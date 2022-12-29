@@ -4,13 +4,13 @@ while(a <= 20)
 {
     print a;
 
-    if (a < 10)
+    if (a == 10)
     {
-        print("a < 10");
+        print("a is 10");
     }
     else
     {
-        print("ELSE block of a < 10");
+        print("a is not 10");
     }
 
     a = a + 1;

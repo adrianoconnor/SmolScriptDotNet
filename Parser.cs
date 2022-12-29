@@ -45,11 +45,11 @@ printStmt      → "print" expression ";" ;
 
 expression     → assignment ;
 assignment     → IDENTIFIER "=" assignment
-               | equality ;
+               | boolean_logic ;
 
-equality       → boolean ( ( "!=" | "==" ) boolean )* ;
+boolean_logic  → equality ( ( AND | OR ) equality )* ; // ?????
 
-boolean        → comparison ( ( AND | OR ) comparison )* ; // ?????
+equality       → comparison ( ( "!=" | "==" ) comparison )* ;
 
 comparison     → term ( ( ">" | ">=" | "<" | "<=" ) term )* ;
 
@@ -277,7 +277,7 @@ primary        → NUMBER | STRING | "true" | "false" | "nil"
 
         private Expression assignment()
         {
-            var expr = equality();
+            var expr = booleanLogic();
 
             if (match(TokenType.EQUAL))
             {
@@ -296,29 +296,29 @@ primary        → NUMBER | STRING | "true" | "false" | "nil"
             return expr;
         }
 
-        private Expression equality()
+        private Expression booleanLogic()
         {
-            var expr = boolean();
+            var expr = equality();
 
-            while(match(TokenType.BANG_EQUAL, TokenType.EQUAL_EQUAL))
+            while(match(TokenType.AND, TokenType.OR))
             {
                 var op = previous();
-                var right = boolean();
-                expr = new Expression.Binary(expr, op, right);
+                var right = equality();
+                expr = new Expression.Logical(expr, op, right);
             }
 
             return expr;
         }
 
-        private Expression boolean()
+        private Expression equality()
         {
             var expr = comparison();
 
-            while(match(TokenType.AND, TokenType.OR))
+            while(match(TokenType.BANG_EQUAL, TokenType.EQUAL_EQUAL))
             {
                 var op = previous();
                 var right = comparison();
-                expr = new Expression.Logical(expr, op, right);
+                expr = new Expression.Binary(expr, op, right);
             }
 
             return expr;
