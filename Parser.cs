@@ -45,9 +45,10 @@ printStmt      → "print" expression ";" ;
 
 expression     → assignment ;
 assignment     → IDENTIFIER "=" assignment
-               | boolean_logic ;
+               | logical_or ;
 
-boolean_logic  → equality ( ( AND | OR ) equality )* ; // ?????
+logical_or     → logical_and ( ( AND | OR ) logical_and )* ; // ?????
+logical_and    → equality ( ( AND | OR ) equality )* ; // ?????
 
 equality       → comparison ( ( "!=" | "==" ) comparison )* ;
 
@@ -277,7 +278,7 @@ primary        → NUMBER | STRING | "true" | "false" | "nil"
 
         private Expression assignment()
         {
-            var expr = booleanLogic();
+            var expr = logicalOr();
 
             if (match(TokenType.EQUAL))
             {
@@ -296,11 +297,25 @@ primary        → NUMBER | STRING | "true" | "false" | "nil"
             return expr;
         }
 
-        private Expression booleanLogic()
+        private Expression logicalOr()
+        {
+            var expr = logicalAnd();
+
+            while(match(TokenType.OR))
+            {
+                var op = previous();
+                var right = logicalAnd();
+                expr = new Expression.Logical(expr, op, right);
+            }
+
+            return expr;
+        }
+
+        private Expression logicalAnd()
         {
             var expr = equality();
 
-            while(match(TokenType.AND, TokenType.OR))
+            while(match(TokenType.AND))
             {
                 var op = previous();
                 var right = equality();
