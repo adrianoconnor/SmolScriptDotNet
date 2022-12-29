@@ -85,6 +85,11 @@ namespace ABasic
             return $"[print {stmt.expression.Accept(this)}]";
         }
 
+        public object? Visit(Statement.Break stmt)
+        {
+            return $"[break]";
+        }
+
         public object? Visit(Statement.If stmt)
         {
             var s = new StringBuilder();

@@ -31,6 +31,7 @@ statement      → exprStmt
                | ifStmt
                | whileStmt
                | printStmt
+               | breakStmt
                | block ;
 
 ifStmt         → "if" "(" expression ")" statement
@@ -213,6 +214,7 @@ primary        → NUMBER | STRING | "true" | "false" | "nil"
             if (match(TokenType.IF)) return ifStatement();
             if (match(TokenType.WHILE)) return whileStatement();
             if (match(TokenType.PRINT)) return printStatement();
+            if (match(TokenType.BREAK)) return breakStatement();
             if (match(TokenType.LEFT_BRACE)) return new Statement.Block(block());
 
             return expressionStatement();
@@ -223,6 +225,12 @@ primary        → NUMBER | STRING | "true" | "false" | "nil"
             var expr = expression();
             consume(TokenType.SEMICOLON, "Expected ;");
             return new Statement.Print(expr);
+        }
+
+        private Statement breakStatement()
+        {
+            consume(TokenType.SEMICOLON, "Expected ;");
+            return new Statement.Break();
         }
 
         private IList<Statement> block()

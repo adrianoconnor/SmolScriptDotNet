@@ -12,6 +12,8 @@ namespace ABasic
 
         private Environment environment = new Environment();
 
+        private bool _break_while = false;
+
         public void Interpret(IList<Statement> statements)
         {
             try
@@ -76,6 +78,13 @@ namespace ABasic
             return null;
         }
 
+        public object? Visit(Statement.Break stmt)
+        {   
+            _break_while = true;
+
+            return null;
+        }
+
         public object? Visit(Statement.Var stmt)
         {   
             object? value = null;
@@ -114,10 +123,12 @@ namespace ABasic
 
         public object? Visit(Statement.While stmt)
         {
-            while (isTruthy(evaluate(stmt.whileCondition)))
+            while (!_break_while && isTruthy(evaluate(stmt.whileCondition)))
             {
                 execute(stmt.executeStatement);
             }
+
+            _break_while = false;
 
             return null;
         }
@@ -145,12 +156,11 @@ namespace ABasic
                     {
                         return (double)left + (double)right;
                     }
-                    
+
                     if (left.GetType() == typeof(string) && right.GetType() == left.GetType())
                     {
                         return (string)left + (string)right;
                     }
-
                     break;
                 case TokenType.POW:
                     return Double.Pow((double)left, (double)right);
@@ -165,11 +175,7 @@ namespace ABasic
                 case TokenType.BANG_EQUAL:
                     return !isEqual(left, right);
                 case TokenType.EQUAL_EQUAL:
-                    return isEqual(left, right);
-                case TokenType.AND:
-                    return isTruthy(left) && isTruthy(right);
-                case TokenType.OR:
-                    return isTruthy(left) || isTruthy(right);                              
+                    return isEqual(left, right);                          
             }   
 
             return null;
@@ -270,6 +276,8 @@ namespace ABasic
                 foreach(var statement in statements)
                 {
                     execute(statement);
+
+                    if (_break_while) break;
                 }
             }
             finally // Restore env

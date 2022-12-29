@@ -8,11 +8,14 @@ namespace ABasic
         object? Visit(Statement.Block stmt);
         object? Visit(Statement.If stmt);
         object? Visit(Statement.While stmt);
+        object? Visit(Statement.Break stmt);
     }
 
     public abstract class Statement
     {
         public abstract object? Accept(IStatementVisitor visitor);
+
+        public Statement? parent;
 
         public class Expression: Statement
         {
@@ -36,6 +39,18 @@ namespace ABasic
             public Print(ABasic.Expression expression)
             {
                 this.expression = expression;
+            }
+
+            public override object? Accept(IStatementVisitor visitor)
+            {
+                return visitor.Visit(this);
+            }
+        }
+
+        public class Break: Statement
+        {
+            public Break()
+            {
             }
 
             public override object? Accept(IStatementVisitor visitor)
