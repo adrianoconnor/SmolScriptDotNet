@@ -214,6 +214,8 @@ primary        → NUMBER | STRING | "true" | "false" | "nil"
 
         private Statement functionDeclaration()
         {
+            _statementCallStack.Push("FUNCTION");
+
             var functionName = consume(TokenType.IDENTIFIER, "Expected function name");
             var functionParams = new List<Token>();
 
@@ -233,6 +235,8 @@ primary        → NUMBER | STRING | "true" | "false" | "nil"
             consume(TokenType.LEFT_BRACE, "Expected {");
             
             var functionBody = block();
+
+            _ = _statementCallStack.Pop();
 
             return new Statement.Function(functionName, functionParams, functionBody);
         }
@@ -273,6 +277,11 @@ primary        → NUMBER | STRING | "true" | "false" | "nil"
 
         private Statement returnStatement()
         {
+            if (!_statementCallStack.Contains("FUNCTION"))
+            {
+                throw error(previous(), "Return not in function."); 
+            }
+
             var expr = expression();
             consume(TokenType.SEMICOLON, "Expected ;");
             return new Statement.Return(expr);
