@@ -13,11 +13,15 @@ namespace SmolScript
         public static readonly Environment globalEnv = new Environment();
         private Environment environment = globalEnv;
 
+        // These flags are used to signal that execution needs to stop until we
+        // exit out of the closest loop/function that was invoked.
         private bool _break_while = false;
         private bool _return_function = false;
 
         public Interpreter()
         {
+            // For now just manually configure the global functions from stdlib
+
             globalEnv.Define("ticks", new StdLib.Ticks());
         }
 
@@ -98,7 +102,7 @@ namespace SmolScript
                 throw new RuntimeError("ReturnValue already set?");
             }
 
-            environment.returnVaue = value;
+            environment.SetFunctionReturnValue(value);
 
             _return_function = true;
 

@@ -16,7 +16,7 @@ namespace SmolScript
 
         public object? call(Interpreter interpreter, IList<object?> parameters)
         {
-            var env = new Environment(Interpreter.globalEnv);
+            var env = new Environment(Interpreter.globalEnv, Environment.Scope.Function);
 
             for(int i = 0; i < parameters.Count(); i++)
             {

@@ -5,7 +5,11 @@ var b = 1;
 
 function pi()
 {
-    return (3.41);
+    if (true)
+    { 
+        return (3.41);
+    }
+    
     return 1;
 }
 
