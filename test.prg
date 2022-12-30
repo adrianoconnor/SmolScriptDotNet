@@ -3,6 +3,11 @@ var start = ticks();
 var a = 1;
 var b = 1;
 
+function pi()
+{
+    return (3.41);
+}
+
 function blah()
 {
     print "blah";
@@ -24,6 +29,7 @@ function say_times(what, times)
     }
 }
 
+print "pi = " + pi()*1;
 
 print "CP1: " + (ticks() - start);
 

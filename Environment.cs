@@ -4,6 +4,7 @@ namespace SmolScript
     {
         private readonly Environment? enclosing = null;
         private IDictionary<string, object?> variables = new Dictionary<string, object?>();
+        public object? returnVaue = null;
 
         public Environment()
         {

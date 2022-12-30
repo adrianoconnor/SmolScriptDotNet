@@ -102,6 +102,11 @@ namespace SmolScript
             return $"[print {stmt.expression.Accept(this)}]";
         }
 
+        public object? Visit(Statement.Return stmt)
+        {
+            return $"[return {stmt.expression.Accept(this)}]";
+        }
+
         public object? Visit(Statement.Break stmt)
         {
             return $"[break]";

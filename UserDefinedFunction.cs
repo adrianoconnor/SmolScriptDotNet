@@ -25,7 +25,7 @@ namespace SmolScript
 
             interpreter.executeBlock(declaration.functionBody.statements, env);
 
-            return null;
+            return env.returnVaue;
         }
     }
 }

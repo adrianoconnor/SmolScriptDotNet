@@ -88,6 +88,20 @@ namespace SmolScript
             return null;
         }
 
+        public object? Visit(Statement.Return stmt)
+        {   
+            var value = evaluate(stmt.expression);
+
+            if (environment.returnVaue != null)
+            {
+                throw new RuntimeError("ReturnValue already set?");
+            }
+
+            environment.returnVaue = value;
+
+            return null;
+        }
+
         public object? Visit(Statement.Break stmt)
         {   
             _break_while = true;

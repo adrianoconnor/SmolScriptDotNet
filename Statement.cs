@@ -4,6 +4,7 @@ namespace SmolScript
     {
         object? Visit(Statement.Expression stmt);
         object? Visit(Statement.Print stmt);
+        object? Visit(Statement.Return stmt);
         object? Visit(Statement.Var stmt);
         object? Visit(Statement.Block stmt);
         object? Visit(Statement.If stmt);
@@ -38,6 +39,21 @@ namespace SmolScript
             public readonly SmolScript.Expression expression;
 
             public Print(SmolScript.Expression expression)
+            {
+                this.expression = expression;
+            }
+
+            public override object? Accept(IStatementVisitor visitor)
+            {
+                return visitor.Visit(this);
+            }
+        }
+
+        public class Return: Statement
+        {
+            public readonly SmolScript.Expression expression;
+
+            public Return(SmolScript.Expression expression)
             {
                 this.expression = expression;
             }

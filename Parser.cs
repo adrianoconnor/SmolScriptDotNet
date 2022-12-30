@@ -37,6 +37,7 @@ statement      → exprStmt
                | ifStmt
                | whileStmt
                | printStmt
+               | returnStmt
                | breakStmt
                | block ;
 
@@ -49,6 +50,7 @@ block          → "{" declaration* "}" ;
 
 exprStmt       → expression ";" ;
 printStmt      → "print" expression ";" ;
+returnStmt     → "return" expression ";" ;
 
 expression     → assignment ;
 assignment     → IDENTIFIER "=" assignment
@@ -255,6 +257,7 @@ primary        → NUMBER | STRING | "true" | "false" | "nil"
             if (match(TokenType.IF)) return ifStatement();
             if (match(TokenType.WHILE)) return whileStatement();
             if (match(TokenType.PRINT)) return printStatement();
+            if (match(TokenType.RETURN)) return returnStatement();
             if (match(TokenType.BREAK)) return breakStatement();
             if (match(TokenType.LEFT_BRACE)) return block();
 
@@ -266,6 +269,13 @@ primary        → NUMBER | STRING | "true" | "false" | "nil"
             var expr = expression();
             consume(TokenType.SEMICOLON, "Expected ;");
             return new Statement.Print(expr);
+        }
+
+        private Statement returnStatement()
+        {
+            var expr = expression();
+            consume(TokenType.SEMICOLON, "Expected ;");
+            return new Statement.Return(expr);
         }
 
         private Statement breakStatement()
