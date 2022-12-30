@@ -1,4 +1,4 @@
-namespace ABasic
+namespace SmolScript
 {
     public interface IStatementVisitor
     {
@@ -19,9 +19,9 @@ namespace ABasic
 
         public class Expression: Statement
         {
-            public readonly ABasic.Expression expression;
+            public readonly SmolScript.Expression expression;
 
-            public Expression(ABasic.Expression expression)
+            public Expression(SmolScript.Expression expression)
             {
                 this.expression = expression;
             }
@@ -34,9 +34,9 @@ namespace ABasic
 
         public class Print: Statement
         {
-            public readonly ABasic.Expression expression;
+            public readonly SmolScript.Expression expression;
 
-            public Print(ABasic.Expression expression)
+            public Print(SmolScript.Expression expression)
             {
                 this.expression = expression;
             }
@@ -62,9 +62,9 @@ namespace ABasic
         public class Var: Statement
         {
             public readonly Token name;
-            public readonly ABasic.Expression? initializerExpression;
+            public readonly SmolScript.Expression? initializerExpression;
 
-            public Var(Token name, ABasic.Expression? initializerExpression)
+            public Var(Token name, SmolScript.Expression? initializerExpression)
             {
                 this.name = name;
                 this.initializerExpression = initializerExpression;
@@ -93,11 +93,11 @@ namespace ABasic
 
         public class If: Statement
         {
-            public readonly ABasic.Expression testExpression;
-            public readonly ABasic.Statement thenStatement;
-            public readonly ABasic.Statement? elseStatement;
+            public readonly SmolScript.Expression testExpression;
+            public readonly SmolScript.Statement thenStatement;
+            public readonly SmolScript.Statement? elseStatement;
 
-            public If(ABasic.Expression testExpression, ABasic.Statement thenStatement, ABasic.Statement? elseStatement)
+            public If(SmolScript.Expression testExpression, SmolScript.Statement thenStatement, SmolScript.Statement? elseStatement)
             {
                 this.testExpression = testExpression;
                 this.thenStatement = thenStatement;
@@ -112,10 +112,10 @@ namespace ABasic
 
         public class While: Statement
         {
-            public readonly ABasic.Expression whileCondition;
-            public readonly ABasic.Statement executeStatement;
+            public readonly SmolScript.Expression whileCondition;
+            public readonly SmolScript.Statement executeStatement;
 
-            public While(ABasic.Expression whileCondition, ABasic.Statement executeStatement)
+            public While(SmolScript.Expression whileCondition, SmolScript.Statement executeStatement)
             {
                 this.whileCondition = whileCondition;
                 this.executeStatement = executeStatement;

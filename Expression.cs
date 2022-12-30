@@ -1,4 +1,4 @@
-namespace ABasic
+namespace SmolScript
 {
     public interface IExpressionVisitor
     {
@@ -9,6 +9,7 @@ namespace ABasic
         object? Visit(Expression.Unary expr);
         object? Visit(Expression.Variable expr);
         object? Visit(Expression.Assign expr);
+        object? Visit(Expression.Call expr);
     }
 
     public abstract class Expression
@@ -124,6 +125,25 @@ namespace ABasic
             {
                 this.name = name;
                 this.value = value;
+            }
+
+            public override object? Accept(IExpressionVisitor visitor)
+            {
+                return visitor.Visit(this);
+            }
+        }
+
+        public class Call: Expression
+        {
+            public readonly Expression callee;
+            public readonly Token paren;
+            public readonly IList<Expression> args;
+
+            public Call(Expression callee, Token paren, IList<Expression> args)
+            {
+                this.callee = callee;
+                this.paren = paren;
+                this.args = args;
             }
 
             public override object? Accept(IExpressionVisitor visitor)

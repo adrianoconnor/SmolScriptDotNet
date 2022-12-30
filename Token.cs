@@ -1,6 +1,6 @@
 using System;
 
-namespace ABasic
+namespace SmolScript
 {
     public class Token
     {

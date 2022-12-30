@@ -1,8 +1,8 @@
 ﻿using System;
 
-namespace ABasic
+namespace SmolScript
 {
-    internal class ABasicProgram
+    internal class SmolScriptProgram
     {
         static void Main(string[] args)
         {
@@ -20,7 +20,7 @@ namespace ABasic
             }
             else 
             {
-                Console.WriteLine("ABasic Interactive");
+                Console.WriteLine("SmolScript Interactive");
 
                 var interpreterInstance = new Interpreter();
 

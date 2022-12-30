@@ -1,4 +1,4 @@
-namespace ABasic
+namespace SmolScript
 {
     public class Environment
     {

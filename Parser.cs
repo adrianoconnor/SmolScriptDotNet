@@ -1,6 +1,6 @@
 using System;
 
-namespace ABasic
+namespace SmolScript
 {
     public class ParseError : Exception
     {
@@ -59,7 +59,10 @@ term           → factor ( ( "-" | "+" ) factor )* ;
 factor         → power ( ( "/" | "*" ) power )* ;
 power          → unary ( ( "^" ) unary )* ;
 unary          → ( "!" | "-" ) unary
-               | primary ;
+               | call ;
+
+call           → primary ( "(" arguments? ")" )* ;
+
 primary        → NUMBER | STRING | "true" | "false" | "nil"
                | "(" expression ")"
                | IDENTIFIER ;
@@ -163,7 +166,7 @@ primary        → NUMBER | STRING | "true" | "false" | "nil"
 
                 switch (peek().type) {
                     case TokenType.CLASS:
-                    case TokenType.FUN:
+                    case TokenType.FUNC:
                     case TokenType.VAR:
                     case TokenType.FOR:
                     case TokenType.IF:
@@ -438,7 +441,44 @@ primary        → NUMBER | STRING | "true" | "false" | "nil"
                 return new Expression.Unary(op, right);
             }
 
-            return primary();
+            return call();
+        }
+
+        private Expression call()
+        {
+            var expr = primary();
+
+            while(true)
+            {
+                if (match(TokenType.LEFT_PAREN))
+                {
+                    expr = finishCall(expr);
+                }
+                else 
+                {
+                    break;
+                }
+            }
+
+            return expr;
+        }
+
+        private Expression finishCall(Expression callee)
+        {
+            var args = new List<Expression>();
+
+            if (!check(TokenType.RIGHT_PAREN))
+            {
+                do 
+                {
+                    args.Add(expression());
+
+                } while (match(TokenType.COMMA));
+            }
+
+            var closingParen = consume(TokenType.RIGHT_PAREN, "Expected )");
+
+            return new Expression.Call(callee, closingParen, args);
         }
 
         private Expression primary()

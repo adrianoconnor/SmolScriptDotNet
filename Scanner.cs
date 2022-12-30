@@ -1,6 +1,6 @@
 using System;
 
-namespace ABasic
+namespace SmolScript
 {
     public record ScannerError
     {
@@ -34,7 +34,7 @@ namespace ABasic
             { "else", TokenType.ELSE },
             { "false", TokenType.FALSE },
             { "for", TokenType.FOR },
-            { "fun", TokenType.FUN },
+            { "function", TokenType.FUNC },
             { "if", TokenType.IF },
             { "nil", TokenType.NIL },
             { "or", TokenType.OR },

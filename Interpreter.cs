@@ -1,4 +1,4 @@
-namespace ABasic
+namespace SmolScript
 {
     public class RuntimeError : Exception {
 
@@ -10,9 +10,15 @@ namespace ABasic
 
     public class Interpreter : IExpressionVisitor, IStatementVisitor {
 
-        private Environment environment = new Environment();
+        private static readonly Environment globalEnv = new Environment();
+        private Environment environment = globalEnv;
 
         private bool _break_while = false;
+
+        public Interpreter()
+        {
+            globalEnv.Define("ticks", new StdLib.Ticks());
+        }
 
         public void Interpret(IList<Statement> statements)
         {
@@ -131,6 +137,26 @@ namespace ABasic
             _break_while = false;
 
             return null;
+        }
+
+        public object? Visit(Expression.Call expr)
+        {
+            var callee = evaluate(expr.callee);
+            var function = callee as ICallable;
+
+            if (function == null)
+            {
+                throw new RuntimeError("Unable to call function, bad type");
+            }
+
+            var args = new List<object?>();
+ 
+            foreach (var arg in expr.args)
+            { 
+                args.Add(evaluate(arg));
+            }
+        
+            return function.call(this, args);
         }
 
         public object? Visit(Expression.Binary expr)

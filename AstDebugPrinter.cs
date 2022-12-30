@@ -1,6 +1,6 @@
 using System.Text;
 
-namespace ABasic
+namespace SmolScript
 {
     public class AstDebugPrinter : IExpressionVisitor, IStatementVisitor {
 
@@ -45,6 +45,11 @@ namespace ABasic
         public object? Visit(Expression.Assign expr)
         {
             return $"(assign {expr.name.lexeme} {expr.value.Accept(this)})";
+        }
+
+        public object? Visit(Expression.Call expr)
+        {
+            return $"(call {expr.callee.Accept(this)} {expr.paren.lexeme} args[{expr.args.Count}])";
         }
 
         public object? Visit(Statement.Var stmt)
