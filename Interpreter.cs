@@ -154,7 +154,7 @@ namespace SmolScript
 
         public object? Visit(Statement.While stmt)
         {
-            while (!_break_while && isTruthy(evaluate(stmt.whileCondition)))
+            while (!_break_while && !_return_function && isTruthy(evaluate(stmt.whileCondition)))
             {
                 execute(stmt.executeStatement);
             }
