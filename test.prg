@@ -6,11 +6,14 @@ var b = 1;
 function pi()
 {
     return (3.41);
+    return 1;
 }
 
 function blah()
 {
-    print "blah";
+    print "blah 1";
+    print "blah 2";
+    print "blah 3";
 }
 
 function say(what)

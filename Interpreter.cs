@@ -14,6 +14,7 @@ namespace SmolScript
         private Environment environment = globalEnv;
 
         private bool _break_while = false;
+        private bool _return_function = false;
 
         public Interpreter()
         {
@@ -99,6 +100,8 @@ namespace SmolScript
 
             environment.returnVaue = value;
 
+            _return_function = true;
+
             return null;
         }
 
@@ -181,7 +184,11 @@ namespace SmolScript
                 args.Add(evaluate(arg));
             }
         
-            return function.call(this, args);
+            var result = function.call(this, args);
+
+            _return_function = false;
+
+            return result;
         }
 
         public object? Visit(Expression.Binary expr)
@@ -325,6 +332,7 @@ namespace SmolScript
                     execute(statement);
 
                     if (_break_while) break;
+                    if (_return_function) break;
                 }
             }
             finally // Restore env
