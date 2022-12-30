@@ -39,6 +39,8 @@ namespace SmolScript
 
         static void Run(string source, Interpreter? interpreterInstance = null)
         {
+            var startTime = System.Environment.TickCount;
+
             if (interpreterInstance == null)
             {
                 interpreterInstance = new Interpreter();
@@ -46,6 +48,8 @@ namespace SmolScript
 
             var scanner = new Scanner(source);
             var scanResult = scanner.ScanTokens();
+
+            var scanTime = System.Environment.TickCount - startTime;
 
 
             if (scanResult.errors.Any())
@@ -63,11 +67,18 @@ namespace SmolScript
                 {
                     var statements = parser.Parse();
 
+                    var parseTime = System.Environment.TickCount - startTime - scanTime;
+
                     if (statements != null)
                     {
-                        //Console.WriteLine(new AstDebugPrinter().Print(expression));
+                        //Console.WriteLine(new AstDebugPrinter().Print(statements));
 
                         interpreterInstance.Interpret(statements);
+
+                        var executionTime = System.Environment.TickCount - startTime - scanTime - parseTime;
+
+                        Console.WriteLine($"Done. Took {System.Environment.TickCount - startTime} ms total");
+                        Console.WriteLine($"(Scan time = {scanTime}, Parse time = {parseTime}, Execution time = {executionTime})");                        
                     }
                 }
                 catch (ParseError e)

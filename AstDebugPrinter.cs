@@ -12,6 +12,18 @@ namespace SmolScript
             return stmt.Accept(this) as string;
         }
 
+        public string? Print(IList<Statement> stmts) {
+            
+            StringBuilder sb = new StringBuilder();
+
+            foreach(var stmt in stmts)
+            {
+                sb.AppendLine(stmt.Accept(this) as string);
+            }
+
+            return sb.ToString();
+        }
+
         public object? Visit(Expression.Binary expr)
         {
             return $"({expr.op.lexeme} {expr.left.Accept(this)} {expr.right.Accept(this)})";

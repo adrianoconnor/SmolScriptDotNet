@@ -1,3 +1,5 @@
+var start = ticks();
+
 var a = 1;
 var b = 1;
 
@@ -22,11 +24,12 @@ function say_times(what, times)
     }
 }
 
+
+print "CP1: " + (ticks() - start);
+
 print "2 squared = " + (2 ** 2);
 
-var start = ticks();
-
-while (a <= 10)
+while (a <= 100000)
 {
     while (b <= 10)
     {
@@ -36,16 +39,20 @@ while (a <= 10)
         if (b > 2) { break; }
     }
 
-    print ("outer");
-    print (a);
+    //print ("outer");
+    //print (a);
 
     a = a + 1;
 }
 
-print "Time taken (ticks): " + (ticks() - start);
+print a;
+
+print "CP2: " + (ticks() - start);
 
 say("bye");
 
 blah();
 
 say_times("bye", 2);
+
+print "Time taken (ticks): " + (ticks() - start);
