@@ -130,5 +130,18 @@ namespace SmolScript
             return s.ToString();
         }
 
+        public object? Visit(Statement.Function stmt)
+        {
+            var s = new StringBuilder();
+            
+            s.AppendLine($"[declare function {stmt.name.lexeme} ()]");
+
+            s.Append($"{stmt.functionBody.Accept(this)}");
+
+            s.AppendLine("[end function declaration]");
+
+            return s.ToString();
+        }
+
     }
 }

@@ -9,6 +9,7 @@ namespace SmolScript
         object? Visit(Statement.If stmt);
         object? Visit(Statement.While stmt);
         object? Visit(Statement.Break stmt);
+        object? Visit(Statement.Function stmt);
     }
 
     public abstract class Statement
@@ -119,6 +120,25 @@ namespace SmolScript
             {
                 this.whileCondition = whileCondition;
                 this.executeStatement = executeStatement;
+            }
+
+            public override object? Accept(IStatementVisitor visitor)
+            {
+                return visitor.Visit(this);
+            }
+        }
+
+        public class Function: Statement
+        {
+            public readonly Token name;
+            public readonly IList<Token> parameters;
+            public readonly Statement.Block functionBody;
+
+            public Function(Token name, IList<Token> parameters, Statement.Block functionBody)
+            {
+                this.name = name;
+                this.parameters = parameters;
+                this.functionBody = functionBody;
             }
 
             public override object? Accept(IStatementVisitor visitor)

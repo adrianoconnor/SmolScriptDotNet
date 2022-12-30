@@ -82,7 +82,16 @@ namespace SmolScript
                 case '+': AddToken(TokenType.PLUS); break;
                 case '^': AddToken(TokenType.POW); break;
                 case ';': AddToken(TokenType.SEMICOLON); break;
-                case '*': AddToken(TokenType.STAR); break;
+                case '*': 
+                    if (MatchNext('*'))
+                    {
+                       AddToken(TokenType.POW);
+                    }
+                    else
+                    {
+                        AddToken(TokenType.STAR);
+                    }
+                    break;
                 case '!':
                     if (MatchNext('='))
                     {

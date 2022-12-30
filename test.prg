@@ -1,6 +1,29 @@
 var a = 1;
 var b = 1;
 
+function blah()
+{
+    print "blah";
+}
+
+function say(what)
+{
+    print what;
+}
+
+function say_times(what, times)
+{
+    var a = 0;
+
+    while (a < times)
+    {
+        print what;
+        a = a + 1;
+    }
+}
+
+print "2 squared = " + (2 ** 2);
+
 var start = ticks();
 
 while (a <= 10)
@@ -19,7 +42,10 @@ while (a <= 10)
     a = a + 1;
 }
 
-print "Time taken: (ticks)";
-print (ticks() - start);
+print "Time taken (ticks): " + (ticks() - start);
 
-print "bye";
+say("bye");
+
+blah();
+
+say_times("bye", 2);

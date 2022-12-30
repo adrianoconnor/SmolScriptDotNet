@@ -10,7 +10,7 @@ namespace SmolScript
 
     public class Interpreter : IExpressionVisitor, IStatementVisitor {
 
-        private static readonly Environment globalEnv = new Environment();
+        public static readonly Environment globalEnv = new Environment();
         private Environment environment = globalEnv;
 
         private bool _break_while = false;
@@ -64,6 +64,10 @@ namespace SmolScript
                 else if (value.GetType() == typeof(bool))
                 {
                     return (bool)value ? "true" : "false";
+                }
+                else if ((value as ICallable) != null)
+                {
+                    return "function()";
                 }
 
                 throw new RuntimeError($"Unable to stringify variable with type {value.GetType()}");
@@ -139,6 +143,13 @@ namespace SmolScript
             return null;
         }
 
+        public object? Visit(Statement.Function stmt)
+        {
+            environment.Define(stmt.name.lexeme, new UserDefinedFunction(stmt));
+
+            return null;
+        }
+
         public object? Visit(Expression.Call expr)
         {
             var callee = evaluate(expr.callee);
@@ -183,11 +194,7 @@ namespace SmolScript
                         return (double)left + (double)right;
                     }
 
-                    if (left.GetType() == typeof(string) && right.GetType() == left.GetType())
-                    {
-                        return (string)left + (string)right;
-                    }
-                    break;
+                    return left.ToString() + right.ToString();
                 case TokenType.POW:
                     return Double.Pow((double)left, (double)right);
                 case TokenType.GREATER:
@@ -291,7 +298,7 @@ namespace SmolScript
             return a.Equals(b);
         }
 
-        private void executeBlock(IList<Statement> statements, Environment environment)
+        public void executeBlock(IList<Statement> statements, Environment environment)
         {
             var previous = this.environment;
 

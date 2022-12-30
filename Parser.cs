@@ -24,8 +24,14 @@ namespace SmolScript
 /*
 program        → declaration* EOF ;
 
-declaration    → varDecl
+declaration    → functionDecl
+               | varDecl
                | statement ;
+
+functionDecl   → "function" function ;
+
+function       → IDENTIFIER "(" parameters? ")" block ;
+parameters     → IDENTIFIER ( "," IDENTIFIER )* ;
 
 statement      → exprStmt
                | ifStmt
@@ -191,6 +197,7 @@ primary        → NUMBER | STRING | "true" | "false" | "nil"
         {
             try
             {
+                if (match(TokenType.FUNC)) return functionDeclaration();
                 if (match(TokenType.VAR)) return varDeclaration();
 
                 return statement();
@@ -201,6 +208,31 @@ primary        → NUMBER | STRING | "true" | "false" | "nil"
                 throw;
             }
 
+        }
+
+        private Statement functionDeclaration()
+        {
+            var functionName = consume(TokenType.IDENTIFIER, "Expected function name");
+            var functionParams = new List<Token>();
+
+            consume(TokenType.LEFT_PAREN, "Expected (");
+            
+            if (!check(TokenType.RIGHT_PAREN)) {
+                do {
+                    if (functionParams.Count() >= 127) {
+                        error(peek(), "Can't define a function with more than 127 parameters.");
+                    }
+
+                    functionParams.Add(consume(TokenType.IDENTIFIER, "Expected parameter name"));
+                } while (match(TokenType.COMMA));
+            }
+            
+            consume(TokenType.RIGHT_PAREN, "Expected )");
+            consume(TokenType.LEFT_BRACE, "Expected {");
+            
+            var functionBody = block();
+
+            return new Statement.Function(functionName, functionParams, functionBody);
         }
 
         private Statement varDeclaration()

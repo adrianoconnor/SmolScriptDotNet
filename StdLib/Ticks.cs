@@ -1,15 +1,13 @@
-using SmolScript;
-
 namespace SmolScript.StdLib
 {
-    public class Ticks : Callable, ICallable
+    public class Ticks : SmolScript.ICallable
     {
-        public override int arity()
+        public int arity()
         {
             return 0;
         }
 
-        public override object? call(Interpreter interpreter, IList<object?> args)
+        public object? call(Interpreter interpreter, IList<object?> args)
         {
             return (double)System.Environment.TickCount;
         }
