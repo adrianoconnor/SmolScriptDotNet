@@ -70,6 +70,10 @@ primary        → NUMBER | STRING | "true" | "false" | "nil"
         private readonly Token[] _tokens;
         private int _current = 0;
 
+        // Maintain a basic call stack of enclosing statement types, so we can do some validation
+        // on certain commands that can only appear inside certain other statements (while/break)
+        private Stack<string> _statementCallStack = new Stack<string>();
+
         public Parser(IList<Token> tokens)
         {
             this._tokens = tokens.ToArray();
@@ -171,6 +175,8 @@ primary        → NUMBER | STRING | "true" | "false" | "nil"
 
                   advance();
             }
+
+            _statementCallStack.Clear();
         }
 
         private bool ReachedEnd()
@@ -215,7 +221,7 @@ primary        → NUMBER | STRING | "true" | "false" | "nil"
             if (match(TokenType.WHILE)) return whileStatement();
             if (match(TokenType.PRINT)) return printStatement();
             if (match(TokenType.BREAK)) return breakStatement();
-            if (match(TokenType.LEFT_BRACE)) return new Statement.Block(block());
+            if (match(TokenType.LEFT_BRACE)) return block();
 
             return expressionStatement();
         }
@@ -229,24 +235,38 @@ primary        → NUMBER | STRING | "true" | "false" | "nil"
 
         private Statement breakStatement()
         {
+            //Console.WriteLine("BREAK");
+            //Console.WriteLine(String.Join('|', _statementCallStack.ToArray()));
+
+            if (!_statementCallStack.Contains("WHILE"))
+            {
+                throw error(previous(), "Break not in while."); 
+            }
+
             consume(TokenType.SEMICOLON, "Expected ;");
             return new Statement.Break();
         }
 
-        private IList<Statement> block()
+        private Statement.Block block()
         {
+            _statementCallStack.Push("BLOCK");
+
             IList<Statement> statements = new List<Statement>();
 
             while (!check(TokenType.RIGHT_BRACE) && !ReachedEnd()) {
                 statements.Add(declaration());
             }
 
+            _ = _statementCallStack.Pop();
+
             consume(TokenType.RIGHT_BRACE, "Expect '}' after block.");
-            return statements;
+            return new Statement.Block(statements);
         }
 
         private Statement ifStatement()
         {
+            _statementCallStack.Push("IF");
+
             consume(TokenType.LEFT_PAREN, "Expected (");
             var condition = expression();
             consume(TokenType.RIGHT_PAREN, "Expected )");
@@ -259,15 +279,21 @@ primary        → NUMBER | STRING | "true" | "false" | "nil"
                 elseStatement = statement();
             }
 
+            _ = _statementCallStack.Pop();
+
             return new Statement.If(condition, thenStatement, elseStatement);
         }
 
         private Statement whileStatement()
         {
+            _statementCallStack.Push("WHILE");
+
             consume(TokenType.LEFT_PAREN, "Expected (");
             var whileCondition = expression();
             consume(TokenType.RIGHT_PAREN, "Expected )");
             var whileStatement = statement();
+
+            _ = _statementCallStack.Pop();
 
             return new Statement.While(whileCondition, whileStatement);
         }
