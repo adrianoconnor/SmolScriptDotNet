@@ -151,7 +151,7 @@ namespace SmolScript
         {
             var s = new StringBuilder();
             
-            s.AppendLine($"[declare function {stmt.name.lexeme} ()]");
+            s.AppendLine($"[declare function {stmt.name?.lexeme ?? ""} ()]");
 
             s.Append($"{stmt.functionBody.Accept(this)}");
 

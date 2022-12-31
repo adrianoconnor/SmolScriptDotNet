@@ -8,15 +8,23 @@ namespace SmolScript
         }
     }
 
+    public class ReturnFromUserDefinedFunction : Exception {
+        public object? ReturnValue { get; private set; }
+
+        public ReturnFromUserDefinedFunction(object? returnValue) 
+        {
+            this.ReturnValue = returnValue;
+        }
+    }
+
+    public class BreakFromLoop : Exception {
+
+    }
+
     public class Interpreter : IExpressionVisitor, IStatementVisitor {
 
         public static readonly Environment globalEnv = new Environment();
         private Environment environment = globalEnv;
-
-        // These flags are used to signal that execution needs to stop until we
-        // exit out of the closest loop/function that was invoked.
-        private bool _break_while = false;
-        private bool _return_function = false;
 
         public Interpreter()
         {
@@ -95,25 +103,14 @@ namespace SmolScript
 
         public object? Visit(Statement.Return stmt)
         {   
-            var value = evaluate(stmt.expression);
+            var returnValue = evaluate(stmt.expression);
 
-            if (environment.returnVaue != null)
-            {
-                throw new RuntimeError("ReturnValue already set?");
-            }
-
-            environment.SetFunctionReturnValue(value);
-
-            _return_function = true;
-
-            return null;
+            throw new ReturnFromUserDefinedFunction(returnValue);
         }
 
         public object? Visit(Statement.Break stmt)
         {   
-            _break_while = true;
-
-            return null;
+            throw new BreakFromLoop();
         }
 
         public object? Visit(Statement.Var stmt)
@@ -154,19 +151,29 @@ namespace SmolScript
 
         public object? Visit(Statement.While stmt)
         {
-            while (!_break_while && !_return_function && isTruthy(evaluate(stmt.whileCondition)))
+            try
             {
-                execute(stmt.executeStatement);
+                while(isTruthy(evaluate(stmt.whileCondition)))
+                {
+                    execute(stmt.executeStatement);
+                }
             }
+            catch(BreakFromLoop)
+            {
 
-            _break_while = false;
+            }
 
             return null;
         }
 
         public object? Visit(Statement.Function stmt)
         {
-            environment.Define(stmt.name.lexeme, new UserDefinedFunction(stmt));
+            if (stmt.name == null)
+            {
+                throw new RuntimeError("Anonymous function not allowed here");
+            }
+            
+            environment.Define(stmt.name.lexeme, new UserDefinedFunction(stmt, environment));
 
             return null;
         }
@@ -184,13 +191,27 @@ namespace SmolScript
             var args = new List<object?>();
  
             foreach (var arg in expr.args)
-            { 
-                args.Add(evaluate(arg));
+            {
+                var stmt = arg as Expression;
+
+                if (stmt != null)
+                {
+                    args.Add(evaluate(stmt));
+                    continue;
+                }
+
+                var fn = arg as Statement.Function;
+
+                if (fn != null)
+                {
+                    args.Add(fn);
+                    continue;
+                }
+
+                throw new RuntimeError("Unable to process one or more arguments");
             }
         
             var result = function.call(this, args);
-
-            _return_function = false;
 
             return result;
         }
@@ -334,9 +355,6 @@ namespace SmolScript
                 foreach(var statement in statements)
                 {
                     execute(statement);
-
-                    if (_break_while) break;
-                    if (_return_function) break;
                 }
             }
             finally // Restore env

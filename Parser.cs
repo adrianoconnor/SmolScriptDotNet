@@ -221,7 +221,13 @@ primary        → NUMBER | STRING | "true" | "false" | "nil"
         {
             _statementCallStack.Push("FUNCTION");
 
-            var functionName = consume(TokenType.IDENTIFIER, "Expected function name");
+            Token? functionName = null;
+
+            if (!check(TokenType.LEFT_PAREN))
+            {
+                functionName = consume(TokenType.IDENTIFIER, "Expected function name");
+            }
+
             var functionParams = new List<Token>();
 
             consume(TokenType.LEFT_PAREN, "Expected (");
@@ -300,7 +306,7 @@ primary        → NUMBER | STRING | "true" | "false" | "nil"
 
             if (!_statementCallStack.Contains("WHILE"))
             {
-                throw error(previous(), "Break not in while."); 
+                throw error(previous(), "Break should be inside a while or for loop"); 
             }
 
             consume(TokenType.SEMICOLON, "Expected ;");
@@ -590,14 +596,21 @@ primary        → NUMBER | STRING | "true" | "false" | "nil"
 
         private Expression finishCall(Expression callee)
         {
-            var args = new List<Expression>();
+            var args = new List<object?>();
 
             if (!check(TokenType.RIGHT_PAREN))
             {
                 do 
                 {
-                    args.Add(expression());
-
+                    if (match(TokenType.FUNC))
+                    {
+                        // Anonymous function                        
+                        args.Add(functionDeclaration());
+                    }
+                    else
+                    {
+                        args.Add(expression());
+                    }
                 } while (match(TokenType.COMMA));
             }
 

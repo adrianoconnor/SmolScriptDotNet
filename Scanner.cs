@@ -80,7 +80,6 @@ namespace SmolScript
                 case '.': AddToken(TokenType.DOT); break;
                 case '-': AddToken(TokenType.MINUS); break;
                 case '+': AddToken(TokenType.PLUS); break;
-                case '^': AddToken(TokenType.POW); break;
                 case ';': AddToken(TokenType.SEMICOLON); break;
                 case '*': 
                     if (MatchNext('*'))
@@ -180,7 +179,7 @@ namespace SmolScript
                     }
                     else
                     {
-                        _errors.Add(new ScannerError(_line, "Unexpected character"));
+                        _errors.Add(new ScannerError(_line, $"Unexpected character '{c}'"));
                     }
 
                     break;

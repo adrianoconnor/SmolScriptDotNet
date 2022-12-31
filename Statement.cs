@@ -146,11 +146,11 @@ namespace SmolScript
 
         public class Function: Statement
         {
-            public readonly Token name;
+            public readonly Token? name;
             public readonly IList<Token> parameters;
             public readonly Statement.Block functionBody;
 
-            public Function(Token name, IList<Token> parameters, Statement.Block functionBody)
+            public Function(Token? name, IList<Token> parameters, Statement.Block functionBody)
             {
                 this.name = name;
                 this.parameters = parameters;

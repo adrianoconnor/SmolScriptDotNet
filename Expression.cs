@@ -137,9 +137,11 @@ namespace SmolScript
         {
             public readonly Expression callee;
             public readonly Token paren;
-            public readonly IList<Expression> args;
+            //public readonly IList<Expression> args;
+            public readonly IList<object?> args;
 
-            public Call(Expression callee, Token paren, IList<Expression> args)
+
+            public Call(Expression callee, Token paren, IList<object?> args)
             {
                 this.callee = callee;
                 this.paren = paren;
