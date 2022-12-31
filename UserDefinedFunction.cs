@@ -11,35 +11,35 @@ namespace SmolScript
             this.closure = closure;
         }
 
-        public int arity()
-        {
-            return declaration.parameters.Count;
-        }
-
         public object? call(Interpreter interpreter, IList<object?> parameters)
         {
             var env = new Environment(this.closure);
 
-            for(int i = 0; i < parameters.Count(); i++)
+            for(int i = 0; i < declaration.parameters.Count(); i++)
             {
-                //Console.WriteLine(declaration.parameters[i].lexeme);
-                //Console.WriteLine(parameters[i]);
-
-                var anonymousFunction = parameters[i] as Statement.Function;
-
-                if (anonymousFunction != null)
+                if (parameters.Count() > i)
                 {
-                    env.Define(declaration.parameters[i].lexeme, new UserDefinedFunction((Statement.Function)anonymousFunction, env));
+                    var anonymousFunction = parameters[i] as Statement.Function;
+
+                    if (anonymousFunction != null)
+                    {
+                        env.Define(declaration.parameters[i].lexeme, new UserDefinedFunction((Statement.Function)anonymousFunction, env));
+                    }
+                    else
+                    {
+                        env.Define(declaration.parameters[i].lexeme, parameters[i]);
+                    }
                 }
                 else
                 {
-                    env.Define(declaration.parameters[i].lexeme, parameters[i]);
+                    env.Define(declaration.parameters[i].lexeme, null);
                 }
             }
 
             object? returnValue = null;
 
-            try {
+            try
+            {
                 interpreter.executeBlock(declaration.functionBody.statements, env);
             }
             catch (ReturnFromUserDefinedFunction r)
