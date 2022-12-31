@@ -36,4 +36,11 @@ function test2()
     return 2;
 }
 
-print test1();
+function test3()
+{
+    print 1;
+    while (1 == 1) return 2;
+    return 1;
+}
+
+print test3();

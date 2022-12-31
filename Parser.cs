@@ -36,6 +36,7 @@ parameters     → IDENTIFIER ( "," IDENTIFIER )* ;
 statement      → exprStmt
                | ifStmt
                | whileStmt
+               | forStmt
                | printStmt
                | returnStmt
                | breakStmt
@@ -45,6 +46,10 @@ ifStmt         → "if" "(" expression ")" statement
                ( "else" statement )? ;
 
 whileStmt      → "while" "(" expression ")" statement ;
+
+forStmt        → "for" "(" ( varDecl | exprStmt | ";" )
+                 expression? ";"
+                 expression? ")" statement ;
 
 block          → "{" declaration* "}" ;
 
@@ -260,6 +265,7 @@ primary        → NUMBER | STRING | "true" | "false" | "nil"
         {
             if (match(TokenType.IF)) return ifStatement();
             if (match(TokenType.WHILE)) return whileStatement();
+            if (match(TokenType.FOR)) return forStatement();
             if (match(TokenType.PRINT)) return printStatement();
             if (match(TokenType.RETURN)) return returnStatement();
             if (match(TokenType.BREAK)) return breakStatement();
@@ -350,6 +356,74 @@ primary        → NUMBER | STRING | "true" | "false" | "nil"
             _ = _statementCallStack.Pop();
 
             return new Statement.While(whileCondition, whileStatement);
+        }
+
+        private Statement forStatement()
+        {
+             _statementCallStack.Push("WHILE");
+
+            consume(TokenType.LEFT_PAREN, "Expected (");
+            
+            Statement? initialiser = null;
+
+            if (match(TokenType.SEMICOLON))
+            {
+                initialiser = null;
+            }
+            else if (match(TokenType.VAR))
+            {
+                initialiser = varDeclaration();
+            }
+            else
+            {
+                initialiser = expressionStatement();
+            }
+
+            Expression? condition = null;
+
+            if (!check(TokenType.SEMICOLON))
+            {
+                condition = expression();
+            }
+            else
+            {
+                condition = new Expression.Literal(true);
+            }
+            
+            consume(TokenType.SEMICOLON, "Expected ;");
+            
+            Expression? increment = null;
+
+            if (!check(TokenType.RIGHT_PAREN))
+            {
+                increment = expression();
+            }
+
+            consume(TokenType.RIGHT_PAREN, "Expected )");
+            
+            var body = statement();
+
+            if (increment != null)
+            {
+                body = new Statement.Block(new List<Statement>() {
+                    body,
+                    new Statement.Expression(increment)
+                });
+            }
+
+            body = new Statement.While(condition, body);
+
+            if (initialiser != null) 
+            {
+                body = new Statement.Block(new List<Statement>() {
+                    initialiser,
+                    body
+                });
+            }
+
+            _ = _statementCallStack.Pop();
+
+            return body;
         }
 
         private Statement expressionStatement()

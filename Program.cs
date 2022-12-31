@@ -91,6 +91,11 @@ namespace SmolScript
                         {
                             Console.WriteLine($"Error on line {error.LineNumber}: {error.Message}");
                         }
+
+                        foreach(var token in scanResult.tokens)
+                        {
+                            //Console.WriteLine(token.lexeme);
+                        }
                     }
                     else
                     {
