@@ -642,7 +642,7 @@ primary        → NUMBER | STRING | "true" | "false" | "nil"
                 return new Expression.Grouping(expr);
             }
 
-            throw error(peek(), "Parser could not deal with the data");
+            throw error(peek(), $"Parser did not expect to see '{peek().lexeme}' on line {peek().line}, sorry :(");
         }
     }
 }
