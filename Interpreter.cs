@@ -1,3 +1,5 @@
+using SmolScript.Statements;
+
 namespace SmolScript
 {
     public class RuntimeError : Exception {
@@ -87,7 +89,7 @@ namespace SmolScript
             }
         }
 
-        public object? Visit(Statement.Expression stmt)
+        public object? Visit(ExpressionStatement stmt)
         {
             return evaluate(stmt.expression);
 
@@ -147,6 +149,20 @@ namespace SmolScript
             }
 
             return null;
+        }
+
+        public object? Visit(Statement.Ternary stmt)
+        {
+            var test = evaluate(stmt.testExpression);
+
+            if (isTruthy(test))
+            {
+                return evaluate(stmt.thenExpression);
+            }
+            else
+            {
+                return evaluate(stmt.elseExpression);
+            }
         }
 
         public object? Visit(Statement.While stmt)
@@ -230,9 +246,9 @@ namespace SmolScript
             {
                 case TokenType.MINUS:
                     return (double)left - (double)right;
-                case TokenType.SLASH:
+                case TokenType.DIVIDE:
                     return (double)left / (double)right;
-                case TokenType.STAR:
+                case TokenType.MULTIPLY:
                     return (double)left * (double)right;
                 case TokenType.PLUS:
                     if (left.GetType() == typeof(double) && right.GetType() == left.GetType())
@@ -251,10 +267,17 @@ namespace SmolScript
                     return (double)left < (double)right;
                 case TokenType.LESS_EQUAL:
                     return (double)left <= (double)right;
-                case TokenType.BANG_EQUAL:
+                case TokenType.NOT_EQUAL:
                     return !isEqual(left, right);
                 case TokenType.EQUAL_EQUAL:
-                    return isEqual(left, right);                          
+                    return isEqual(left, right);
+                case TokenType.BITWISE_AND:
+                    // A bit stupid, but we have to cast double>int>double...
+                    return (double)((int)(double)left & (int)(double)right);
+                case TokenType.BITWISE_OR:
+                    return (double)((int)(double)left | (int)(double)right);
+                case TokenType.REMAINDER:
+                    return (double)left % (double)right;
             }   
 
             return null;
@@ -266,8 +289,8 @@ namespace SmolScript
 
             // Short circuit means we only evaluate the left side if that's enough
 
-            if (!isTruthy(left) && expr.op.type == TokenType.AND) return false;
-            if (isTruthy(left) && expr.op.type == TokenType.OR) return true;
+            if (!isTruthy(left) && expr.op.type == TokenType.LOGICAL_AND) return false;
+            if (isTruthy(left) && expr.op.type == TokenType.LOGICAL_OR) return true;
 
             // It wasn't enough
 
@@ -275,9 +298,9 @@ namespace SmolScript
 
             switch(expr.op.type)
             {
-                case TokenType.AND:
+                case TokenType.LOGICAL_AND:
                     return isTruthy(left) && isTruthy(right);
-                case TokenType.OR:
+                case TokenType.LOGICAL_OR:
                     return isTruthy(left) || isTruthy(right);
             }
 
@@ -307,7 +330,7 @@ namespace SmolScript
             {
                 case TokenType.MINUS:
                     return 0-(double)right;
-                case TokenType.BANG:
+                case TokenType.NOT:
                     return !isTruthy(right);
             }   
 
@@ -316,7 +339,34 @@ namespace SmolScript
 
         public object? Visit(Expression.Variable expr)
         {
-            return environment.Get(expr.name.lexeme);
+            if (expr.prepostfixop == null)
+            {
+                return environment.Get(expr.name.lexeme);
+            }
+            else
+            {
+                Console.WriteLine($"Getting var ${expr.name.lexeme}");
+
+                var val = (double)environment.Get(expr.name.lexeme)!;
+
+                switch (expr.prepostfixop!.Value)
+                {
+                    case TokenType.PREFIX_INCREMENT:
+                        environment.Assign(expr.name.lexeme, val + 1);
+                        return val + 1;
+                    case TokenType.POSTFIX_INCREMENT:
+                        environment.Assign(expr.name.lexeme, val + 1);
+                        return val;
+                    case TokenType.PREFIX_DECREMENT:
+                        environment.Assign(expr.name.lexeme, val - 1);
+                        return val - 1;
+                    case TokenType.POSTFIX_DECREMENT:
+                        environment.Assign(expr.name.lexeme, val - 1);
+                        return val;
+                }
+           }
+
+           throw new Exception();
         }
 
         public object? Visit(Expression.Assign expr)

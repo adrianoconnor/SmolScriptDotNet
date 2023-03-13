@@ -1,39 +1,11 @@
-namespace SmolScript
+namespace SmolScript.Statements
 {
-    public interface IStatementVisitor
-    {
-        object? Visit(Statement.Expression stmt);
-        object? Visit(Statement.Print stmt);
-        object? Visit(Statement.Return stmt);
-        object? Visit(Statement.Var stmt);
-        object? Visit(Statement.Block stmt);
-        object? Visit(Statement.If stmt);
-        object? Visit(Statement.While stmt);
-        object? Visit(Statement.Break stmt);
-        object? Visit(Statement.Function stmt);
-    }
-
     public abstract class Statement
     {
         public abstract object? Accept(IStatementVisitor visitor);
 
         public Statement? parent;
-
-        public class Expression: Statement
-        {
-            public readonly SmolScript.Expression expression;
-
-            public Expression(SmolScript.Expression expression)
-            {
-                this.expression = expression;
-            }
-
-            public override object? Accept(IStatementVisitor visitor)
-            {
-                return visitor.Visit(this);
-            }
-        }
-
+       
         public class Print: Statement
         {
             public readonly SmolScript.Expression expression;
@@ -110,11 +82,11 @@ namespace SmolScript
 
         public class If: Statement
         {
-            public readonly SmolScript.Expression testExpression;
-            public readonly SmolScript.Statement thenStatement;
-            public readonly SmolScript.Statement? elseStatement;
+            public readonly Expression testExpression;
+            public readonly Statement thenStatement;
+            public readonly Statement? elseStatement;
 
-            public If(SmolScript.Expression testExpression, SmolScript.Statement thenStatement, SmolScript.Statement? elseStatement)
+            public If(SmolScript.Expression testExpression, Statement thenStatement, Statement? elseStatement)
             {
                 this.testExpression = testExpression;
                 this.thenStatement = thenStatement;
@@ -127,12 +99,31 @@ namespace SmolScript
             }
         }
 
+        public class Ternary: Statement
+        {
+            public readonly SmolScript.Expression testExpression;
+            public readonly SmolScript.Expression thenExpression;
+            public readonly SmolScript.Expression elseExpression;
+
+            public Ternary(SmolScript.Expression testExpression, SmolScript.Expression thenExpression, SmolScript.Expression elseExpression)
+            {
+                this.testExpression = testExpression;
+                this.thenExpression = thenExpression;
+                this.elseExpression = elseExpression;
+            }
+
+            public override object? Accept(IStatementVisitor visitor)
+            {
+                return visitor.Visit(this);
+            }
+        }
+
         public class While: Statement
         {
-            public readonly SmolScript.Expression whileCondition;
-            public readonly SmolScript.Statement executeStatement;
+            public readonly Expression whileCondition;
+            public readonly Statement executeStatement;
 
-            public While(SmolScript.Expression whileCondition, SmolScript.Statement executeStatement)
+            public While(SmolScript.Expression whileCondition, Statement executeStatement)
             {
                 this.whileCondition = whileCondition;
                 this.executeStatement = executeStatement;

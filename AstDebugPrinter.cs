@@ -1,4 +1,5 @@
 using System.Text;
+using SmolScript.Statements;
 
 namespace SmolScript
 {
@@ -76,7 +77,7 @@ namespace SmolScript
             }
         }
 
-        public object? Visit(Statement.Expression stmt)
+        public object? Visit(ExpressionStatement stmt)
         {
             return $"[expr {stmt.expression.Accept(this)}]";
         }
@@ -130,6 +131,25 @@ namespace SmolScript
             }
 
             s.AppendLine("[end if]");
+
+            return s.ToString();
+        }
+
+        public object? Visit(Statement.Ternary stmt)
+        {
+            var s = new StringBuilder();
+            
+            s.AppendLine($"[ternary {stmt.testExpression.Accept(this)}]");
+
+            s.AppendLine($"[then]");
+            //s.Append($"{stmt.thenStatement.Accept(this)}");
+            s.AppendLine($"[/then]");
+        
+            s.AppendLine($"[else]");
+            //s.Append($"{stmt.elseStatement!.Accept(this)}");
+            s.AppendLine($"[/else]");
+        
+            s.AppendLine("[end ternary]");
 
             return s.ToString();
         }

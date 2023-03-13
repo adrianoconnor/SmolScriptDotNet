@@ -104,10 +104,13 @@ namespace SmolScript
         public class Variable: Expression
         {
             public readonly Token name;
+            public readonly TokenType? prepostfixop;
 
-            public Variable(Token name)
+            public Variable(Token name, TokenType? prepostfixop = null)
             {
                 this.name = name;
+
+                this.prepostfixop = prepostfixop;
             }
 
             public override object? Accept(IExpressionVisitor visitor)

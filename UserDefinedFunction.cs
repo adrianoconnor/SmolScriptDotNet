@@ -1,3 +1,5 @@
+using SmolScript.Statements;
+
 namespace SmolScript
 {
     public class UserDefinedFunction : ICallable

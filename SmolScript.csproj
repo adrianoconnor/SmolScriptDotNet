@@ -8,4 +8,10 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <None Remove="Statements\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Statements\" />
+  </ItemGroup>
 </Project>

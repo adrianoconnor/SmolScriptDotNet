@@ -28,23 +28,30 @@ namespace SmolScript
 
         private IDictionary<string, TokenType> _keywords = new Dictionary<string, TokenType>()
         {
-            { "and", TokenType.AND },
             { "break", TokenType.BREAK },
             { "class", TokenType.CLASS },
+            { "case", TokenType.CASE },
+            { "const", TokenType.CONST },
+            { "continue", TokenType.CONTINUE },
+            { "debugger", TokenType.DEBUGGER },
+            { "do", TokenType.DO },
             { "else", TokenType.ELSE },
             { "false", TokenType.FALSE },
             { "for", TokenType.FOR },
             { "function", TokenType.FUNC },
             { "if", TokenType.IF },
-            { "nil", TokenType.NIL },
-            { "or", TokenType.OR },
+            { "null", TokenType.NULL },
+            { "new", TokenType.NEW },
             { "print", TokenType.PRINT },
             { "return", TokenType.RETURN },
             { "super", TokenType.SUPER },
+            { "switch", TokenType.SWITCH },
             { "this", TokenType.THIS },
             { "true", TokenType.TRUE },
             { "var", TokenType.VAR },
-            { "while", TokenType.WHILE }
+            { "let", TokenType.VAR },
+            { "while", TokenType.WHILE },
+            { "undefined", TokenType.UNDEFINED }
         };
 
         public Scanner(string source)
@@ -72,33 +79,81 @@ namespace SmolScript
 
             switch(c)
             {
-                case '(': AddToken(TokenType.LEFT_PAREN); break;
-                case ')': AddToken(TokenType.RIGHT_PAREN); break;
+                case '(': AddToken(TokenType.LEFT_BRACKET); break;
+                case ')': AddToken(TokenType.RIGHT_BRACKET); break;
                 case '{': AddToken(TokenType.LEFT_BRACE); break;
                 case '}': AddToken(TokenType.RIGHT_BRACE); break;
+                case '[': AddToken(TokenType.LEFT_SQUARE_BRACKET); break;
+                case ']': AddToken(TokenType.RIGHT_SQUARE_BRACKET); break;
                 case ',': AddToken(TokenType.COMMA); break;
                 case '.': AddToken(TokenType.DOT); break;
-                case '-': AddToken(TokenType.MINUS); break;
-                case '+': AddToken(TokenType.PLUS); break;
+                case '?': AddToken(TokenType.QUESTION_MARK); break;
+                case ':': AddToken(TokenType.COLON); break;
+                case '-':
+                    if (MatchNext('-'))
+                    {
+                        if (_tokens.LastOrDefault()?.type == TokenType.IDENTIFIER)
+                        {
+                           AddToken(TokenType.POSTFIX_DECREMENT);
+                        }
+                        else
+                        {
+                           AddToken(TokenType.PREFIX_DECREMENT);
+                        }
+                    }
+                    else if (MatchNext('='))
+                    {
+                        AddToken(TokenType.MINUS_EQUALS);
+                    }
+                    else
+                    {
+                        AddToken(TokenType.MINUS);
+                    }
+                    break;
+                case '+': 
+                    if (MatchNext('+'))
+                    {
+                        if (_tokens.LastOrDefault()?.type == TokenType.IDENTIFIER)
+                        {
+                           AddToken(TokenType.POSTFIX_INCREMENT);
+                        }
+                        else
+                        {
+                           AddToken(TokenType.PREFIX_INCREMENT);
+                        }
+                    }
+                    else if (MatchNext('='))
+                    {
+                        AddToken(TokenType.PLUS_EQUALS);
+                    }
+                    else
+                    {
+                        AddToken(TokenType.PLUS); 
+                    }
+                    break;
                 case ';': AddToken(TokenType.SEMICOLON); break;
                 case '*': 
                     if (MatchNext('*'))
                     {
                        AddToken(TokenType.POW);
                     }
+                    else if (MatchNext('='))
+                    {
+                       AddToken(TokenType.POW_EQUALS);
+                    }
                     else
                     {
-                        AddToken(TokenType.STAR);
+                        AddToken(TokenType.MULTIPLY);
                     }
                     break;
                 case '!':
                     if (MatchNext('='))
                     {
-                        AddToken(TokenType.BANG_EQUAL);
+                        AddToken(TokenType.NOT_EQUAL);
                     }
                     else
                     {
-                        AddToken(TokenType.BANG);
+                        AddToken(TokenType.NOT);
                     }
                     break;
                 case '=':
@@ -136,21 +191,46 @@ namespace SmolScript
                     {
                         while(Peek() != '\n' && !ReachedEnd()) _ = NextChar();
                     }
+                    else if (MatchNext('*'))
+                    {
+                        while(Peek() != '*' && Peek(1) != '/')
+                        {
+                            if (ReachedEnd())
+                            {
+                                _errors.Add(new ScannerError(_line, $"Expected end of comment block"));
+                            }
+                            else
+                            {
+                                _current = NextChar();        
+                            }
+                        }
+                    }
                     else
                     {
-                        AddToken(TokenType.SLASH);
+                        AddToken(TokenType.DIVIDE);
                     }
+                    break;
+                case '%':
+                    AddToken(TokenType.REMAINDER);
                     break;
                 case '&':
                     if (MatchNext('&'))
                     {
-                        AddToken(TokenType.AND);
+                        AddToken(TokenType.LOGICAL_AND);
+                    }
+                    else
+                    {
+                        AddToken(TokenType.BITWISE_AND);
                     }
                     break;
                 case '|':
                     if (MatchNext('|'))
                     {
-                        AddToken(TokenType.OR);
+                        AddToken(TokenType.LOGICAL_OR);
+                    }
+                    else
+                    {
+                        AddToken(TokenType.BITWISE_OR);
                     }
                     break;
 
@@ -163,6 +243,11 @@ namespace SmolScript
                 case '\n':
                     _line++;
                     break;
+
+                case '`':
+                    ProcessString();
+                    break;
+
 
                 case '"':
                     ProcessString();
@@ -243,6 +328,31 @@ namespace SmolScript
             }
 
             if (ReachedEnd()) {
+                _errors.Add(new ScannerError(_line, "Unterminated string"));
+                return;
+            }
+
+            // Consume the closing "
+            _ = NextChar();
+
+            // Trim the surrounding quotes
+            var stringStart = _start + 1;
+            var stringEnd = _current - 1;
+
+            var stringValue = _source.Substring(stringStart, stringEnd - stringStart);
+            AddToken(TokenType.STRING, stringValue);
+        }
+
+        private void ProcessBacktickString()
+        {
+            while (Peek() != '`' && !ReachedEnd())
+            {
+                if (Peek() == '\n') _line++;
+                _ = NextChar();
+            }
+
+            if (ReachedEnd())
+            {
                 _errors.Add(new ScannerError(_line, "Unterminated string"));
                 return;
             }
