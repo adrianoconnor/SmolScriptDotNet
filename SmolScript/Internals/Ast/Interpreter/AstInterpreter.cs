@@ -1,50 +1,65 @@
-using SmolScript.Statements;
+using SmolScript.Internals.Ast.Expressions;
+using SmolScript.Internals.Ast.Statements;
 
-namespace SmolScript
+namespace SmolScript.Internals.Ast.Interpreter
 {
-    public class RuntimeError : Exception {
-
+    public class RuntimeError : Exception
+    {
         public RuntimeError(string message) : base(message)
         {
 
         }
     }
 
-    public class ReturnFromUserDefinedFunction : Exception {
+    public class ReturnFromUserDefinedFunction : Exception
+    {
         public object? ReturnValue { get; private set; }
 
-        public ReturnFromUserDefinedFunction(object? returnValue) 
+        public ReturnFromUserDefinedFunction(object? returnValue)
         {
             this.ReturnValue = returnValue;
         }
     }
 
-    public class BreakFromLoop : Exception {
+    public class BreakFromLoop : Exception
+    {
 
     }
 
-    public class Interpreter : IExpressionVisitor, IStatementVisitor {
+    public class AstInterpreter : IExpressionVisitor, IStatementVisitor
+    {
+        public readonly Environment globalEnv = new Environment();
+        private Environment environment;
 
-        public static readonly Environment globalEnv = new Environment();
-        private Environment environment = globalEnv;
-
-        public Interpreter()
+        public AstInterpreter()
         {
             // For now just manually configure the global functions from stdlib
 
+            environment = globalEnv;
+
             globalEnv.Define("ticks", new StdLib.Ticks());
+        }
+
+        public void Interpret(string source)
+        {
+            var scanner = new Scanner(source);
+            var scanResult = scanner.ScanTokens();
+            var parser = new Parser(scanResult.tokens);
+            var statements = parser.Parse();
+
+            this.Interpret(statements);
         }
 
         public void Interpret(IList<Statement> statements)
         {
             try
             {
-                foreach(var stmt in statements)
+                foreach (var stmt in statements)
                 {
                     execute(stmt);
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 Console.WriteLine(ex);
             }
@@ -62,7 +77,7 @@ namespace SmolScript
 
         public string stringify(object? value)
         {
-            if (value == null) 
+            if (value == null)
             {
                 return "nil";
             }
@@ -96,29 +111,29 @@ namespace SmolScript
             // Was returning null, but doing this lets us get expression values for the repl
         }
 
-        public object? Visit(Statement.Print stmt)
-        {   
+        public object? Visit(PrintStatement stmt)
+        {
             var value = evaluate(stmt.expression);
             Console.WriteLine(stringify(value));
             return null;
         }
 
-        public object? Visit(Statement.Return stmt)
-        {   
+        public object? Visit(ReturnStatement stmt)
+        {
             var returnValue = evaluate(stmt.expression);
 
             throw new ReturnFromUserDefinedFunction(returnValue);
         }
 
-        public object? Visit(Statement.Break stmt)
-        {   
+        public object? Visit(BreakStatement stmt)
+        {
             throw new BreakFromLoop();
         }
 
-        public object? Visit(Statement.Var stmt)
-        {   
+        public object? Visit(VarStatement stmt)
+        {
             object? value = null;
-            
+
             if (stmt.initializerExpression != null)
             {
                 value = evaluate(stmt.initializerExpression);
@@ -129,13 +144,13 @@ namespace SmolScript
             return null;
         }
 
-        public object? Visit(Statement.Block stmt)
-        {   
+        public object? Visit(BlockStatement stmt)
+        {
             executeBlock(stmt.statements, new Environment(this.environment));
             return null;
         }
 
-        public object? Visit(Statement.If stmt)
+        public object? Visit(IfStatement stmt)
         {
             var test = evaluate(stmt.testExpression);
 
@@ -151,7 +166,7 @@ namespace SmolScript
             return null;
         }
 
-        public object? Visit(Statement.Ternary stmt)
+        public object? Visit(TernaryStatement stmt)
         {
             var test = evaluate(stmt.testExpression);
 
@@ -165,16 +180,16 @@ namespace SmolScript
             }
         }
 
-        public object? Visit(Statement.While stmt)
+        public object? Visit(WhileStatement stmt)
         {
             try
             {
-                while(isTruthy(evaluate(stmt.whileCondition)))
+                while (isTruthy(evaluate(stmt.whileCondition)))
                 {
                     execute(stmt.executeStatement);
                 }
             }
-            catch(BreakFromLoop)
+            catch (BreakFromLoop)
             {
 
             }
@@ -182,57 +197,94 @@ namespace SmolScript
             return null;
         }
 
-        public object? Visit(Statement.Function stmt)
+        public object? Visit(FunctionStatement stmt)
         {
             if (stmt.name == null)
             {
                 throw new RuntimeError("Anonymous function not allowed here");
             }
-            
-            environment.Define(stmt.name.lexeme, new UserDefinedFunction(stmt, environment));
+
+            environment.Define(stmt.name.lexeme, new SmolFunctionWrapper(stmt, environment));
 
             return null;
         }
 
-        public object? Visit(Expression.Call expr)
+        public object? Visit(CallExpression expr)
         {
             var callee = evaluate(expr.callee);
+
             var function = callee as ICallable;
 
-            if (function == null)
+            if (function != null)
             {
-                throw new RuntimeError("Unable to call function, bad type");
-            }
 
-            var args = new List<object?>();
- 
-            foreach (var arg in expr.args)
-            {
-                var stmt = arg as Expression;
+                var args = new List<object?>();
 
-                if (stmt != null)
+                foreach (var arg in expr.args)
                 {
-                    args.Add(evaluate(stmt));
-                    continue;
+                    var stmt = arg as Expression;
+
+                    if (stmt != null)
+                    {
+                        args.Add(evaluate(stmt));
+                        continue;
+                    }
+
+                    var fn = arg as FunctionStatement;
+
+                    if (fn != null)
+                    {
+                        args.Add(fn);
+                        continue;
+                    }
+
+                    throw new RuntimeError("Unable to process one or more arguments");
                 }
 
-                var fn = arg as Statement.Function;
+                var result = function.call(args);
 
-                if (fn != null)
+                return result;
+            }
+
+            var smolFunction = callee as ICallableSmolFunction;
+
+            if (smolFunction != null)
+            {
+
+                var args = new List<object?>();
+
+                foreach (var arg in expr.args)
                 {
-                    args.Add(fn);
-                    continue;
+                    var stmt = arg as Expression;
+
+                    if (stmt != null)
+                    {
+                        args.Add(evaluate(stmt));
+                        continue;
+                    }
+
+                    var fn = arg as FunctionStatement;
+
+                    if (fn != null)
+                    {
+                        args.Add(fn);
+                        continue;
+                    }
+
+                    throw new RuntimeError("Unable to process one or more arguments");
                 }
 
-                throw new RuntimeError("Unable to process one or more arguments");
-            }
-        
-            var result = function.call(this, args);
+                var result = smolFunction.call(this, args);
 
-            return result;
+                return result;
+            }
+
+
+
+            throw new RuntimeError("Unable to call function");
         }
 
-        public object? Visit(Expression.Binary expr)
+        public object? Visit(BinaryExpression expr)
         {
             var left = evaluate(expr.left);
             var right = evaluate(expr.right);
@@ -242,7 +294,7 @@ namespace SmolScript
                 throw new RuntimeError("Null reference");
             }
 
-            switch(expr.op.type)
+            switch (expr.op.type)
             {
                 case TokenType.MINUS:
                     return (double)left - (double)right;
@@ -278,12 +330,12 @@ namespace SmolScript
                     return (double)((int)(double)left | (int)(double)right);
                 case TokenType.REMAINDER:
                     return (double)left % (double)right;
-            }   
+            }
 
             return null;
         }
 
-        public object? Visit(Expression.Logical expr)
+        public object? Visit(LogicalExpression expr)
         {
             var left = evaluate(expr.left);
 
@@ -296,7 +348,7 @@ namespace SmolScript
 
             var right = evaluate(expr.right);
 
-            switch(expr.op.type)
+            switch (expr.op.type)
             {
                 case TokenType.LOGICAL_AND:
                     return isTruthy(left) && isTruthy(right);
@@ -307,17 +359,17 @@ namespace SmolScript
             return null;
         }
 
-        public object? Visit(Expression.Grouping expr)
+        public object? Visit(GroupingExpression expr)
         {
             return evaluate(expr.expr);
         }
 
-        public object? Visit(Expression.Literal expr)
+        public object? Visit(LiteralExpression expr)
         {
             return expr.value;
         }
 
-        public object? Visit(Expression.Unary expr)
+        public object? Visit(UnaryExpression expr)
         {
             var right = evaluate(expr.right);
 
@@ -326,18 +378,18 @@ namespace SmolScript
                 throw new RuntimeError("Null reference");
             }
 
-            switch(expr.op.type)
+            switch (expr.op.type)
             {
                 case TokenType.MINUS:
-                    return 0-(double)right;
+                    return 0 - (double)right;
                 case TokenType.NOT:
                     return !isTruthy(right);
-            }   
+            }
 
             return null;
         }
 
-        public object? Visit(Expression.Variable expr)
+        public object? Visit(VariableExpression expr)
         {
             if (expr.prepostfixop == null)
             {
@@ -364,12 +416,12 @@ namespace SmolScript
                         environment.Assign(expr.name.lexeme, val - 1);
                         return val;
                 }
-           }
+            }
 
-           throw new Exception();
+            throw new Exception();
         }
 
-        public object? Visit(Expression.Assign expr)
+        public object? Visit(AssignExpression expr)
         {
             environment.Assign(expr.name.lexeme, evaluate(expr.value));
             return null;
@@ -380,14 +432,14 @@ namespace SmolScript
             return expr.Accept(this);
         }
 
-        private bool isTruthy(object? value)
+        private static bool isTruthy(object? value)
         {
             if (value == null) return false;
             if (value.GetType() == typeof(bool)) return (bool)value;
             return true;
         }
 
-        private bool isEqual(object? a, object? b)
+        private static bool isEqual(object? a, object? b)
         {
             if (a == null && b == null) return true;
             if (a == null) return false;
@@ -402,7 +454,7 @@ namespace SmolScript
             {
                 this.environment = environment;
 
-                foreach(var statement in statements)
+                foreach (var statement in statements)
                 {
                     execute(statement);
                 }

@@ -1,4 +1,4 @@
-namespace SmolScript
+namespace SmolScript.Internals
 {
     public enum TokenType
     {

@@ -1,11 +1,12 @@
-﻿using System;
-namespace SmolScript.Statements
+﻿using SmolScript.Internals.Ast.Expressions;
+
+namespace SmolScript.Internals.Ast.Statements
 {
     public class ExpressionStatement : Statement
     {
-        public readonly SmolScript.Expression expression;
+        public readonly Expression expression;
 
-        public ExpressionStatement(SmolScript.Expression expression)
+        public ExpressionStatement(Expression expression)
         {
             this.expression = expression;
         }

@@ -1,6 +1,4 @@
-using System;
-
-namespace SmolScript
+namespace SmolScript.Internals
 {
     public record ScannerError
     {

@@ -1,19 +1,23 @@
-using SmolScript.Statements;
+using SmolScript.Internals.Ast.Statements;
 
-namespace SmolScript
+namespace SmolScript.Internals.Ast.Interpreter
 {
-    public class UserDefinedFunction : ICallable
+    /// <summary>
+    /// Used by the AST interpreter to package everything needed to let us
+    /// call this function at some point in the future
+    /// </summary>
+    public class SmolFunctionWrapper : ICallableSmolFunction
     {
-        public Statement.Function declaration { get; private set; }
+        public FunctionStatement declaration { get; private set; }
         private readonly Environment closure;
 
-        public UserDefinedFunction(Statement.Function declaration, Environment closure)
+        public SmolFunctionWrapper(FunctionStatement declaration, Environment closure)
         {
             this.declaration = declaration;
             this.closure = closure;
         }
 
-        public object? call(Interpreter interpreter, IList<object?> parameters)
+        public object? call(AstInterpreter interpreter, IList<object?> parameters)
         {
             var env = new Environment(this.closure);
 
@@ -21,11 +25,11 @@ namespace SmolScript
             {
                 if (parameters.Count() > i)
                 {
-                    var anonymousFunction = parameters[i] as Statement.Function;
+                    var anonymousFunction = parameters[i] as FunctionStatement;
 
                     if (anonymousFunction != null)
                     {
-                        env.Define(declaration.parameters[i].lexeme, new UserDefinedFunction((Statement.Function)anonymousFunction, env));
+                        env.Define(declaration.parameters[i].lexeme, new SmolFunctionWrapper((FunctionStatement)anonymousFunction, env));
                     }
                     else
                     {

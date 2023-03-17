@@ -1,23 +1,28 @@
 using System.Text;
-using SmolScript.Statements;
+using SmolScript.Internals.Ast.Expressions;
+using SmolScript.Internals.Ast.Statements;
 
-namespace SmolScript
+namespace SmolScript.Internals.Ast
 {
-    public class AstDebugPrinter : IExpressionVisitor, IStatementVisitor {
+    public class AstDump : IExpressionVisitor, IStatementVisitor
+    {
 
-        public string? Print(Expression expr) {
+        public string? Print(Expression expr)
+        {
             return expr.Accept(this) as string;
         }
 
-        public string? Print(Statement stmt) {
+        public string? Print(Statement stmt)
+        {
             return stmt.Accept(this) as string;
         }
 
-        public string? Print(IList<Statement> stmts) {
-            
+        public string? Print(IList<Statement> stmts)
+        {
+
             StringBuilder sb = new StringBuilder();
 
-            foreach(var stmt in stmts)
+            foreach (var stmt in stmts)
             {
                 sb.AppendLine(stmt.Accept(this) as string);
             }
@@ -25,53 +30,53 @@ namespace SmolScript
             return sb.ToString();
         }
 
-        public object? Visit(Expression.Binary expr)
+        public object? Visit(BinaryExpression expr)
         {
             return $"({expr.op.lexeme} {expr.left.Accept(this)} {expr.right.Accept(this)})";
         }
 
-        public object? Visit(Expression.Logical expr)
+        public object? Visit(LogicalExpression expr)
         {
             return $"({expr.op.lexeme} {expr.left.Accept(this)} {expr.right.Accept(this)})";
         }
 
-        public object? Visit(Expression.Grouping expr)
+        public object? Visit(GroupingExpression expr)
         {
             return $"(group {expr.expr.Accept(this)})";
         }
 
-        public object? Visit(Expression.Literal expr)
+        public object? Visit(LiteralExpression expr)
         {
             return $"{(expr.value == null ? "nil" : expr.value.ToString())}";
         }
 
-        public object? Visit(Expression.Unary expr)
+        public object? Visit(UnaryExpression expr)
         {
             return $"({expr.op.lexeme} {expr.right.Accept(this)})";
         }
 
-        public object? Visit(Expression.Variable expr)
+        public object? Visit(VariableExpression expr)
         {
             return $"(var {expr.name})";
         }
 
-        public object? Visit(Expression.Assign expr)
+        public object? Visit(AssignExpression expr)
         {
             return $"(assign {expr.name.lexeme} {expr.value.Accept(this)})";
         }
 
-        public object? Visit(Expression.Call expr)
+        public object? Visit(CallExpression expr)
         {
             return $"(call {expr.callee.Accept(this)} {expr.paren.lexeme} args[{expr.args.Count}])";
         }
 
-        public object? Visit(Statement.Var stmt)
+        public object? Visit(VarStatement stmt)
         {
             if (stmt.initializerExpression != null)
             {
                 return $"[var {stmt.name} = {stmt.initializerExpression.Accept(this)}]";
             }
-            else 
+            else
             {
                 return $"[var {stmt.name} = <<NULL REFERENCE>>]";
             }
@@ -82,13 +87,13 @@ namespace SmolScript
             return $"[expr {stmt.expression.Accept(this)}]";
         }
 
-        public object? Visit(Statement.Block stmt)
+        public object? Visit(BlockStatement stmt)
         {
             var s = new StringBuilder();
-            
+
             s.AppendLine("[block begin]");
-            
-            foreach(var blockStmt in stmt.statements)
+
+            foreach (var blockStmt in stmt.statements)
             {
                 s.AppendLine(blockStmt.Accept(this) as string);
             }
@@ -98,25 +103,25 @@ namespace SmolScript
             return s.ToString();
         }
 
-        public object? Visit(Statement.Print stmt)
+        public object? Visit(PrintStatement stmt)
         {
             return $"[print {stmt.expression.Accept(this)}]";
         }
 
-        public object? Visit(Statement.Return stmt)
+        public object? Visit(ReturnStatement stmt)
         {
             return $"[return {stmt.expression.Accept(this)}]";
         }
 
-        public object? Visit(Statement.Break stmt)
+        public object? Visit(BreakStatement stmt)
         {
             return $"[break]";
         }
 
-        public object? Visit(Statement.If stmt)
+        public object? Visit(IfStatement stmt)
         {
             var s = new StringBuilder();
-            
+
             s.AppendLine($"[if {stmt.testExpression.Accept(this)}]");
 
             s.AppendLine($"[then]");
@@ -135,29 +140,29 @@ namespace SmolScript
             return s.ToString();
         }
 
-        public object? Visit(Statement.Ternary stmt)
+        public object? Visit(TernaryStatement stmt)
         {
             var s = new StringBuilder();
-            
+
             s.AppendLine($"[ternary {stmt.testExpression.Accept(this)}]");
 
             s.AppendLine($"[then]");
             //s.Append($"{stmt.thenStatement.Accept(this)}");
             s.AppendLine($"[/then]");
-        
+
             s.AppendLine($"[else]");
             //s.Append($"{stmt.elseStatement!.Accept(this)}");
             s.AppendLine($"[/else]");
-        
+
             s.AppendLine("[end ternary]");
 
             return s.ToString();
         }
 
-        public object? Visit(Statement.While stmt)
+        public object? Visit(WhileStatement stmt)
         {
             var s = new StringBuilder();
-            
+
             s.AppendLine($"[while {stmt.whileCondition.Accept(this)}]");
 
             s.Append($"{stmt.executeStatement.Accept(this)}");
@@ -167,10 +172,10 @@ namespace SmolScript
             return s.ToString();
         }
 
-        public object? Visit(Statement.Function stmt)
+        public object? Visit(FunctionStatement stmt)
         {
             var s = new StringBuilder();
-            
+
             s.AppendLine($"[declare function {stmt.name?.lexeme ?? ""} ()]");
 
             s.Append($"{stmt.functionBody.Accept(this)}");

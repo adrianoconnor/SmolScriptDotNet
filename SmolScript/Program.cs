@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SmolScript.Internals;
+using SmolScript.Internals.Ast.Interpreter;
 
 namespace SmolScript
 {
@@ -22,7 +23,7 @@ namespace SmolScript
             {
                 Console.WriteLine("SmolScript Interactive");
 
-                var interpreterInstance = new Interpreter();
+                var interpreterInstance = new AstInterpreter();
 
                 while(true)
                 {
@@ -37,13 +38,13 @@ namespace SmolScript
             }
         }
 
-        static void Run(string source, Interpreter? interpreterInstance = null)
+        static void Run(string source, AstInterpreter? interpreterInstance = null)
         {
             var startTime = System.Environment.TickCount;
 
             if (interpreterInstance == null)
             {
-                interpreterInstance = new Interpreter();
+                interpreterInstance = new AstInterpreter();
             }
 
             var scanner = new Scanner(source);

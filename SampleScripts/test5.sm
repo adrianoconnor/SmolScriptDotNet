@@ -1,0 +1,13 @@
+var a = 1;
+
+function p(x) {
+  x();
+}
+
+p(function() { print "hi"; });
+
+function t() {
+  print ("t");
+}
+
+p(t);

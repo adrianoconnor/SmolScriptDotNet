@@ -1,7 +1,7 @@
-using System;
-using SmolScript.Statements;
+using SmolScript.Internals.Ast.Expressions;
+using SmolScript.Internals.Ast.Statements;
 
-namespace SmolScript
+namespace SmolScript.Internals
 {
     public class ParseError : Exception
     {
@@ -22,65 +22,65 @@ namespace SmolScript
 
     }
 
-/*
-program        → declaration* EOF ;
+    /*
+    program        → declaration* EOF ;
 
-declaration    → functionDecl
-               | varDecl
-               | statement ;
+    declaration    → functionDecl
+                   | varDecl
+                   | statement ;
 
-functionDecl   → "function" function ;
+    functionDecl   → "function" function ;
 
-function       → IDENTIFIER "(" parameters? ")" block ;
-parameters     → IDENTIFIER ( "," IDENTIFIER )* ;
+    function       → IDENTIFIER "(" parameters? ")" block ;
+    parameters     → IDENTIFIER ( "," IDENTIFIER )* ;
 
-statement      → exprStmt
-               | ifStmt
-               | whileStmt
-               | forStmt
-               | printStmt
-               | returnStmt
-               | breakStmt
-               | block ;
+    statement      → exprStmt
+                   | ifStmt
+                   | whileStmt
+                   | forStmt
+                   | printStmt
+                   | returnStmt
+                   | breakStmt
+                   | block ;
 
-ifStmt         → "if" "(" expression ")" statement
-               ( "else" statement )? ;
+    ifStmt         → "if" "(" expression ")" statement
+                   ( "else" statement )? ;
 
-whileStmt      → "while" "(" expression ")" statement ;
+    whileStmt      → "while" "(" expression ")" statement ;
 
-forStmt        → "for" "(" ( varDecl | exprStmt | ";" )
-                 expression? ";"
-                 expression? ")" statement ;
+    forStmt        → "for" "(" ( varDecl | exprStmt | ";" )
+                     expression? ";"
+                     expression? ")" statement ;
 
-block          → "{" declaration* "}" ;
+    block          → "{" declaration* "}" ;
 
-exprStmt       → expression ";" ;
-printStmt      → "print" expression ";" ;
-returnStmt     → "return" expression ";" ;
+    exprStmt       → expression ";" ;
+    printStmt      → "print" expression ";" ;
+    returnStmt     → "return" expression ";" ;
 
-expression     → assignment ;
-assignment     → IDENTIFIER "=" assignment
-               | logical_or ;
+    expression     → assignment ;
+    assignment     → IDENTIFIER "=" assignment
+                   | logical_or ;
 
-logical_or     → logical_and ( ( AND | OR ) logical_and )* ; // ?????
-logical_and    → equality ( ( AND | OR ) equality )* ; // ?????
+    logical_or     → logical_and ( ( AND | OR ) logical_and )* ; // ?????
+    logical_and    → equality ( ( AND | OR ) equality )* ; // ?????
 
-equality       → comparison ( ( "!=" | "==" ) comparison )* ;
+    equality       → comparison ( ( "!=" | "==" ) comparison )* ;
 
-comparison     → term ( ( ">" | ">=" | "<" | "<=" ) term )* ;
+    comparison     → term ( ( ">" | ">=" | "<" | "<=" ) term )* ;
 
-term           → factor ( ( "-" | "+" ) factor )* ;
-factor         → power ( ( "/" | "*" ) power )* ;
-power          → unary ( ( "^" ) unary )* ;
-unary          → ( "!" | "-" ) unary
-               | call ;
+    term           → factor ( ( "-" | "+" ) factor )* ;
+    factor         → power ( ( "/" | "*" ) power )* ;
+    power          → unary ( ( "^" ) unary )* ;
+    unary          → ( "!" | "-" ) unary
+                   | call ;
 
-call           → primary ( "(" arguments? ")" )* ;
+    call           → primary ( "(" arguments? ")" )* ;
 
-primary        → NUMBER | STRING | "true" | "false" | "nil"
-               | "(" expression ")"
-               | IDENTIFIER ;
-*/
+    primary        → NUMBER | STRING | "true" | "false" | "nil"
+                   | "(" expression ")"
+                   | IDENTIFIER ;
+    */
 
     public class Parser
     {
@@ -101,11 +101,11 @@ primary        → NUMBER | STRING | "true" | "false" | "nil"
             var statements = new List<Statement>();
             var errors = new List<ParseError>();
 
-            while(!ReachedEnd())
+            while (!ReachedEnd())
             {
                 try
                 {
-                    while(peek().type == TokenType.SEMICOLON) consume(TokenType.SEMICOLON, "");
+                    while (peek().type == TokenType.SEMICOLON) consume(TokenType.SEMICOLON, "");
 
                     statements.Add(declaration());
                 }
@@ -125,8 +125,10 @@ primary        → NUMBER | STRING | "true" | "false" | "nil"
 
         private bool match(params TokenType[] tokenTypes)
         {
-            foreach(var tokenType in tokenTypes) {        
-                if (check(tokenType)) {
+            foreach (var tokenType in tokenTypes)
+            {
+                if (check(tokenType))
+                {
                     advance();
                     return true;
                 }
@@ -170,7 +172,7 @@ primary        → NUMBER | STRING | "true" | "false" | "nil"
         private ParseError error(Token token, string errorMessage)
         {
             return new ParseError(token, errorMessage);
-        } 
+        }
 
         private void synchronize()
         {
@@ -180,7 +182,8 @@ primary        → NUMBER | STRING | "true" | "false" | "nil"
             {
                 if (previous().type == TokenType.SEMICOLON) return;
 
-                switch (peek().type) {
+                switch (peek().type)
+                {
                     case TokenType.CLASS:
                     case TokenType.FUNC:
                     case TokenType.VAR:
@@ -189,10 +192,10 @@ primary        → NUMBER | STRING | "true" | "false" | "nil"
                     case TokenType.WHILE:
                     case TokenType.PRINT:
                     case TokenType.RETURN:
-                    return;
+                        return;
                 }
 
-                  advance();
+                advance();
             }
 
             _statementCallStack.Clear();
@@ -212,7 +215,7 @@ primary        → NUMBER | STRING | "true" | "false" | "nil"
 
                 return statement();
             }
-            catch(ParseError)
+            catch (ParseError)
             {
                 synchronize();
                 throw;
@@ -234,25 +237,28 @@ primary        → NUMBER | STRING | "true" | "false" | "nil"
             var functionParams = new List<Token>();
 
             consume(TokenType.LEFT_BRACKET, "Expected (");
-            
-            if (!check(TokenType.RIGHT_BRACKET)) {
-                do {
-                    if (functionParams.Count() >= 127) {
+
+            if (!check(TokenType.RIGHT_BRACKET))
+            {
+                do
+                {
+                    if (functionParams.Count() >= 127)
+                    {
                         error(peek(), "Can't define a function with more than 127 parameters.");
                     }
 
                     functionParams.Add(consume(TokenType.IDENTIFIER, "Expected parameter name"));
                 } while (match(TokenType.COMMA));
             }
-            
+
             consume(TokenType.RIGHT_BRACKET, "Expected )");
             consume(TokenType.LEFT_BRACE, "Expected {");
-            
+
             var functionBody = block();
 
             _ = _statementCallStack.Pop();
 
-            return new Statement.Function(functionName, functionParams, functionBody);
+            return new FunctionStatement(functionName, functionParams, functionBody);
         }
 
         private Statement varDeclaration()
@@ -267,7 +273,7 @@ primary        → NUMBER | STRING | "true" | "false" | "nil"
             }
 
             consume(TokenType.SEMICOLON, "Expected ;");
-            return new Statement.Var(name, initializer);
+            return new VarStatement(name, initializer);
         }
 
         private Statement statement()
@@ -287,19 +293,19 @@ primary        → NUMBER | STRING | "true" | "false" | "nil"
         {
             var expr = expression();
             consume(TokenType.SEMICOLON, "Expected ;");
-            return new Statement.Print(expr);
+            return new PrintStatement(expr);
         }
 
         private Statement returnStatement()
         {
             if (!_statementCallStack.Contains("FUNCTION"))
             {
-                throw error(previous(), "Return not in function."); 
+                throw error(previous(), "Return not in function.");
             }
 
             var expr = expression();
             consume(TokenType.SEMICOLON, "Expected ;");
-            return new Statement.Return(expr);
+            return new ReturnStatement(expr);
         }
 
         private Statement breakStatement()
@@ -309,27 +315,28 @@ primary        → NUMBER | STRING | "true" | "false" | "nil"
 
             if (!_statementCallStack.Contains("WHILE"))
             {
-                throw error(previous(), "Break should be inside a while or for loop"); 
+                throw error(previous(), "Break should be inside a while or for loop");
             }
 
             consume(TokenType.SEMICOLON, "Expected ;");
-            return new Statement.Break();
+            return new BreakStatement();
         }
 
-        private Statement.Block block()
+        private BlockStatement block()
         {
             _statementCallStack.Push("BLOCK");
 
             IList<Statement> statements = new List<Statement>();
 
-            while (!check(TokenType.RIGHT_BRACE) && !ReachedEnd()) {
+            while (!check(TokenType.RIGHT_BRACE) && !ReachedEnd())
+            {
                 statements.Add(declaration());
             }
 
             _ = _statementCallStack.Pop();
 
             consume(TokenType.RIGHT_BRACE, "Expect '}' after block.");
-            return new Statement.Block(statements);
+            return new BlockStatement(statements);
         }
 
         private Statement ifStatement()
@@ -350,7 +357,7 @@ primary        → NUMBER | STRING | "true" | "false" | "nil"
 
             _ = _statementCallStack.Pop();
 
-            return new Statement.If(condition, thenStatement, elseStatement);
+            return new IfStatement(condition, thenStatement, elseStatement);
         }
 
         private Statement whileStatement()
@@ -364,15 +371,15 @@ primary        → NUMBER | STRING | "true" | "false" | "nil"
 
             _ = _statementCallStack.Pop();
 
-            return new Statement.While(whileCondition, whileStatement);
+            return new WhileStatement(whileCondition, whileStatement);
         }
 
         private Statement forStatement()
         {
-             _statementCallStack.Push("WHILE");
+            _statementCallStack.Push("WHILE");
 
             consume(TokenType.LEFT_BRACKET, "Expected (");
-            
+
             Statement? initialiser = null;
 
             if (match(TokenType.SEMICOLON))
@@ -396,11 +403,11 @@ primary        → NUMBER | STRING | "true" | "false" | "nil"
             }
             else
             {
-                condition = new Expression.Literal(true);
+                condition = new LiteralExpression(true);
             }
-            
+
             consume(TokenType.SEMICOLON, "Expected ;");
-            
+
             Expression? increment = null;
 
             if (!check(TokenType.RIGHT_BRACKET))
@@ -409,22 +416,22 @@ primary        → NUMBER | STRING | "true" | "false" | "nil"
             }
 
             consume(TokenType.RIGHT_BRACKET, "Expected )");
-            
+
             var body = statement();
 
             if (increment != null)
             {
-                body = new Statement.Block(new List<Statement>() {
+                body = new BlockStatement(new List<Statement>() {
                     body,
                     new ExpressionStatement(increment)
                 });
             }
 
-            body = new Statement.While(condition, body);
+            body = new WhileStatement(condition, body);
 
-            if (initialiser != null) 
+            if (initialiser != null)
             {
-                body = new Statement.Block(new List<Statement>() {
+                body = new BlockStatement(new List<Statement>() {
                     initialiser,
                     body
                 });
@@ -438,17 +445,17 @@ primary        → NUMBER | STRING | "true" | "false" | "nil"
         private Statement expressionStatement()
         {
             var expr = expression();
-            
+
             if (match(TokenType.QUESTION_MARK))
             {
-                var thenExpression = expression();;
+                var thenExpression = expression(); ;
                 consume(TokenType.COLON, "Expected :");
-                var elseExpression = expression();;
+                var elseExpression = expression(); ;
                 consume(TokenType.SEMICOLON, "Expected ;");
 
-                return new Statement.Ternary(expr, thenExpression, elseExpression);
+                return new TernaryStatement(expr, thenExpression, elseExpression);
             }
-            
+
             consume(TokenType.SEMICOLON, "Expected ;");
             return new ExpressionStatement(expr);
         }
@@ -467,13 +474,13 @@ primary        → NUMBER | STRING | "true" | "false" | "nil"
                 var equals = previous();
                 var value = assignment();
 
-                if (expr.GetType() == typeof(Expression.Variable))
+                if (expr.GetType() == typeof(VariableExpression))
                 {
-                    var name = ((Expression.Variable)expr).name;
-                    return new Expression.Assign(name, value);
+                    var name = ((VariableExpression)expr).name;
+                    return new AssignExpression(name, value);
                 }
 
-                throw error(equals, "Invalid assignment target."); 
+                throw error(equals, "Invalid assignment target.");
             }
 
             if (match(TokenType.PLUS_EQUALS))
@@ -481,17 +488,17 @@ primary        → NUMBER | STRING | "true" | "false" | "nil"
                 var equals = previous();
                 var value = assignment();
 
-                if (expr.GetType() == typeof(Expression.Variable))
+                if (expr.GetType() == typeof(VariableExpression))
                 {
-                    var name = ((Expression.Variable)expr).name;
+                    var name = ((VariableExpression)expr).name;
 
                     // DESUGAR!!!
-                    var x = new Expression.Binary(((Expression.Variable)expr), new Token(TokenType.PLUS, "+=", null, 0), value);
+                    var x = new BinaryExpression(((VariableExpression)expr), new Token(TokenType.PLUS, "+=", null, 0), value);
 
-                    return new Expression.Assign(name, x);
+                    return new AssignExpression(name, x);
                 }
 
-                throw error(equals, "Invalid assignment target."); 
+                throw error(equals, "Invalid assignment target.");
             }
 
             if (match(TokenType.MINUS_EQUALS))
@@ -499,16 +506,16 @@ primary        → NUMBER | STRING | "true" | "false" | "nil"
                 var equals = previous();
                 var value = assignment();
 
-                if (expr.GetType() == typeof(Expression.Variable))
+                if (expr.GetType() == typeof(VariableExpression))
                 {
-                    var name = ((Expression.Variable)expr).name;
+                    var name = ((VariableExpression)expr).name;
 
-                    var x = new Expression.Binary(((Expression.Variable)expr), new Token(TokenType.MINUS, "-=", null, 0), value);
+                    var x = new BinaryExpression(((VariableExpression)expr), new Token(TokenType.MINUS, "-=", null, 0), value);
 
-                    return new Expression.Assign(name, x);
+                    return new AssignExpression(name, x);
                 }
 
-                throw error(equals, "Invalid assignment target."); 
+                throw error(equals, "Invalid assignment target.");
             }
 
             if (match(TokenType.POW_EQUALS))
@@ -516,16 +523,16 @@ primary        → NUMBER | STRING | "true" | "false" | "nil"
                 var equals = previous();
                 var value = assignment();
 
-                if (expr.GetType() == typeof(Expression.Variable))
+                if (expr.GetType() == typeof(VariableExpression))
                 {
-                    var name = ((Expression.Variable)expr).name;
+                    var name = ((VariableExpression)expr).name;
 
-                    var x = new Expression.Binary(((Expression.Variable)expr), new Token(TokenType.POW, "*=", null, 0), value);
+                    var x = new BinaryExpression(((VariableExpression)expr), new Token(TokenType.POW, "*=", null, 0), value);
 
-                    return new Expression.Assign(name, x);
+                    return new AssignExpression(name, x);
                 }
 
-                throw error(equals, "Invalid assignment target."); 
+                throw error(equals, "Invalid assignment target.");
             }
 
             return expr;
@@ -535,11 +542,11 @@ primary        → NUMBER | STRING | "true" | "false" | "nil"
         {
             var expr = logicalAnd();
 
-            while(match(TokenType.LOGICAL_OR))
+            while (match(TokenType.LOGICAL_OR))
             {
                 var op = previous();
                 var right = logicalAnd();
-                expr = new Expression.Logical(expr, op, right);
+                expr = new LogicalExpression(expr, op, right);
             }
 
             return expr;
@@ -549,11 +556,11 @@ primary        → NUMBER | STRING | "true" | "false" | "nil"
         {
             var expr = equality();
 
-            while(match(TokenType.LOGICAL_AND))
+            while (match(TokenType.LOGICAL_AND))
             {
                 var op = previous();
                 var right = equality();
-                expr = new Expression.Logical(expr, op, right);
+                expr = new LogicalExpression(expr, op, right);
             }
 
             return expr;
@@ -563,11 +570,11 @@ primary        → NUMBER | STRING | "true" | "false" | "nil"
         {
             var expr = comparison();
 
-            while(match(TokenType.NOT_EQUAL, TokenType.EQUAL_EQUAL))
+            while (match(TokenType.NOT_EQUAL, TokenType.EQUAL_EQUAL))
             {
                 var op = previous();
                 var right = comparison();
-                expr = new Expression.Binary(expr, op, right);
+                expr = new BinaryExpression(expr, op, right);
             }
 
             return expr;
@@ -577,11 +584,11 @@ primary        → NUMBER | STRING | "true" | "false" | "nil"
         {
             var expr = bitwise_op(); // Was term
 
-            while(match(TokenType.GREATER, TokenType.GREATER_EQUAL, TokenType.LESS, TokenType.LESS_EQUAL))
+            while (match(TokenType.GREATER, TokenType.GREATER_EQUAL, TokenType.LESS, TokenType.LESS_EQUAL))
             {
                 var op = previous();
                 var right = bitwise_op(); // Was term
-                expr = new Expression.Binary(expr, op, right);
+                expr = new BinaryExpression(expr, op, right);
             }
 
             return expr;
@@ -591,11 +598,11 @@ primary        → NUMBER | STRING | "true" | "false" | "nil"
         {
             var expr = term();
 
-            while(match(TokenType.BITWISE_AND, TokenType.BITWISE_OR, TokenType.REMAINDER))
+            while (match(TokenType.BITWISE_AND, TokenType.BITWISE_OR, TokenType.REMAINDER))
             {
                 var op = previous();
                 var right = term();
-                expr = new Expression.Binary(expr, op, right);
+                expr = new BinaryExpression(expr, op, right);
             }
 
             return expr;
@@ -605,11 +612,11 @@ primary        → NUMBER | STRING | "true" | "false" | "nil"
         {
             var expr = factor();
 
-            while(match(TokenType.MINUS, TokenType.PLUS))
+            while (match(TokenType.MINUS, TokenType.PLUS))
             {
                 var op = previous();
                 var right = factor();
-                expr = new Expression.Binary(expr, op, right);
+                expr = new BinaryExpression(expr, op, right);
             }
 
             return expr;
@@ -619,11 +626,11 @@ primary        → NUMBER | STRING | "true" | "false" | "nil"
         {
             var expr = pow();
 
-            while(match(TokenType.MULTIPLY, TokenType.DIVIDE))
+            while (match(TokenType.MULTIPLY, TokenType.DIVIDE))
             {
                 var op = previous();
                 var right = pow();
-                expr = new Expression.Binary(expr, op, right);
+                expr = new BinaryExpression(expr, op, right);
             }
 
             return expr;
@@ -633,11 +640,11 @@ primary        → NUMBER | STRING | "true" | "false" | "nil"
         {
             var expr = unary();
 
-            while(match(TokenType.POW))
+            while (match(TokenType.POW))
             {
                 var op = previous();
                 var right = unary();
-                expr = new Expression.Binary(expr, op, right);
+                expr = new BinaryExpression(expr, op, right);
             }
 
             return expr;
@@ -645,11 +652,11 @@ primary        → NUMBER | STRING | "true" | "false" | "nil"
 
         private Expression unary()
         {
-            if(match(TokenType.NOT, TokenType.MINUS))
+            if (match(TokenType.NOT, TokenType.MINUS))
             {
                 var op = previous();
                 var right = unary();
-                return new Expression.Unary(op, right);
+                return new UnaryExpression(op, right);
             }
 
             return call();
@@ -659,13 +666,13 @@ primary        → NUMBER | STRING | "true" | "false" | "nil"
         {
             var expr = primary();
 
-            while(true)
+            while (true)
             {
                 if (match(TokenType.LEFT_BRACKET))
                 {
                     expr = finishCall(expr);
                 }
-                else 
+                else
                 {
                     break;
                 }
@@ -680,7 +687,7 @@ primary        → NUMBER | STRING | "true" | "false" | "nil"
 
             if (!check(TokenType.RIGHT_BRACKET))
             {
-                do 
+                do
                 {
                     if (match(TokenType.FUNC))
                     {
@@ -696,25 +703,25 @@ primary        → NUMBER | STRING | "true" | "false" | "nil"
 
             var closingParen = consume(TokenType.RIGHT_BRACKET, "Expected )");
 
-            return new Expression.Call(callee, closingParen, args);
+            return new CallExpression(callee, closingParen, args);
         }
 
         private Expression primary()
         {
-            if (match(TokenType.FALSE)) return new Expression.Literal(false);
-            if (match(TokenType.TRUE)) return new Expression.Literal(true);
-            if (match(TokenType.NULL)) return new Expression.Literal(null);
+            if (match(TokenType.FALSE)) return new LiteralExpression(false);
+            if (match(TokenType.TRUE)) return new LiteralExpression(true);
+            if (match(TokenType.NULL)) return new LiteralExpression(null);
 
-            if(match(TokenType.NUMBER, TokenType.STRING))
+            if (match(TokenType.NUMBER, TokenType.STRING))
             {
-                return new Expression.Literal(previous().literal!);
+                return new LiteralExpression(previous().literal!);
             }
 
             if (match(TokenType.PREFIX_INCREMENT))
             {
                 if (match(TokenType.IDENTIFIER))
                 {
-                    return new Expression.Variable(previous(), TokenType.PREFIX_INCREMENT);
+                    return new VariableExpression(previous(), TokenType.PREFIX_INCREMENT);
                 }
             }
 
@@ -722,7 +729,7 @@ primary        → NUMBER | STRING | "true" | "false" | "nil"
             {
                 if (match(TokenType.IDENTIFIER))
                 {
-                    return new Expression.Variable(previous(), TokenType.PREFIX_DECREMENT);
+                    return new VariableExpression(previous(), TokenType.PREFIX_DECREMENT);
                 }
             }
 
@@ -730,23 +737,23 @@ primary        → NUMBER | STRING | "true" | "false" | "nil"
             {
                 if (match(TokenType.POSTFIX_INCREMENT))
                 {
-                    return new Expression.Variable(previous(1), TokenType.POSTFIX_INCREMENT);    
+                    return new VariableExpression(previous(1), TokenType.POSTFIX_INCREMENT);
                 }
                 else if (match(TokenType.POSTFIX_DECREMENT))
                 {
-                    return new Expression.Variable(previous(1), TokenType.POSTFIX_DECREMENT);    
+                    return new VariableExpression(previous(1), TokenType.POSTFIX_DECREMENT);
                 }
                 else
                 {
-                    return new Expression.Variable(previous());
+                    return new VariableExpression(previous());
                 }
             }
 
-            if (match(TokenType.LEFT_BRACKET)) 
+            if (match(TokenType.LEFT_BRACKET))
             {
                 Expression expr = expression();
                 consume(TokenType.RIGHT_BRACKET, "Expect ')' after expression.");
-                return new Expression.Grouping(expr);
+                return new GroupingExpression(expr);
             }
 
             //while(match(TokenType.SEMICOLON));
