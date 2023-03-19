@@ -30,24 +30,25 @@ namespace SmolScript.Internals
     }
 
     /// <summary>
-    /// Helper that can take either a null, a single instruction or a list
-    /// of instructions and add them to an existig list (a chunk). This makes
-    /// it easier to just keep appending whatever we get back as we built the
-    /// code
+    /// This helper will take a null, a single instruction, or a list
+    /// of instructions and append them as appropriate to whatever chunk we're
+    /// currently compiling/building. This makes it so much easier to handle
+    /// different types of data from the AST tree walker.
     /// </summary>
     public static class ByteCodeChunkExtension
     {
         public static void AppendChunk(this List<ByteCodeInstruction> chunk, object? byteCodeChunkToAdd)
         {
-            if (byteCodeChunkToAdd?.GetType() == typeof(ByteCodeInstruction))
-            {
-                chunk.Add((ByteCodeInstruction)byteCodeChunkToAdd!);
+            if (byteCodeChunkToAdd != null) {
+                if (byteCodeChunkToAdd?.GetType() == typeof(ByteCodeInstruction))
+                {
+                    chunk.Add((ByteCodeInstruction)byteCodeChunkToAdd!);
+                }
+                else
+                {
+                    chunk.AddRange((List<ByteCodeInstruction>)byteCodeChunkToAdd!);
+                }
             }
-            else
-            {
-                chunk.AddRange((List<ByteCodeInstruction>)byteCodeChunkToAdd!);
-            }
-
         }
     }
 }
