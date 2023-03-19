@@ -5,6 +5,7 @@
         NOP,
 
         LABEL,
+        CALL,
         RETURN,
 
         ADD,
@@ -26,8 +27,8 @@
 
         DECLARE,
 
-        LOAD_CONSTANT,
-        LOAD_VARIABLE,
+        CONST,
+        FETCH,
 
         STORE,
 

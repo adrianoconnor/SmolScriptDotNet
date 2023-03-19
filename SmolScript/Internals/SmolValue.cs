@@ -43,6 +43,11 @@
             }
         }
 
+        public override string ToString()
+        {
+            return $"({this.type.ToString()}) {this.value}";
+        }
+   
         public static SmolValue operator +(SmolValue a, SmolValue b)
         {
             var right = (double)a.value!;

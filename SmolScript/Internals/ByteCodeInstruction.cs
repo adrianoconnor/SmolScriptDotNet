@@ -1,4 +1,6 @@
-﻿namespace SmolScript.Internals
+﻿using System;
+
+namespace SmolScript.Internals
 {
     public struct ByteCodeInstruction
     {
@@ -6,6 +8,25 @@
 
         public object? operand1;
         public object? operand2;
+
+        public override string ToString()
+        {
+            var str = $"{this.opcode.ToString().PadRight(13)}";
+
+            if (this.operand1 != null)
+            {
+                str += $" {this.operand1}";
+            }
+
+            if (this.operand2 != null)
+            {
+                str += $" {this.operand2}";
+            }
+
+            str += "";
+
+            return str;
+        }
     }
 
     /// <summary>

@@ -50,5 +50,21 @@ namespace SmolScript
                 throw new Exception("Variable undefined");
             }
         }
+
+        public object? TryGet(string variable)
+        {
+            if (variables.ContainsKey(variable))
+            {
+                return variables[variable];
+            }
+            else if (enclosing != null)
+            {
+                return enclosing.TryGet(variable);
+            }
+            else
+            {
+                return null;
+            }
+        }
     }
 }

@@ -8,6 +8,8 @@
         Bool,
         Number,
         String,
+        FunctionRef, // Not sure
+        SavedCallState,
         Unknown
     }
 }

@@ -49,10 +49,10 @@ public class UnitTest1
     { 
         var program = SmolCompiler.Compile("5 * (3 - 1);");
 
-        Assert.AreEqual(OpCode.LOAD_CONSTANT, program.code_sections[0][0].opcode);
+        Assert.AreEqual(OpCode.CONST, program.code_sections[0][0].opcode);
         Assert.AreEqual(5.0, ((SmolValue)program.constants[(int)((program.code_sections[0][0]).operand1!)]).value!);
-        Assert.AreEqual(OpCode.LOAD_CONSTANT, program.code_sections[0][1].opcode);
-        Assert.AreEqual(OpCode.LOAD_CONSTANT, program.code_sections[0][2].opcode);
+        Assert.AreEqual(OpCode.CONST, program.code_sections[0][1].opcode);
+        Assert.AreEqual(OpCode.CONST, program.code_sections[0][2].opcode);
         Assert.AreEqual(OpCode.SUB, program.code_sections[0][3].opcode);
         Assert.AreEqual(OpCode.MUL, program.code_sections[0][4].opcode);
     }
@@ -64,10 +64,10 @@ public class UnitTest1
 
         Assert.AreEqual(OpCode.DECLARE, program.code_sections[0][0].opcode);
         Assert.AreEqual("a", ((SmolVariableDefinition)program.code_sections[0][0].operand1!).name);
-        Assert.AreEqual(OpCode.LOAD_CONSTANT, program.code_sections[0][1].opcode);
+        Assert.AreEqual(OpCode.CONST, program.code_sections[0][1].opcode);
         Assert.AreEqual(5.0, ((SmolValue)program.constants[(int)((program.code_sections[0][1]).operand1!)]).value!);
-        Assert.AreEqual(OpCode.LOAD_CONSTANT, program.code_sections[0][2].opcode);
-        Assert.AreEqual(OpCode.LOAD_CONSTANT, program.code_sections[0][3].opcode);
+        Assert.AreEqual(OpCode.CONST, program.code_sections[0][2].opcode);
+        Assert.AreEqual(OpCode.CONST, program.code_sections[0][3].opcode);
         Assert.AreEqual(OpCode.SUB, program.code_sections[0][4].opcode);
         Assert.AreEqual(OpCode.MUL, program.code_sections[0][5].opcode);
         Assert.AreEqual(OpCode.STORE, program.code_sections[0][6].opcode);
@@ -118,5 +118,37 @@ public class UnitTest1
         vm.Run();
 
         Assert.AreEqual(2.0, (double)(((SmolValue)vm.globalEnv.Get("a")!).value!));
+    }
+
+    [TestMethod]
+    public void SimpleVmFunctionTest()
+    {
+        var program = SmolCompiler.Compile(@"function f() { return 2; }; var a = f();");
+
+        var vm = new SmolVM(program);
+
+        vm.Run();
+
+        Assert.AreEqual(2.0, (double)(((SmolValue)vm.globalEnv.Get("a")!).value!));
+    }
+
+    [TestMethod]
+    public void SimpleDisassembleTest()
+    {
+        var program = SmolCompiler.Compile(@"function f(p1) { return p1 * 2; }; var a = f(1);");
+
+        var output = ByteCodeDisassembler.Disassemble(program);
+
+        Console.WriteLine(output);
+    }
+
+    [TestMethod]
+    public void SimpleDisassembleTest2()
+    {
+        var program = SmolCompiler.Compile(@"f(function() {});");
+
+        var output = ByteCodeDisassembler.Disassemble(program);
+
+        Console.WriteLine(output);
     }
 }

@@ -16,6 +16,7 @@ namespace SmolScript
             }
         }
 
+        private List<SmolFunctionDefn> function_table = new List<SmolFunctionDefn>();
         private List<List<ByteCodeInstruction>> function_bodies = new List<List<ByteCodeInstruction>>();
 
         private List<SmolValue> constants = new List<SmolValue>()
@@ -63,12 +64,17 @@ namespace SmolScript
             var code_sections = new List<List<ByteCodeInstruction>>();
             
             code_sections.Add(main_chunk);
-            // Add function blocks
+
+            foreach(var fb in function_bodies)
+            {
+                code_sections.Add(fb);
+            }
 
             return new SmolProgram()
             {
                 constants = this.constants,
-                code_sections = code_sections
+                code_sections = code_sections,
+                function_table = function_table
             };
         }
 
@@ -167,7 +173,7 @@ namespace SmolScript
 
             return new ByteCodeInstruction()
             {
-                opcode = OpCode.LOAD_CONSTANT,
+                opcode = OpCode.CONST,
                 operand1 = cIndex
             };
         }
@@ -181,7 +187,7 @@ namespace SmolScript
         {
             return new ByteCodeInstruction()
             {
-                opcode = OpCode.LOAD_VARIABLE,
+                opcode = OpCode.FETCH,
                 operand1 = new SmolVariableDefinition() {
                     name = (string)(expr.name.lexeme)
                 }
@@ -208,7 +214,34 @@ namespace SmolScript
 
         public object? Visit(CallExpression expr)
         {
-            return $"(call {expr.callee.Accept(this)} {expr.paren.lexeme} args[{expr.args.Count}])";
+            var chunk = new List<ByteCodeInstruction>();
+
+            // Evalulate the arguments from left to right and pop them on the stack.
+
+            foreach (var arg in expr.args)
+            {
+                // Maybe there's a better way to do this... feels a bit dumb
+                switch (arg!.GetType().Name)
+                {
+                    case "LiteralExpression":
+                        chunk.AppendChunk(((LiteralExpression)arg!).Accept(this));
+                        break;
+
+                    default:
+                        throw new NotImplementedException($"Unable to process type '{arg!.GetType().Name}' as a function argument, we haven't implemented this yet");
+                }
+                
+            }
+
+            chunk.AppendChunk(expr.callee.Accept(this)); // Load the function name onto the stack
+
+            chunk.AppendChunk(new ByteCodeInstruction()
+            {
+                opcode = OpCode.CALL,
+                operand1 = expr.args.Count
+            });
+
+            return chunk;
         }
 
         public object? Visit(VarStatement stmt)
@@ -406,15 +439,37 @@ namespace SmolScript
         }
 
         public object? Visit(FunctionStatement stmt)
-        {            
-            //s.AppendLine($"[declare function {stmt.name?.lexeme ?? ""} ()]");
+        {
+            var function_index = function_bodies.Count() + 1;
+            var function_name = stmt.name?.lexeme! ?? $"$_anon_{function_index}";
 
-            //s.Append($"{stmt.functionBody.Accept(this)}");
+            function_table.Add(new SmolFunctionDefn()
+            {
+                globalFunctionName = function_name,
+                code_section = function_index,
+                arity = stmt.parameters.Count(),
+                param_variable_names = stmt.parameters.Select(p => p.lexeme).ToList()
+            });
 
-            //s.AppendLine("[end function declaration]");
+            var body = (List<ByteCodeInstruction>)stmt.functionBody.Accept(this)!;
 
-            return null;
+            body.AppendChunk(new ByteCodeInstruction()
+            {
+                // Not sure if this is the way to do this, seems like it should work.
+                // Guess we can make it optional if the last statmeent of the body was already return?
+                opcode = OpCode.RETURN
+                // void?
+            });
+
+            function_bodies.Add(body);
+
+            // We are declaring a function, we don't add anything to the byte stream at the current loc.
+            // When we allow functions as expressions and assignments we'll need to do something
+            // here, I guess something more like load constant but for functions
+            return new ByteCodeInstruction()
+            {
+                opcode = OpCode.NOP
+            };
         }
-
     }
 }

@@ -691,7 +691,7 @@ namespace SmolScript.Internals
                 {
                     if (match(TokenType.FUNC))
                     {
-                        // Anonymous function                        
+                        // Anonymous function -- I think this needs to be functionExpression?
                         args.Add(functionDeclaration());
                     }
                     else

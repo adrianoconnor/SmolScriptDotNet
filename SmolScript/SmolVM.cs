@@ -6,10 +6,17 @@ namespace SmolScript
     {
         SmolProgram program;
 
-        int PC = 0;
         int code_section = 0;
+        int PC = 0; // Program Counter / Instruction Pointer
 
+        // This is a stack based VM, so this is for our working data.
+        // We store everything here as SmolValue, which is a wrapper
+        // for all of our types
         Stack<SmolValue> stack = new Stack<SmolValue>();
+
+        // Call stack
+        Stack<SmolValue> callstack = new Stack<SmolValue>();
+
         Dictionary<int, int> jmplocs = new Dictionary<int, int>();
 
         public readonly Environment globalEnv = new Environment();
@@ -69,7 +76,8 @@ namespace SmolScript
             {
                 var instr = program.code_sections[code_section][PC++];
 
-                Console.WriteLine($"{instr}: {System.Environment.TickCount - t}");
+                Console.WriteLine($"{instr}");//: {System.Environment.TickCount - t}");
+
                 t = System.Environment.TickCount;
 
                 switch (instr.opcode)
@@ -78,8 +86,60 @@ namespace SmolScript
                         // Just skip over this instruction, no-op
                         break;
 
-                    case OpCode.LOAD_CONSTANT:
+                    case OpCode.CONST:
+                        // Load a value from the data section at specified index
+                        // and place it on the stack
                         stack.Push(program.constants[(int)instr.operand1!]);
+                        break;
+
+                    case OpCode.CALL:
+                        var callData = (SmolFunctionDefn)stack.Pop().value!;
+
+                        // First we need to pop the args off the stack                        
+
+                        List<SmolValue> paramValues = new List<SmolValue>();
+
+                        for (int i = 0; i < (int)instr.operand1!; i++) {
+                            paramValues.Add(this.stack.Pop());
+                            //env.Define(callData.variableNames[i], param_value);
+                        }
+
+                        var state = new SmolCallSaveState()
+                        {
+                            code_section = this.code_section,
+                            PC = this.PC,
+                            previous_env = this.environment,
+                            treat_call_as_expression = true // Needs to come from function dfn, I guess
+                        };
+
+                        var env = new Environment(this.globalEnv);
+                        this.environment = env;
+
+                        // Now prime the new environment with variables for
+                        // the parameters in the function declaration (actual number
+                        // passed might be different)
+
+                        for (int i = 0; i < callData.arity; i++)
+                        {
+                            if (paramValues.Count > i) {
+                                env.Define(callData.param_variable_names[i], paramValues[i]);
+                            }
+                            else {
+                                env.Define(callData.param_variable_names[i], new SmolValue() {
+                                    type = SmolValueType.Undefined
+                                });
+                            }
+                        }
+
+                        stack.Push(new SmolValue()
+                        {
+                            type = SmolValueType.SavedCallState,
+                            value = state
+                        });
+
+                        PC = 0;
+                        code_section = callData.code_section;
+
                         break;
 
                     case OpCode.ADD:
@@ -100,6 +160,31 @@ namespace SmolScript
                     case OpCode.RETURN:
                         // Needs to return to the previous code section, putting
                         // a return value on the stack and restoring the PC
+
+                        // Top value on the stack is the return value
+
+                        var return_value = stack.Pop();
+
+                        var _savedCallState = stack.Pop();
+
+                        if (_savedCallState.type != SmolValueType.SavedCallState) {
+                            throw new Exception("Tried to return but found something unexecpted on the stack");
+                        }
+
+                        var savedCallState = (SmolCallSaveState)_savedCallState.value!;
+
+                        if (savedCallState.treat_call_as_expression)
+                        {
+                            // Means we're using the return value as an expression
+                            // in some other statement
+                            stack.Push(return_value);
+                        }
+
+                        this.environment = savedCallState.previous_env;
+                        this.PC = savedCallState.PC;
+                        this.code_section = savedCallState.code_section;
+
+                        
                         break;
 
                     case OpCode.DECLARE:
@@ -114,8 +199,24 @@ namespace SmolScript
                             break;
                         }
 
-                    case OpCode.LOAD_VARIABLE:
-                        stack.Push((SmolValue)environment.Get(((SmolVariableDefinition)instr.operand1!).name)!);
+                    case OpCode.FETCH:
+                        // Could be a variable or a function
+                        var name = ((SmolVariableDefinition)instr.operand1!).name;
+
+                        var fetchedValue = environment.TryGet(name);
+
+                        if (fetchedValue != null) {
+                            stack.Push((SmolValue)fetchedValue);
+                        }
+                        else {
+                            if (program.function_table.Any(f => f.globalFunctionName == name)) {
+                                stack.Push(new SmolValue() {
+                                    type = SmolValueType.FunctionRef,
+                                    value = program.function_table.First(f => f.globalFunctionName == name)
+                                });
+                            }
+                        }
+
                         break;
 
                     case OpCode.JMPFALSE:
