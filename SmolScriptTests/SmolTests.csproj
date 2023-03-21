@@ -20,4 +20,10 @@
   <ItemGroup>
     <ProjectReference Include="..\SmolScript\SmolScript.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <None Remove="SmolVmTests\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="SmolVmTests\" />
+  </ItemGroup>
 </Project>

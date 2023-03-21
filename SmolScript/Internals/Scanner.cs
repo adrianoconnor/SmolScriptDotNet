@@ -1,3 +1,5 @@
+using System.Text;
+
 namespace SmolScript.Internals
 {
     public record ScannerError
@@ -242,13 +244,13 @@ namespace SmolScript.Internals
                     _line++;
                     break;
 
-                case '`':
-                    ProcessString();
+                case '\'':
+                    ProcessString('\'');
                     break;
 
 
                 case '"':
-                    ProcessString();
+                    ProcessString('"');
                     break;
 
                 default:
@@ -318,11 +320,51 @@ namespace SmolScript.Internals
             }
         }
 
-        private void ProcessString()
+        private void ProcessString(char quoteChar)
         {
-            while (Peek() != '"' && !ReachedEnd()) {
+            StringBuilder sb = new StringBuilder();
+
+            while (Peek() != quoteChar && !ReachedEnd())
+            {
+
                 if (Peek() == '\n') _line++;
-                _ = NextChar();
+
+                if (Peek() == '\\')
+                {
+                    var next = Peek(1);
+
+                    if (next == '\'' || next == '"' || next == '\\')
+                    {
+                        _ = NextChar();
+                        sb.Append(NextChar());
+                    }
+                    else if (next == 't')
+                    {
+                        _ = NextChar();
+                        _ = NextChar();
+                        sb.Append('\t');
+                    }
+                    else if (next == 'r')
+                    {
+                        _ = NextChar();
+                        _ = NextChar();
+                        sb.Append('\r');
+                    }
+                    else if (next == 'n')
+                    {
+                        _ = NextChar();
+                        _ = NextChar();
+                        sb.Append('\n');
+                    }
+                    else
+                    {
+                        sb.Append(NextChar());
+                    }
+                }
+                else
+                {
+                    sb.Append(NextChar());
+                }
             }
 
             if (ReachedEnd()) {
@@ -333,12 +375,7 @@ namespace SmolScript.Internals
             // Consume the closing "
             _ = NextChar();
 
-            // Trim the surrounding quotes
-            var stringStart = _start + 1;
-            var stringEnd = _current - 1;
-
-            var stringValue = _source.Substring(stringStart, stringEnd - stringStart);
-            AddToken(TokenType.STRING, stringValue);
+            AddToken(TokenType.STRING, sb.ToString());// stringValue);
         }
 
         private void ProcessBacktickString()
