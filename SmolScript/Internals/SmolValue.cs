@@ -263,9 +263,14 @@ namespace SmolScript.Internals
             }
         }
 
+        public bool IsTruthy()
+        {
+            return (bool)this.value! == true;
+        }
+
         public bool IsFalsey()
         {
-            return (bool)this.value! == false;
+            return !IsTruthy();
         }
     }
 }

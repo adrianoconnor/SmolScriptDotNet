@@ -93,6 +93,12 @@ namespace SmolScript
                         // Load a value from the data section at specified index
                         // and place it on the stack
                         stack.Push(program.constants[(int)instr.operand1!]);
+
+                        if (debug)
+                        {
+                            Console.WriteLine($"[Pushed ${program.constants[(int)instr.operand1!]}]");
+                        }
+
                         break;
 
                     case OpCode.CALL:
@@ -242,6 +248,13 @@ namespace SmolScript
                             var value = stack.Pop();
 
                             environment.Assign(((SmolVariableDefinition)instr.operand1!).name, value);
+
+
+                            if (debug)
+                            {
+                                Console.WriteLine($"[Saved ${value}]");
+                            }
+
                             break;
                         }
 
@@ -253,6 +266,11 @@ namespace SmolScript
 
                         if (fetchedValue != null) {
                             stack.Push((SmolValue)fetchedValue);
+
+                            if (debug)
+                            {
+                                Console.WriteLine($"[Loaded ${fetchedValue}]");
+                            }
                         }
                         else {
                             if (program.function_table.Any(f => f.globalFunctionName == name)) {
@@ -276,6 +294,16 @@ namespace SmolScript
 
                             break;
                         }
+
+                    case OpCode.JMPTRUE:
+                        
+                        if (stack.Pop().IsTruthy())
+                        {
+                            PC = jmplocs[(int)instr.operand1!];
+                        }
+
+                        break;
+                        
 
                     case OpCode.JMP:
                         PC = jmplocs[(int)instr.operand1!];

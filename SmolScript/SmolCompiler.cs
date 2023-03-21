@@ -156,6 +156,7 @@ namespace SmolScript
             var chunk = new List<ByteCodeInstruction>();
 
             int shortcutLabel = nextLabel;
+            int testCompleteLabel = nextLabel;
 
             switch (expr.op.type)
             {
@@ -165,23 +166,40 @@ namespace SmolScript
 
                     chunk.AppendChunk(new ByteCodeInstruction()
                     {
-                        opcode = OpCode.CONST,
-                        operand1 = constants.FindIndex(e => (bool)e.value! == false)
-                    });
-
-                    chunk.AppendChunk(new ByteCodeInstruction()
-                    {
                         opcode = OpCode.JMPFALSE,
                         operand1 = shortcutLabel
                     });
 
                     chunk.AppendChunk(expr.right.Accept(this));
-                   
+
+                    chunk.AppendChunk(new ByteCodeInstruction()
+                    {
+                        opcode = OpCode.JMP,
+                        operand1 = testCompleteLabel
+                    });
+
                     chunk.AppendChunk(new ByteCodeInstruction()
                     {
                         opcode = OpCode.LABEL,
                         operand1 = shortcutLabel
                     });
+
+                    // We arrived at this point from the shortcut, which had to be FALSE, and that Jump-not-true
+                    // instruction popped the false result from the stack, so we need to put it back. I think a
+                    // specific test instruction would make this nicer, but for now we can live with a few extra steps...
+
+                    chunk.AppendChunk(new ByteCodeInstruction()
+                    {
+                        opcode = OpCode.CONST,
+                        operand1 = constants.FindIndex(e => e.type == SmolValueType.Bool && (bool)e.value! == false)
+                    });
+
+                    chunk.AppendChunk(new ByteCodeInstruction()
+                    {
+                        opcode = OpCode.LABEL,
+                        operand1 = testCompleteLabel
+                    });
+
 
                     break;
 
@@ -199,8 +217,26 @@ namespace SmolScript
 
                     chunk.AppendChunk(new ByteCodeInstruction()
                     {
+                        opcode = OpCode.JMP,
+                        operand1 = testCompleteLabel
+                    });
+
+                    chunk.AppendChunk(new ByteCodeInstruction()
+                    {
                         opcode = OpCode.LABEL,
                         operand1 = shortcutLabel
+                    });
+
+                    chunk.AppendChunk(new ByteCodeInstruction()
+                    {
+                        opcode = OpCode.CONST,
+                        operand1 = constants.FindIndex(e => e.type == SmolValueType.Bool && (bool)e.value! == true)
+                    });
+
+                    chunk.AppendChunk(new ByteCodeInstruction()
+                    {
+                        opcode = OpCode.LABEL,
+                        operand1 = testCompleteLabel
                     });
 
                     break;
