@@ -14,9 +14,6 @@ namespace SmolScript
         // for all of our types
         Stack<SmolValue> stack = new Stack<SmolValue>();
 
-        // Call stack
-        Stack<SmolValue> callstack = new Stack<SmolValue>();
-
         Dictionary<int, int> jmplocs = new Dictionary<int, int>();
 
         public readonly Environment globalEnv = new Environment();
@@ -68,7 +65,7 @@ namespace SmolScript
             }
         }
 
-        public void Run(bool debug = true)
+        public void Run(bool debug = false)
         {
             double t = System.Environment.TickCount;
 
@@ -96,7 +93,7 @@ namespace SmolScript
 
                         if (debug)
                         {
-                            Console.WriteLine($"[Pushed ${program.constants[(int)instr.operand1!]}]");
+                            Console.WriteLine($"              [Pushed ${program.constants[(int)instr.operand1!]}]");
                         }
 
                         break;
@@ -207,6 +204,12 @@ namespace SmolScript
                     case OpCode.EOF:
                         // Needs to handle call stack scenario for functions that
                         // implicitly return void
+
+                        //if (debug)
+                        {
+                            Console.WriteLine($"DONE, TOOK {System.Environment.TickCount - t}");
+                        }
+
                         return;
 
                     case OpCode.RETURN:
@@ -252,7 +255,7 @@ namespace SmolScript
 
                             if (debug)
                             {
-                                Console.WriteLine($"[Saved ${value}]");
+                                Console.WriteLine($"              [Saved ${value}]");
                             }
 
                             break;
@@ -269,7 +272,7 @@ namespace SmolScript
 
                             if (debug)
                             {
-                                Console.WriteLine($"[Loaded ${fetchedValue}]");
+                                Console.WriteLine($"              [Loaded ${fetchedValue}]");
                             }
                         }
                         else {

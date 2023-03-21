@@ -521,15 +521,41 @@ namespace SmolScript
 
         public object? Visit(WhileStatement stmt)
         {
-            var s = new StringBuilder();
-            
-            s.AppendLine($"[while {stmt.whileCondition.Accept(this)}]");
+            var chunk = new List<ByteCodeInstruction>();
 
-            s.Append($"{stmt.executeStatement.Accept(this)}");
+            int startOfLoop = nextLabel;
+            int notTrueLabel = nextLabel;
 
-            s.AppendLine("[end while]");
+            chunk.AppendChunk(new ByteCodeInstruction()
+            {
+                opcode = OpCode.LABEL,
+                operand1 = startOfLoop
+            });
 
-            return s.ToString();
+            chunk.AppendChunk(stmt.whileCondition.Accept(this));
+
+            chunk.AppendChunk(new ByteCodeInstruction()
+            {
+                opcode = OpCode.JMPFALSE,
+                operand1 = notTrueLabel
+            });
+
+            chunk.AppendChunk(stmt.executeStatement.Accept(this));
+
+            chunk.AppendChunk(new ByteCodeInstruction()
+            {
+                opcode = OpCode.JMP,
+                operand1 = startOfLoop
+            });
+
+            chunk.AppendChunk(new ByteCodeInstruction()
+            {
+                opcode = OpCode.LABEL,
+                operand1 = notTrueLabel
+            });
+
+            return chunk;
+
         }
 
         public object? Visit(FunctionStatement stmt)
