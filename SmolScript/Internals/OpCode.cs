@@ -16,10 +16,14 @@
         REM,
 
         EQL,
+        NEQ,
         LT,
         LTE,
         GT,
         GTE,
+
+        BITWISE_AND,
+        BITWISE_OR,
 
         JMPTRUE,
         JMPFALSE,

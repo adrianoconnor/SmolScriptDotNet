@@ -248,9 +248,12 @@ namespace SmolScript.Internals
                     ProcessString('\'');
                     break;
 
-
                 case '"':
                     ProcessString('"');
+                    break;
+
+                case '`':
+                    ProcessBacktickString();
                     break;
 
                 default:
@@ -375,15 +378,137 @@ namespace SmolScript.Internals
             // Consume the closing "
             _ = NextChar();
 
-            AddToken(TokenType.STRING, sb.ToString());// stringValue);
+            AddToken(TokenType.STRING, sb.ToString());
         }
 
         private void ProcessBacktickString()
         {
+            StringBuilder sb = new StringBuilder();
+            bool hasProducedAtLeastOneToken = false; // Use this to know whether we need to inject a + before each new token
+
             while (Peek() != '`' && !ReachedEnd())
             {
+                // TODO: Need to refactor this so somehow it uses the same code as regular string parsing -- need it to
+                // match those rules exactly, an handle all of the same cases for escaping etc.
+
                 if (Peek() == '\n') _line++;
-                _ = NextChar();
+
+                if (Peek() == '\\')
+                {
+                    var next = Peek(1);
+
+                    if (next == '\'' || next == '"' || next == '\\' || next == '{')
+                    {
+                        _ = NextChar();
+                        sb.Append(NextChar());
+                    }
+                    else if (next == 't')
+                    {
+                        _ = NextChar();
+                        _ = NextChar();
+                        sb.Append('\t');
+                    }
+                    else if (next == 'r')
+                    {
+                        _ = NextChar();
+                        _ = NextChar();
+                        sb.Append('\r');
+                    }
+                    else if (next == 'n')
+                    {
+                        _ = NextChar();
+                        _ = NextChar();
+                        sb.Append('\n');
+                    }
+                    else
+                    {
+                        sb.Append(NextChar());
+                    }
+                }
+                else
+                {
+                    if (Peek() == '$' && Peek(1) == '{')
+                    {
+                        // We've just entered the ${} section, so whatever we've got so far, create
+                        // a string token and add it to the stream, and then start a new string part
+
+                        if (sb.Length > 0)
+                        {
+                            AddToken(TokenType.STRING, sb.ToString());
+                            sb = new StringBuilder();
+                            hasProducedAtLeastOneToken = true;
+                        }
+
+                        // Now we'll loop through collecting whatever is inside the ${}
+
+                        _ = NextChar();
+                        _ = NextChar();
+
+                        StringBuilder embeddedExpr = new StringBuilder();
+
+                        bool inEmbeddedString = false;
+                        char? embeddedStringChar = null;
+
+                        while ((Peek() != '}' || inEmbeddedString) && !ReachedEnd())
+                        {
+                            // Bug here, ${"}"} will currently not do so well
+
+                            if ((embeddedStringChar == null && (Peek() == '\'' || Peek() == '"'))
+                                    || embeddedStringChar != null && Peek() == embeddedStringChar) // Also `
+                            {
+                                embeddedStringChar = Peek();
+                                inEmbeddedString = !inEmbeddedString;
+                            }
+
+                            embeddedExpr.Append(NextChar());
+                        }
+
+                        _ = NextChar();
+
+                        if (embeddedExpr.Length > 0)
+                        {
+                            // We've just extracted the contents inside the ${}.
+                            // Now we create a new scanner and pass it that string and
+                            // get back tokens. We will wrap those in parens and, if we've already
+                            // generated at least one token so far, we insert a + to concat them.
+
+                            if (hasProducedAtLeastOneToken)
+                            {
+                                // There is actually a potential bug here... I think
+                                // `${a}${b}` might actually print the result of a+b if they're numbers.
+
+                                AddToken(TokenType.PLUS);
+                            }
+                            
+                            Scanner embeddedScanner = new Scanner(embeddedExpr.ToString());
+
+                            var embeddedTokens = embeddedScanner.ScanTokens();
+
+                            //TODO: Handle errors from embedded scanner
+
+                            AddToken(TokenType.LEFT_BRACKET);
+
+                            foreach (var t in embeddedTokens.tokens)
+                            { 
+                                if (t.type == TokenType.EOF)
+                                {
+                                    break;
+                                }
+
+                                this._tokens.Add(t);
+                            }
+
+                            AddToken(TokenType.RIGHT_BRACKET);
+
+                            hasProducedAtLeastOneToken = true;
+                        }
+
+                    }
+                    else
+                    {
+                        sb.Append(NextChar());
+                    }
+                }
             }
 
             if (ReachedEnd())
@@ -392,15 +517,18 @@ namespace SmolScript.Internals
                 return;
             }
 
-            // Consume the closing "
+            // Consume the closing `
             _ = NextChar();
 
-            // Trim the surrounding quotes
-            var stringStart = _start + 1;
-            var stringEnd = _current - 1;
+            if (sb.Length > 0 || !hasProducedAtLeastOneToken) // If we haven't produced a token yet, even if it's an empty string, we still need that string token
+            {
+                if (hasProducedAtLeastOneToken)
+                {
+                    AddToken(TokenType.PLUS);
+                }
 
-            var stringValue = _source.Substring(stringStart, stringEnd - stringStart);
-            AddToken(TokenType.STRING, stringValue);
+                AddToken(TokenType.STRING, sb.ToString());// stringValue);
+            }
         }
 
         private bool CharIsDigit(char c)

@@ -26,6 +26,18 @@ namespace SmolTests
         }
 
         [TestMethod]
+        public void ConcatStringAndNumber()
+        {
+            var program = SmolCompiler.Compile("var a = \"test\" + 1;");
+
+            var vm = new SmolVM(program);
+
+            vm.Run();
+
+            Assert.AreEqual("test1", ((SmolValue)vm.globalEnv.Get("a")!).value);
+        }
+
+        [TestMethod]
         public void CreateAndAssignStringUsingSingleQuotes()
         {
             var program = SmolCompiler.Compile("var a = 'test';");
@@ -59,6 +71,53 @@ namespace SmolTests
             vm.Run();
 
             Assert.AreEqual("\"test\t\r\n123\"", ((SmolValue)vm.globalEnv.Get("a")!).value);
+        }
+
+        [TestMethod]
+        public void AddTwoStrings()
+        {
+            var program = SmolCompiler.Compile("var a = 'test'; var b = '123'; var c = a + b;");
+
+            var vm = new SmolVM(program);
+
+            vm.Run();
+
+            Assert.AreEqual("test123", ((SmolValue)vm.globalEnv.Get("c")!).value);
+        }
+
+        [TestMethod]
+        public void CreateAndAssignStringUsingBackticks()
+        {
+            var program = SmolCompiler.Compile("var n = 'x'; var a = `test ${n}`;");
+
+            var vm = new SmolVM(program);
+
+            vm.Run();
+
+            Assert.AreEqual("test x", ((SmolValue)vm.globalEnv.Get("a")!).value);
+        }
+
+        [TestMethod]
+        public void InvalidStringFromBackticks()
+        {
+            // TODO: We really need to test the error handling to make sure we get a good error
+
+            Assert.ThrowsException<ParseError>(() =>
+            {
+                var program = SmolCompiler.Compile("var n = 'x'; var a = `test ${!!!}`;");
+            });
+        }
+
+        [TestMethod]
+        public void BacktickStringHandlesEmbeddedRightBrace()
+        {
+            var program = SmolCompiler.Compile("var n = 'x'; var a = `test ${\"x}x\"}`;");
+
+            var vm = new SmolVM(program);
+
+            vm.Run();
+
+            Assert.AreEqual("test x}x", ((SmolValue)vm.globalEnv.Get("a")!).value);
         }
     }
 }

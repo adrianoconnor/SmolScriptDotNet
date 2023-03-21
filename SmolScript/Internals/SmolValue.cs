@@ -1,4 +1,6 @@
-﻿namespace SmolScript.Internals
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace SmolScript.Internals
 {
     /// <summary>
     /// This class represents any kind of runtime variable that can be put on
@@ -53,21 +55,212 @@
         {
             return $"({this.type.ToString()}) {this.value}";
         }
-   
+
         public static SmolValue operator +(SmolValue a, SmolValue b)
         {
             // Currently only handles really simple case of both values
             // being numeric -- anything else will raise an exception. Next
             // to implement is string handling...
 
-            var right = (double)a.value!;
-            var left = (double)b.value!;
-
-            return new SmolValue()
+            if (a.type == SmolValueType.Number && b.type == SmolValueType.Number)
             {
-                type = SmolValueType.Number,
-                value = left + right
-            };
+                var right = (double)a.value!;
+                var left = (double)b.value!;
+
+                return new SmolValue()
+                {
+                    type = SmolValueType.Number,
+                    value = left + right
+                };
+            }
+            else if (a.type == SmolValueType.String || b.type == SmolValueType.String)
+            {
+                // TODO: Need a Stringify helper method.
+
+                string aString = a.type == SmolValueType.String ? (string)a.value! : ((double)a.value!).ToString();
+                string bString = b.type == SmolValueType.String ? (string)b.value! : ((double)b.value!).ToString();
+
+                return new SmolValue()
+                {
+                    type = SmolValueType.String,
+                    value = aString + bString
+                };
+            }
+
+            throw new Exception($"Unable to add {a.type} and {b.type}");
+        }
+
+        public static SmolValue operator -(SmolValue a, SmolValue b)
+        {
+            // Currently only handles really simple case of both values
+            // being numeric -- anything else will raise an exception. Next
+            // to implement is string handling...
+
+            if (a.type == SmolValueType.Number && b.type == SmolValueType.Number)
+            {
+                var right = (double)a.value!;
+                var left = (double)b.value!;
+
+                return new SmolValue()
+                {
+                    type = SmolValueType.Number,
+                    value = left - right
+                };
+            }
+
+            throw new Exception($"Unable to subtract {a.type} and {b.type}");
+        }
+
+        public static SmolValue operator *(SmolValue a, SmolValue b)
+        {
+            // Currently only handles really simple case of both values
+            // being numeric -- anything else will raise an exception. Next
+            // to implement is string handling...
+
+            if (a.type == SmolValueType.Number && b.type == SmolValueType.Number)
+            {
+                var right = (double)a.value!;
+                var left = (double)b.value!;
+
+                return new SmolValue()
+                {
+                    type = SmolValueType.Number,
+                    value = left * right
+                };
+            }
+
+            throw new Exception($"Unable to multiply {a.type} and {b.type}");
+        }
+
+        public static SmolValue operator /(SmolValue a, SmolValue b)
+        {
+            // Currently only handles really simple case of both values
+            // being numeric -- anything else will raise an exception. Next
+            // to implement is string handling...
+
+            if (a.type == SmolValueType.Number && b.type == SmolValueType.Number)
+            {
+                var right = (double)a.value!;
+                var left = (double)b.value!;
+
+                return new SmolValue()
+                {
+                    type = SmolValueType.Number,
+                    value = left / right
+                };
+            }
+
+            throw new Exception($"Unable to divide {a.type} and {b.type}");
+        }
+
+        public static SmolValue operator %(SmolValue a, SmolValue b)
+        {
+            // Currently only handles really simple case of both values
+            // being numeric -- anything else will raise an exception. Next
+            // to implement is string handling...
+
+            if (a.type == SmolValueType.Number && b.type == SmolValueType.Number)
+            {
+                var right = (double)a.value!;
+                var left = (double)b.value!;
+
+                return new SmolValue()
+                {
+                    type = SmolValueType.Number,
+                    value = left % right
+                };
+            }
+
+            throw new Exception($"Unable to modulo {a.type} and {b.type}");
+        }
+
+        public static SmolValue operator >(SmolValue a, SmolValue b)
+        {
+            if (a.type == SmolValueType.Number && b.type == SmolValueType.Number)
+            {
+                var right = (double)a.value!;
+                var left = (double)b.value!;
+
+                return new SmolValue()
+                {
+                    type = SmolValueType.Bool,
+                    value = left > right
+                };
+            }
+
+            throw new Exception($"Unable to modulo {a.type} and {b.type}");
+        }
+
+        public static SmolValue operator <(SmolValue a, SmolValue b)
+        {
+            if (a.type == SmolValueType.Number && b.type == SmolValueType.Number)
+            {
+                var right = (double)a.value!;
+                var left = (double)b.value!;
+
+                return new SmolValue()
+                {
+                    type = SmolValueType.Bool,
+                    value = left < right
+                };
+            }
+
+            throw new Exception($"Unable to modulo {a.type} and {b.type}");
+        }
+
+        public static SmolValue operator >=(SmolValue a, SmolValue b)
+        {
+            if (a.type == SmolValueType.Number && b.type == SmolValueType.Number)
+            {
+                var right = (double)a.value!;
+                var left = (double)b.value!;
+
+                return new SmolValue()
+                {
+                    type = SmolValueType.Bool,
+                    value = left >= right
+                };
+            }
+
+            throw new Exception($"Unable to modulo {a.type} and {b.type}");
+        }
+
+        public static SmolValue operator <=(SmolValue a, SmolValue b)
+        {
+            if (a.type == SmolValueType.Number && b.type == SmolValueType.Number)
+            {
+                var right = (double)a.value!;
+                var left = (double)b.value!;
+
+                return new SmolValue()
+                {
+                    type = SmolValueType.Bool,
+                    value = left <= right
+                };
+            }
+
+            throw new Exception($"Unable to modulo {a.type} and {b.type}");
+        }
+
+        public override bool Equals([NotNullWhen(true)] object? obj)
+        {
+            return base.Equals(obj);
+        }
+
+        public override int GetHashCode()
+        {
+            if (this.type == SmolValueType.Number)
+            {
+                return ((double)this.value!).GetHashCode();
+            }
+            if (this.type == SmolValueType.String)
+            {
+                return ((string)this.value!).GetHashCode();
+            }
+            else
+            {
+                return base.GetHashCode();
+            }
         }
 
         public bool IsFalsey()

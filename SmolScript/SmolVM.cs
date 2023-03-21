@@ -68,7 +68,7 @@ namespace SmolScript
             }
         }
 
-        public void Run()
+        public void Run(bool debug = true)
         {
             double t = System.Environment.TickCount;
 
@@ -76,9 +76,12 @@ namespace SmolScript
             {
                 var instr = program.code_sections[code_section][PC++];
 
-                Console.WriteLine($"{instr}");//: {System.Environment.TickCount - t}");
+                if (debug)
+                {
+                    Console.WriteLine($"{instr}");//: {System.Environment.TickCount - t}");
 
-                t = System.Environment.TickCount;
+                    t = System.Environment.TickCount;
+                }
 
                 switch (instr.opcode)
                 {
@@ -151,6 +154,49 @@ namespace SmolScript
 
                             break;
                         }
+
+                    case OpCode.SUB:
+                        stack.Push(stack.Pop() - stack.Pop());
+                        break;
+
+                    case OpCode.MUL:
+                        stack.Push(stack.Pop() * stack.Pop());
+                        break;
+
+                    case OpCode.DIV:
+                        stack.Push(stack.Pop() / stack.Pop());
+                        break;
+
+                    case OpCode.EQL:
+                        stack.Push(new SmolValue() {
+                            type = SmolValueType.Bool,
+                            value = stack.Pop()!.Equals(stack.Pop()!)
+                        });
+                        break;
+
+                    case OpCode.NEQ:
+                        stack.Push(new SmolValue()
+                        {
+                            type = SmolValueType.Bool,
+                            value = !stack.Pop()!.Equals(stack.Pop()!)
+                        });
+                        break;
+
+                    case OpCode.GT:
+                        stack.Push(stack.Pop() > stack.Pop());
+                        break;
+
+                    case OpCode.LT:
+                        stack.Push(stack.Pop() < stack.Pop());
+                        break;
+
+                    case OpCode.GTE:
+                        stack.Push(stack.Pop() >= stack.Pop());
+                        break;
+
+                    case OpCode.LTE:
+                        stack.Push(stack.Pop() <= stack.Pop());
+                        break;
 
                     case OpCode.EOF:
                         // Needs to handle call stack scenario for functions that

@@ -50,6 +50,14 @@ namespace SmolScript.Internals
                 }
             }
         }
+
+        public static void AppendInstruction(this List<ByteCodeInstruction> chunk, OpCode opcode)
+        {
+            chunk.Add(new ByteCodeInstruction()
+            {
+                opcode = opcode
+            });
+        }
     }
 }
 

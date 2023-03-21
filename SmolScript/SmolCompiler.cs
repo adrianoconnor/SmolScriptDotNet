@@ -88,67 +88,125 @@ namespace SmolScript
             switch (expr.op.type)
             {
                 case TokenType.MINUS:
-                    chunk.AppendChunk(new ByteCodeInstruction()
-                    {
-                        opcode = OpCode.SUB
-                    });
+                    chunk.AppendInstruction(OpCode.SUB);
                     break;
+
                 case TokenType.DIVIDE:
-                    chunk.AppendChunk(new ByteCodeInstruction()
-                    {
-                        opcode = OpCode.DIV
-                    });
+                    chunk.AppendInstruction(OpCode.DIV);
                     break;
+
                 case TokenType.MULTIPLY:
-                    chunk.AppendChunk(new ByteCodeInstruction()
-                    {
-                        opcode = OpCode.MUL
-                    });
+                    chunk.AppendInstruction(OpCode.MUL);
                     break;
+
                 case TokenType.PLUS:
-                    chunk.AppendChunk(new ByteCodeInstruction()
-                    {
-                        opcode = OpCode.ADD
-                    });
+                    chunk.AppendInstruction(OpCode.ADD);
                     break;
 
                 case TokenType.POW:
-                    chunk.AppendChunk(new ByteCodeInstruction()
-                    {
-                        opcode = OpCode.POW
-                    });
+                    chunk.AppendInstruction(OpCode.POW);
                     break;
-                    /*
+
+                case TokenType.REMAINDER:
+                    chunk.AppendInstruction(OpCode.REM);
+                    break;
+
+                case TokenType.EQUAL_EQUAL:
+                    chunk.AppendInstruction(OpCode.EQL);
+                    break;
+
+                case TokenType.NOT_EQUAL:
+                    chunk.AppendInstruction(OpCode.NEQ);
+                    break;
+
                 case TokenType.GREATER:
-                       return (double)left > (double)right;
-                   case TokenType.GREATER_EQUAL:
-                       return (double)left >= (double)right;
-                   case TokenType.LESS:
-                       return (double)left < (double)right;
-                   case TokenType.LESS_EQUAL:
-                       return (double)left <= (double)right;
-                   case TokenType.NOT_EQUAL:
-                       return !isEqual(left, right);
-                   case TokenType.EQUAL_EQUAL:
-                       return isEqual(left, right);
-                   case TokenType.BITWISE_AND:
-                       // A bit stupid, but we have to cast double>int>double...
-                       return (double)((int)(double)left & (int)(double)right);
-                   case TokenType.BITWISE_OR:
-                       return (double)((int)(double)left | (int)(double)right);
-                   case TokenType.REMAINDER:
-                       return (double)left % (double)right;*/
+                    chunk.AppendInstruction(OpCode.GT);
+                    break;
+
+                case TokenType.GREATER_EQUAL:
+                    chunk.AppendInstruction(OpCode.GTE);
+                    break;
+
+                case TokenType.LESS:
+                    chunk.AppendInstruction(OpCode.LT);
+                    break;
+
+                case TokenType.LESS_EQUAL:
+                    chunk.AppendInstruction(OpCode.LTE);
+                    break;
+
+                /* We can live without these for now, let's do logical first
+                case TokenType.BITWISE_AND:
+                    chunk.AppendInstruction(OpCode.AND);
+                    break;
+
+                case TokenType.BITWISE_OR:
+                    chunk.AppendInstruction(OpCode.OR);
+                */
                 default:
                     throw new NotImplementedException();
             }
 
             return chunk;
         }
-        
+
 
         public object? Visit(LogicalExpression expr)
         {
-            return $"({expr.op.lexeme} {expr.left.Accept(this)} {expr.right.Accept(this)})";
+            var chunk = new List<ByteCodeInstruction>();
+
+            int shortcutLabel = nextLabel;
+
+            switch (expr.op.type)
+            {
+                case TokenType.LOGICAL_AND:
+
+                    chunk.AppendChunk(expr.left.Accept(this));
+
+                    chunk.AppendChunk(new ByteCodeInstruction()
+                    {
+                        opcode = OpCode.CONST,
+                        operand1 = constants.FindIndex(e => (bool)e.value! == false)
+                    });
+
+                    chunk.AppendChunk(new ByteCodeInstruction()
+                    {
+                        opcode = OpCode.JMPFALSE,
+                        operand1 = shortcutLabel
+                    });
+
+                    chunk.AppendChunk(expr.right.Accept(this));
+                   
+                    chunk.AppendChunk(new ByteCodeInstruction()
+                    {
+                        opcode = OpCode.LABEL,
+                        operand1 = shortcutLabel
+                    });
+
+                    break;
+
+                case TokenType.LOGICAL_OR:
+
+                    chunk.AppendChunk(expr.left.Accept(this));
+
+                    chunk.AppendChunk(new ByteCodeInstruction()
+                    {
+                        opcode = OpCode.JMPTRUE,
+                        operand1 = shortcutLabel
+                    });
+
+                    chunk.AppendChunk(expr.right.Accept(this));
+
+                    chunk.AppendChunk(new ByteCodeInstruction()
+                    {
+                        opcode = OpCode.LABEL,
+                        operand1 = shortcutLabel
+                    });
+
+                    break;
+            }
+
+            return chunk;
         }
 
         public object? Visit(GroupingExpression expr)
