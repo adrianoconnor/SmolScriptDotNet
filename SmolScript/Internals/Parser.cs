@@ -192,6 +192,7 @@ namespace SmolScript.Internals
                     case TokenType.WHILE:
                     case TokenType.PRINT:
                     case TokenType.RETURN:
+                    case TokenType.TRY:
                         return;
                 }
 
@@ -280,11 +281,13 @@ namespace SmolScript.Internals
         {
             if (match(TokenType.IF)) return ifStatement();
             if (match(TokenType.WHILE)) return whileStatement();
+            if (match(TokenType.TRY)) return tryStatement();
             if (match(TokenType.FOR)) return forStatement();
             if (match(TokenType.PRINT)) return printStatement();
             if (match(TokenType.RETURN)) return returnStatement();
             if (match(TokenType.BREAK)) return breakStatement();
             if (match(TokenType.LEFT_BRACE)) return block();
+            if (match(TokenType.DEBUGGER)) return debuggerStatement();
 
             return expressionStatement();
         }
@@ -320,6 +323,12 @@ namespace SmolScript.Internals
 
             consume(TokenType.SEMICOLON, "Expected ;");
             return new BreakStatement();
+        }
+
+        private Statement debuggerStatement()
+        {
+            consume(TokenType.SEMICOLON, "Expected ;");
+            return new DebuggerStatement();
         }
 
         private BlockStatement block()
@@ -372,6 +381,45 @@ namespace SmolScript.Internals
             _ = _statementCallStack.Pop();
 
             return new WhileStatement(whileCondition, whileStatement);
+        }
+
+        private Statement tryStatement()
+        {
+            _statementCallStack.Push("TRY");
+
+            consume(TokenType.LEFT_BRACE, "Expected {");
+            BlockStatement tryBody = block();
+            BlockStatement? catchBody = null;
+            BlockStatement? finallyBody = null;
+
+            Token? exceptionVarName = null;
+
+            if (match(TokenType.CATCH))
+            {             
+                if (match(TokenType.LEFT_BRACKET))
+                {
+                    exceptionVarName = consume(TokenType.IDENTIFIER, "Expected a single variable name for exception variable");
+
+                    consume(TokenType.RIGHT_BRACKET, "Expected )");
+                }
+
+                consume(TokenType.LEFT_BRACE, "Expected {");
+                catchBody = block();
+            }
+            
+            if (match(TokenType.FINALLY))
+            {
+                consume(TokenType.LEFT_BRACE, "Expected {");
+                finallyBody = block();
+            }
+
+            if (catchBody == null && finallyBody == null) {
+                consume(TokenType.CATCH, "Expected catch or finally");
+            }
+
+            _ = _statementCallStack.Pop();
+
+            return new TryStatement(tryBody, exceptionVarName, catchBody, finallyBody);
         }
 
         private Statement forStatement()

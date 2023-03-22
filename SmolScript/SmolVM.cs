@@ -2,12 +2,22 @@
 
 namespace SmolScript
 {
+    public enum RunMode {
+        Run,
+        Paused,
+        Step
+    }
+
     public class SmolVM
     {
         SmolProgram program;
 
         int code_section = 0;
         int PC = 0; // Program Counter / Instruction Pointer
+
+        bool debug = true; 
+
+        RunMode runMode = RunMode.Paused;
 
         // This is a stack based VM, so this is for our working data.
         // We store everything here as SmolValue, which is a wrapper
@@ -65,8 +75,15 @@ namespace SmolScript
             }
         }
 
-        public void Run(bool debug = false)
+        public void Step()
         {
+            this.Run(RunMode.Step);
+        }
+
+        public void Run(RunMode newRunMode = RunMode.Run)
+        {
+            this.runMode = newRunMode;
+
             double t = System.Environment.TickCount;
 
             while (true)
@@ -169,6 +186,15 @@ namespace SmolScript
                     case OpCode.DIV:
                         stack.Push(stack.Pop() / stack.Pop());
                         break;
+
+                    case OpCode.REM:
+                        stack.Push(stack.Pop() % stack.Pop());
+                        break;
+
+                    case OpCode.POW:
+                        stack.Push(stack.Pop().Power(stack.Pop()));
+                        break;
+
 
                     case OpCode.EQL:
                         stack.Push(new SmolValue() {
@@ -318,13 +344,35 @@ namespace SmolScript
                         break;
 
                     case OpCode.ENTER_SCOPE:
-                        break;
+                        {
+                            this.environment = new Environment(this.environment);
+                            break;
+                        }
 
                     case OpCode.LEAVE_SCOPE:
+                        {
+                            this.environment = this.environment.enclosing!;
+                            break;
+                        }
+
+                    case OpCode.DEBUGGER:
+                    {
+                        this.runMode = RunMode.Paused;
+                        return;
+                    }
+
+                    case OpCode.POP_AND_DISCARD:
+                        stack.Pop();
                         break;
 
                     default:
                         throw new Exception($"You forgot to handle an opcode: {instr.opcode}");
+                }
+
+                if (this.runMode == RunMode.Step && instr.StepCheckpoint == true)
+                {
+                    this.runMode = RunMode.Paused;
+                    return;
                 }
             }
         }

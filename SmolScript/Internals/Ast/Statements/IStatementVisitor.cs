@@ -12,6 +12,8 @@
         object? Visit(WhileStatement stmt);
         object? Visit(BreakStatement stmt);
         object? Visit(FunctionStatement stmt);
+        object? Visit(DebuggerStatement stmt);
+        object? Visit(TryStatement stmt);
     }
 }
 

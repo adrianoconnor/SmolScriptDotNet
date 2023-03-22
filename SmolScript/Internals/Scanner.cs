@@ -51,7 +51,10 @@ namespace SmolScript.Internals
             { "var", TokenType.VAR },
             { "let", TokenType.VAR },
             { "while", TokenType.WHILE },
-            { "undefined", TokenType.UNDEFINED }
+            { "undefined", TokenType.UNDEFINED },
+            { "try", TokenType.TRY },
+            { "catch", TokenType.CATCH },
+            { "finally", TokenType.FINALLY }
         };
 
         public Scanner(string source)

@@ -25,6 +25,19 @@ namespace SmolTests
             Assert.AreEqual(3.0, ((SmolValue)vm.globalEnv.Get("a")!).value);
         }
 
+        [TestMethod]
+        public void PassVariableAsParamToFunc()
+        {
+            var program = SmolCompiler.Compile("var a = 1; function addOne(num) { return num + 1; } var b = addOne(a);");
+
+            var vm = new SmolVM(program);
+
+            vm.Run();
+
+            Assert.AreEqual(1.0, ((SmolValue)vm.globalEnv.Get("a")!).value);
+            Assert.AreEqual(2.0, ((SmolValue)vm.globalEnv.Get("b")!).value);
+        }
+
     }
 }
 

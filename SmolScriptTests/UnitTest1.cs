@@ -30,6 +30,23 @@ public class UnitTest1
     }
 
     [TestMethod]
+    public void NewScopeForIfAstInterpreterTest()
+    {
+        var interpreter = new AstInterpreter();
+
+        interpreter.Interpret(@"
+        var a = 1;
+
+        if (true)
+        {
+            var a = 2;
+        }
+        ");
+
+        Assert.AreEqual(1.0, interpreter.globalEnv.Get("a"));
+    }
+
+    [TestMethod]
     public void ReallySimpleAstInterpreterTest2()
     { 
         var cf = new CustomFunc();

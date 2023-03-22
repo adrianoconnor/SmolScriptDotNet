@@ -34,6 +34,10 @@ namespace SmolScript
             foreach(var stmt in stmts)
             {
                 chunk.AppendChunk(stmt.Accept(this));
+
+                var lastInstr = chunk[chunk.Count() - 1];
+                lastInstr.StepCheckpoint = true;
+                chunk[chunk.Count() - 1] = lastInstr;
             }
 
             return chunk;
@@ -274,18 +278,201 @@ namespace SmolScript
 
         public object? Visit(UnaryExpression expr)
         {
-            return $"({expr.op.lexeme} {expr.right.Accept(this)})";
+            var chunk = new List<ByteCodeInstruction>();
+
+            switch (expr.op.type)
+            {
+                case TokenType.NOT:
+                {
+                    chunk.AppendChunk(expr.right.Accept(this));
+
+                    int isTrueLabel = nextLabel;
+                    int endLabel = nextLabel;
+            
+                    chunk.AppendChunk(new ByteCodeInstruction()
+                    {
+                        opcode = OpCode.JMPTRUE,
+                        operand1 = isTrueLabel
+                    });
+
+                    // If we're here it was false, so now it's true
+                    chunk.AppendChunk(new ByteCodeInstruction()
+                    {
+                        opcode = OpCode.CONST,
+                        operand1 = constants.FindIndex(e => e.type == SmolValueType.Bool && (bool)e.value! == true)
+                    });
+
+                    chunk.AppendChunk(new ByteCodeInstruction()
+                    {
+                        opcode = OpCode.JMP,
+                        operand1 = endLabel
+                    });
+
+                    chunk.AppendChunk(new ByteCodeInstruction()
+                    {
+                        opcode = OpCode.LABEL,
+                        operand1 = isTrueLabel
+                    });
+
+                    // If we're here it was true, so now it's false
+                    chunk.AppendChunk(new ByteCodeInstruction()
+                    {
+                        opcode = OpCode.CONST,
+                        operand1 = constants.FindIndex(e => e.type == SmolValueType.Bool && (bool)e.value! == false)
+                    });
+
+                    chunk.AppendChunk(new ByteCodeInstruction()
+                    {
+                        opcode = OpCode.LABEL,
+                        operand1 = endLabel
+                    });
+
+                    break;
+                }
+
+                case TokenType.MINUS:
+
+                    chunk.AppendChunk(new ByteCodeInstruction()
+                    {
+                        opcode = OpCode.CONST,
+                        operand1 = constants.FindIndex(e => e.type == SmolValueType.Number && (double)e.value! == 0.0)
+                    });
+
+                    chunk.AppendChunk(expr.right.Accept(this));
+                    
+                    chunk.AppendInstruction(OpCode.SUB);
+
+                    break;
+
+            }
+
+            return chunk;
         }
 
         public object? Visit(VariableExpression expr)
         {
-            return new ByteCodeInstruction()
+            var chunk = new List<ByteCodeInstruction>();
+
+            chunk.AppendChunk(new ByteCodeInstruction()
             {
                 opcode = OpCode.FETCH,
                 operand1 = new SmolVariableDefinition() {
                     name = (string)(expr.name.lexeme)
                 }
-            };
+            });
+
+            if (expr.prepostfixop != null)
+            {
+                if (expr.prepostfixop == TokenType.POSTFIX_INCREMENT)
+                {
+                    chunk.AppendChunk(new ByteCodeInstruction()
+                    {
+                        opcode = OpCode.FETCH,
+                        operand1 = new SmolVariableDefinition() {
+                            name = (string)(expr.name.lexeme)
+                        }
+                    });
+
+                    chunk.AppendChunk(new ByteCodeInstruction()
+                    {
+                        opcode = OpCode.CONST,
+                        operand1 = constants.FindIndex(e => e.type == SmolValueType.Number && (double)e.value! == 1.0)
+                    });
+
+                    chunk.AppendInstruction(OpCode.ADD);
+                    
+                    chunk.AppendChunk(new ByteCodeInstruction()
+                    {
+                        opcode = OpCode.STORE,
+                        operand1 = new SmolVariableDefinition() {
+                            name = (string)(expr.name.lexeme)
+                        }
+                    });
+                }
+
+                if (expr.prepostfixop == TokenType.POSTFIX_DECREMENT)
+                {
+                    chunk.AppendChunk(new ByteCodeInstruction()
+                    {
+                        opcode = OpCode.FETCH,
+                        operand1 = new SmolVariableDefinition() {
+                            name = (string)(expr.name.lexeme)
+                        }
+                    });
+                    
+                    chunk.AppendChunk(new ByteCodeInstruction()
+                    {
+                        opcode = OpCode.CONST,
+                        operand1 = constants.FindIndex(e => e.type == SmolValueType.Number && (double)e.value! == 1.0)
+                    });
+
+                    chunk.AppendInstruction(OpCode.SUB);
+
+                    chunk.AppendChunk(new ByteCodeInstruction()
+                    {
+                        opcode = OpCode.STORE,
+                        operand1 = new SmolVariableDefinition() {
+                            name = (string)(expr.name.lexeme)
+                        }
+                    });
+                }
+
+                if (expr.prepostfixop == TokenType.PREFIX_INCREMENT)
+                {                    
+                    chunk.AppendChunk(new ByteCodeInstruction()
+                    {
+                        opcode = OpCode.CONST,
+                        operand1 = constants.FindIndex(e => e.type == SmolValueType.Number && (double)e.value! == 1.0)
+                    });
+
+                    chunk.AppendInstruction(OpCode.ADD);
+                    
+                    chunk.AppendChunk(new ByteCodeInstruction()
+                    {
+                        opcode = OpCode.STORE,
+                        operand1 = new SmolVariableDefinition() {
+                            name = (string)(expr.name.lexeme)
+                        }
+                    });
+
+                    chunk.AppendChunk(new ByteCodeInstruction()
+                    {
+                        opcode = OpCode.FETCH,
+                        operand1 = new SmolVariableDefinition() {
+                            name = (string)(expr.name.lexeme)
+                        }
+                    });
+                }
+
+                if (expr.prepostfixop == TokenType.PREFIX_DECREMENT)
+                {                    
+                    chunk.AppendChunk(new ByteCodeInstruction()
+                    {
+                        opcode = OpCode.CONST,
+                        operand1 = constants.FindIndex(e => e.type == SmolValueType.Number && (double)e.value! == 1.0)
+                    });
+
+                    chunk.AppendInstruction(OpCode.SUB);
+
+                    chunk.AppendChunk(new ByteCodeInstruction()
+                    {
+                        opcode = OpCode.STORE,
+                        operand1 = new SmolVariableDefinition() {
+                            name = (string)(expr.name.lexeme)
+                        }
+                    });
+
+                    chunk.AppendChunk(new ByteCodeInstruction()
+                    {
+                        opcode = OpCode.FETCH,
+                        operand1 = new SmolVariableDefinition() {
+                            name = (string)(expr.name.lexeme)
+                        }
+                    });
+                }
+            }
+
+            return chunk;
         }
 
         public object? Visit(AssignExpression expr)
@@ -319,6 +506,10 @@ namespace SmolScript
                 {
                     case "LiteralExpression":
                         chunk.AppendChunk(((LiteralExpression)arg!).Accept(this));
+                        break;
+
+                    case "VariableExpression":
+                        chunk.AppendChunk(((VariableExpression)arg!).Accept(this));
                         break;
 
                     default:
@@ -558,6 +749,79 @@ namespace SmolScript
 
         }
 
+        public object? Visit(TryStatement stmt)
+        {
+            var chunk = new List<ByteCodeInstruction>();
+
+            var exceptionLabel = nextLabel;
+            var finallyLabel = nextLabel;
+
+            // This will create a try 'checkpoint' in the vm. If we hit an exception the
+            // vm will rewind the stack back to this instruction and jump to the catch/finally.
+            chunk.AppendInstruction(OpCode.TRY, exceptionLabel);
+
+            chunk.AppendChunk(this.Visit(stmt.tryBody));
+
+            // if we get here then we need to go to the finally block (whether or not there's a catch)
+
+            chunk.AppendInstruction(OpCode.JMP, finallyLabel);
+
+            chunk.AppendInstruction(OpCode.LABEL, exceptionLabel);
+
+            // We're now at the catch part -- even if the user didn't specify one, we'll have a default (of { throw })
+            // TODO: Need to save the finally address here somehow so that if there's a throw inside the catch,
+            // it can rewind to this point and branch off to the finally, but leave a value on the stack
+            // to let the finally know there's an exception to throw
+            
+            if (stmt.exceptionVariableName != null)
+            {
+                chunk.AppendInstruction(OpCode.ENTER_SCOPE);
+
+                // Top of stack will be exception
+                chunk.AppendInstruction(OpCode.STORE, new SmolVariableDefinition()
+                {
+                    name = (string)(stmt.exceptionVariableName.lexeme)
+                });
+            }
+            else
+            {
+                // Top of stack is exception, but no variable defined to hold it so get rid
+                chunk.AppendInstruction(OpCode.POP_AND_DISCARD);
+            }
+
+            if (stmt.catchBody != null)
+            {
+                chunk.AppendChunk(this.Visit(stmt.catchBody!)); // Might be a throw inside here...
+            }
+            else
+            {
+                // Instruction to rethrow the exception
+
+                chunk.AppendInstruction(OpCode.THROW);
+            }
+
+            if (stmt.exceptionVariableName != null)
+            {
+                chunk.AppendInstruction(OpCode.LEAVE_SCOPE);
+            }
+           
+
+            // If we reach here, there was no throw inside the catch
+            // That means we need to tell the finally that it does not need to raise an exception
+
+
+            chunk.AppendInstruction(OpCode.LABEL, finallyLabel);
+
+            if (stmt.finallyBody != null)
+            {
+                chunk.AppendChunk(this.Visit(stmt.finallyBody));
+
+                // Instruction to check for unthrown exception and throw it
+            }
+
+            return chunk;
+        }
+
         public object? Visit(FunctionStatement stmt)
         {
             var function_index = function_bodies.Count() + 1;
@@ -572,7 +836,7 @@ namespace SmolScript
             });
 
             var body = (List<ByteCodeInstruction>)stmt.functionBody.Accept(this)!;
-
+            /*
             body.AppendChunk(new ByteCodeInstruction()
             {
                 // Not sure if this is the way to do this, seems like it should work.
@@ -580,7 +844,7 @@ namespace SmolScript
                 opcode = OpCode.RETURN
                 // void?
             });
-
+            */
             function_bodies.Add(body);
 
             // We are declaring a function, we don't add anything to the byte stream at the current loc.
@@ -589,6 +853,14 @@ namespace SmolScript
             return new ByteCodeInstruction()
             {
                 opcode = OpCode.NOP
+            };
+        }
+
+        public object? Visit(DebuggerStatement stmt)
+        {
+            return new ByteCodeInstruction()
+            {
+                opcode = OpCode.DEBUGGER
             };
         }
     }

@@ -45,6 +45,8 @@
 
         NEW,
 
+        POP_AND_DISCARD,
+
         PRINT,
         DEBUGGER,
 

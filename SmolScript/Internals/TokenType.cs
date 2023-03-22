@@ -82,6 +82,10 @@ namespace SmolScript.Internals
         VAR,
         WHILE,
         UNDEFINED,
+        TRY,
+        CATCH,
+        FINALLY,
+        THROW,
 
         EOF
     }

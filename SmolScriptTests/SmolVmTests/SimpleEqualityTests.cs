@@ -9,8 +9,6 @@ namespace SmolTests
 	{
         public SimpleEqualityTests()
 		{
-
-
 		}
 
         [TestMethod]
@@ -90,6 +88,18 @@ namespace SmolTests
             Assert.AreEqual(true, ((SmolValue)vm.globalEnv.Get("a")!).value);
             Assert.AreEqual(true, ((SmolValue)vm.globalEnv.Get("b")!).value);
         }
+
+        [TestMethod]
+        public void UnaryNegation()
+        {
+            var program = SmolCompiler.Compile("var a = (!false); var b = (!true);");
+
+            var vm = new SmolVM(program);
+
+            vm.Run();
+
+            Assert.AreEqual(true, ((SmolValue)vm.globalEnv.Get("a")!).value);
+            Assert.AreEqual(false, ((SmolValue)vm.globalEnv.Get("b")!).value);
+        }
     }
 }
-

@@ -9,6 +9,8 @@ namespace SmolScript.Internals
         public object? operand1;
         public object? operand2;
 
+        public bool StepCheckpoint;
+
         public override string ToString()
         {
             var str = $"{this.opcode.ToString().PadRight(13)}";
@@ -50,12 +52,14 @@ namespace SmolScript.Internals
                 }
             }
         }
-
-        public static void AppendInstruction(this List<ByteCodeInstruction> chunk, OpCode opcode)
+        
+        public static void AppendInstruction(this List<ByteCodeInstruction> chunk, OpCode opcode, object? operand1 = null, object? operand2 = null)
         {
             chunk.Add(new ByteCodeInstruction()
             {
-                opcode = opcode
+                opcode = opcode,
+                operand1 = operand1,
+                operand2 = operand2
             });
         }
     }

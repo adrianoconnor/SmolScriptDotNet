@@ -2,7 +2,7 @@ namespace SmolScript
 {
     public class Environment
     {
-        private readonly Environment? enclosing = null;
+        public readonly Environment? enclosing = null;
         private IDictionary<string, object?> variables = new Dictionary<string, object?>();
 
         public Environment()

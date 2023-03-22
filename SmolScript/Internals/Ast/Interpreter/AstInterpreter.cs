@@ -197,6 +197,24 @@ namespace SmolScript.Internals.Ast.Interpreter
             return null;
         }
 
+        public object? Visit(TryStatement stmt)
+        {
+            try
+            {
+                throw new Exception("Try/Catch not implemented in AST interpreter");
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
+            finally
+            {
+
+            }
+
+            return null;
+        }
+
         public object? Visit(FunctionStatement stmt)
         {
             if (stmt.name == null)
@@ -463,6 +481,11 @@ namespace SmolScript.Internals.Ast.Interpreter
             {
                 this.environment = previous;
             }
+        }
+
+        public object? Visit(DebuggerStatement stmt)
+        {
+            return null;
         }
     }
 }

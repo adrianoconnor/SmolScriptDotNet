@@ -242,6 +242,23 @@ namespace SmolScript.Internals
             throw new Exception($"Unable to modulo {a.type} and {b.type}");
         }
 
+        public SmolValue Power(SmolValue power)
+        {
+            if (this.type == SmolValueType.Number && power.type == SmolValueType.Number)
+            {
+                var left = (double)this.value!;
+                var right = (double)power.value!;
+
+                return new SmolValue()
+                {
+                    type = SmolValueType.Bool,
+                    value = double.Pow(left, right)
+                };
+            }
+
+            throw new Exception($"Unable to calculate power for {this.type} and {power.type}");
+        }
+
         public override bool Equals([NotNullWhen(true)] object? obj)
         {
             return base.Equals(obj);

@@ -108,6 +108,11 @@ namespace SmolScript.Internals.Ast
             return $"[print {stmt.expression.Accept(this)}]";
         }
 
+        public object? Visit(DebuggerStatement stmt)
+        {
+            return $"[debugger]]";
+        }
+
         public object? Visit(ReturnStatement stmt)
         {
             return $"[return {stmt.expression.Accept(this)}]";
@@ -137,6 +142,28 @@ namespace SmolScript.Internals.Ast
 
             s.AppendLine("[end if]");
 
+            return s.ToString();
+        }
+
+        public object? Visit(TryStatement stmt)
+        {
+            var s = new StringBuilder();
+/*
+            s.AppendLine($"[if {stmt.testExpression.Accept(this)}]");
+
+            s.AppendLine($"[then]");
+            s.Append($"{stmt.thenStatement.Accept(this)}");
+            s.AppendLine($"[/then]");
+
+            if (stmt.elseStatement != null)
+            {
+                s.AppendLine($"[else]");
+                s.Append($"{stmt.elseStatement!.Accept(this)}");
+                s.AppendLine($"[/else]");
+            }
+
+            s.AppendLine("[end if]");
+                */
             return s.ToString();
         }
 

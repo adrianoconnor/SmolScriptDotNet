@@ -17,12 +17,18 @@ namespace SmolTests
         public void TryCreatingByteCodeForAGlobalFunction()
         {
             var program = SmolCompiler.Compile("debugger; var a = 10; function addOne(num) { return num + 1; } a = addOne(a);");
-
+            
             var vm = new SmolVM(program);
 
             vm.Run();
+            
+            vm.Step();
 
-            //Assert.AreEqual(3.0, ((SmolValue)vm.globalEnv.Get("a")!).value);
+            Assert.AreEqual(10.0, ((SmolValue)vm.globalEnv.Get("a")!).value);
+
+            vm.Run();
+
+            Assert.AreEqual(11.0, ((SmolValue)vm.globalEnv.Get("a")!).value);
         }
 
     }
