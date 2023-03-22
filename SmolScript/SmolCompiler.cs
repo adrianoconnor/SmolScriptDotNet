@@ -755,62 +755,76 @@ namespace SmolScript
 
             var exceptionLabel = nextLabel;
             var finallyLabel = nextLabel;
+            var finallyWithExceptionLabel = nextLabel;
 
             // This will create a try 'checkpoint' in the vm. If we hit an exception the
             // vm will rewind the stack back to this instruction and jump to the catch/finally.
-            chunk.AppendInstruction(OpCode.TRY, exceptionLabel);
+            chunk.AppendInstruction(OpCode.TRY, exceptionLabel, false);
+
+            // If an exception happens inside the body, it will rewind the stack to the try that just went on
+            // and that tells us where to jump to
 
             chunk.AppendChunk(this.Visit(stmt.tryBody));
 
-            // if we get here then we need to go to the finally block (whether or not there's a catch)
+            // If there was no exception, we need to get rid of that try checkpoint that's on the stack, we aren't
+            // going back there even if there's an exception in the finally
+
+            chunk.AppendInstruction(OpCode.POP_AND_DISCARD);
+
+            // Now execute the finally
 
             chunk.AppendInstruction(OpCode.JMP, finallyLabel);
 
             chunk.AppendInstruction(OpCode.LABEL, exceptionLabel);
 
             // We're now at the catch part -- even if the user didn't specify one, we'll have a default (of { throw })
-            // TODO: Need to save the finally address here somehow so that if there's a throw inside the catch,
-            // it can rewind to this point and branch off to the finally, but leave a value on the stack
-            // to let the finally know there's an exception to throw
-            
-            if (stmt.exceptionVariableName != null)
-            {
-                chunk.AppendInstruction(OpCode.ENTER_SCOPE);
+            // We now should have the thrown exception on the stack, so if a throw happens inside the catch that will
+            // be the thing that's thrown.
 
-                // Top of stack will be exception
-                chunk.AppendInstruction(OpCode.STORE, new SmolVariableDefinition()
-                {
-                    name = (string)(stmt.exceptionVariableName.lexeme)
-                });
-            }
-            else
-            {
-                // Top of stack is exception, but no variable defined to hold it so get rid
-                chunk.AppendInstruction(OpCode.POP_AND_DISCARD);
-            }
+            chunk.AppendInstruction(OpCode.TRY, finallyWithExceptionLabel, true); // True means keep the exception at the top of the stack
 
             if (stmt.catchBody != null)
             {
+                if (stmt.exceptionVariableName != null)
+                {
+                    chunk.AppendInstruction(OpCode.ENTER_SCOPE);
+
+                    // Top of stack will be exception so store it in variable name
+                    chunk.AppendInstruction(OpCode.STORE, new SmolVariableDefinition()
+                    {
+                        name = (string)(stmt.exceptionVariableName.lexeme)
+                    });
+                }
+                else
+                {
+                    // Top of stack is exception, but no variable defined to hold it so get rid of it
+                    chunk.AppendInstruction(OpCode.POP_AND_DISCARD);
+                }
+
                 chunk.AppendChunk(this.Visit(stmt.catchBody!)); // Might be a throw inside here...
+
+                if (stmt.exceptionVariableName != null)
+                {
+                    chunk.AppendInstruction(OpCode.LEAVE_SCOPE);
+                }
             }
             else
             {
-                // Instruction to rethrow the exception
+                // No catch body is replaced by single instruction to rethrow the exception, which is already on the top of the stack
 
                 chunk.AppendInstruction(OpCode.THROW);
             }
 
-            if (stmt.exceptionVariableName != null)
-            {
-                chunk.AppendInstruction(OpCode.LEAVE_SCOPE);
-            }
+            // If we made it here we got through the catch block without a throw, so we're free to execute the regular
+            // finally and carry on with execution, exception is fully handled.
            
+            chunk.AppendInstruction(OpCode.JMP, finallyLabel);
 
-            // If we reach here, there was no throw inside the catch
-            // That means we need to tell the finally that it does not need to raise an exception
+            chunk.AppendInstruction(OpCode.LABEL, finallyWithExceptionLabel);
 
-
-            chunk.AppendInstruction(OpCode.LABEL, finallyLabel);
+            // If we're here then we had a throw inside the catch, so execute the finally and then throw it again.
+            // When we throw this time the try checkpoint has been removed so we'll bubble down the stack to the next
+            // try checkpoint (if there is one -- and panic if not)
 
             if (stmt.finallyBody != null)
             {
@@ -818,6 +832,24 @@ namespace SmolScript
 
                 // Instruction to check for unthrown exception and throw it
             }
+
+            chunk.AppendInstruction(OpCode.THROW);
+
+            chunk.AppendInstruction(OpCode.LABEL, finallyLabel);
+
+            // Top of stack has to the try checkpoint, so get rid of it because we aren't going back there
+            chunk.AppendInstruction(OpCode.POP_AND_DISCARD);
+
+
+            if (stmt.finallyBody != null)
+            {
+                chunk.AppendChunk(this.Visit(stmt.finallyBody));
+
+                // Instruction to check for unthrown exception and throw it
+            }
+
+            // Hopefully that all works. It's mega dependent on the instructions leaving the stack in a pristine state -- no
+            // half finished evaluations or anything. That's definitely going to be a problem.
 
             return chunk;
         }
