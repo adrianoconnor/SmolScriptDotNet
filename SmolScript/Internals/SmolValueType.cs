@@ -10,6 +10,7 @@
         String,
         FunctionRef, // Not sure
         SavedCallState,
+        TryCheckPoint,
         Unknown
     }
 }

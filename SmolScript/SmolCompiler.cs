@@ -211,11 +211,7 @@ namespace SmolScript
 
                     chunk.AppendChunk(expr.left.Accept(this));
 
-                    chunk.AppendChunk(new ByteCodeInstruction()
-                    {
-                        opcode = OpCode.JMPTRUE,
-                        operand1 = shortcutLabel
-                    });
+                    chunk.AppendInstruction(OpCode.JMPTRUE, shortcutLabel);
 
                     chunk.AppendChunk(expr.right.Accept(this));
 
@@ -817,7 +813,10 @@ namespace SmolScript
 
             // If we made it here we got through the catch block without a throw, so we're free to execute the regular
             // finally and carry on with execution, exception is fully handled.
-           
+
+            // Top of stack has to the try checkpoint, so get rid of it because we aren't going back there
+            chunk.AppendInstruction(OpCode.POP_AND_DISCARD);
+
             chunk.AppendInstruction(OpCode.JMP, finallyLabel);
 
             chunk.AppendInstruction(OpCode.LABEL, finallyWithExceptionLabel);
@@ -836,10 +835,6 @@ namespace SmolScript
             chunk.AppendInstruction(OpCode.THROW);
 
             chunk.AppendInstruction(OpCode.LABEL, finallyLabel);
-
-            // Top of stack has to the try checkpoint, so get rid of it because we aren't going back there
-            chunk.AppendInstruction(OpCode.POP_AND_DISCARD);
-
 
             if (stmt.finallyBody != null)
             {

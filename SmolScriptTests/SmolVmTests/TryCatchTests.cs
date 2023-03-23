@@ -17,7 +17,7 @@ namespace SmolTests
         public void SimpleTryCatchSyntaxTest()
         {
             //            var source = "try { var a = 1; } catch { /* nothing */ }"; // Inline comment breaks the scanner :(
-            var source = "try { var a = 1; } catch { var b = 2; }";
+            var source = "var a = 0; try { a = 1; } catch { a = 2; }";
 
             var program = SmolCompiler.Compile(source);
 

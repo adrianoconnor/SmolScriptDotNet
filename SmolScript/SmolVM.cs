@@ -365,6 +365,38 @@ namespace SmolScript
                         stack.Pop();
                         break;
 
+                    case OpCode.TRY:
+
+                        SmolValue? exception = null;
+
+                        if (instr.operand2 != null && (bool)instr.operand2)
+                        {
+                            // This is a special flag for the try instruction that tells us to
+                            // take the exception that's already on the stack and leave it at the
+                            // top after creating the try checkpoint.
+
+                            exception = stack.Pop();
+                        }
+
+                        stack.Push(new SmolValue()
+                        {
+                            type = SmolValueType.TryCheckPoint,
+                            value = new SmolTrySaveState()
+                            {
+                                code_section = this.code_section,
+                                PC = this.PC,
+                                this_env = this.environment,
+                                jump_exception = (int)instr.operand1!
+                            }
+                        });
+
+                        if (exception != null)
+                        {
+                            stack.Push((SmolValue)exception!);
+                        }
+
+                        break;
+
                     default:
                         throw new Exception($"You forgot to handle an opcode: {instr.opcode}");
                 }
