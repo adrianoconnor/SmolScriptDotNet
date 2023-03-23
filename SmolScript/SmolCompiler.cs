@@ -745,6 +745,23 @@ namespace SmolScript
 
         }
 
+        public object? Visit(ThrowStatement stmt)
+        {
+            var chunk = new List<ByteCodeInstruction>();
+
+            if (stmt.expression != null)
+            {
+                chunk.AppendChunk(stmt.expression!.Accept(this));
+                chunk.AppendInstruction(OpCode.THROW, true);
+            }
+            else
+            {
+                chunk.AppendInstruction(OpCode.THROW, false);
+            }
+
+            return chunk;
+        }
+
         public object? Visit(TryStatement stmt)
         {
             var chunk = new List<ByteCodeInstruction>();
@@ -786,6 +803,12 @@ namespace SmolScript
                     chunk.AppendInstruction(OpCode.ENTER_SCOPE);
 
                     // Top of stack will be exception so store it in variable name
+
+                    chunk.AppendInstruction(OpCode.DECLARE, new SmolVariableDefinition()
+                    {
+                        name = (string)(stmt.exceptionVariableName.lexeme)
+                    });
+
                     chunk.AppendInstruction(OpCode.STORE, new SmolVariableDefinition()
                     {
                         name = (string)(stmt.exceptionVariableName.lexeme)

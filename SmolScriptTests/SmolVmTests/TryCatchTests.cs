@@ -77,24 +77,25 @@ namespace SmolTests
         [TestMethod]
         public void ComplexTryCatchTestsWillFail()
         {
-            var source = "class ValidationError extends Error {\n  printCustomerMessage() {\n    return `Validation failed :-( (details: ${this.message})`;\n  }\n}\n\ntry {\n  throw new ValidationError(\"Not a valid phone number\");\n} catch (error) {\n  if (error instanceof ValidationError) {\n    console.log(error.name); // This is Error instead of ValidationError!\n    console.log(error.printCustomerMessage());\n  } else {\n    console.log(\"Unknown error\", error);\n    throw error;\n  }\n}";
+            //var source = "class ValidationError extends Error {\n  printCustomerMessage() {\n    return `Validation failed :-( (details: ${this.message})`;\n  }\n}\n\ntry {\n  throw new ValidationError(\"Not a valid phone number\");\n} catch (error) {\n  if (error instanceof ValidationError) {\n    console.log(error.name); // This is Error instead of ValidationError!\n    console.log(error.printCustomerMessage());\n  } else {\n    console.log(\"Unknown error\", error);\n    throw error;\n  }\n}";
 
-            var s = new Scanner(source);
-
-            var tokens = s.ScanTokens();
-
-            foreach (var t in tokens.tokens)
-            {
-                Console.WriteLine(t);
-            }
+            var source = "var a = 1; try { a = 2; throw; } catch(e) { a = 3; debugger; } finally { a = 4; } var b = 4;";
 
             var program = SmolCompiler.Compile(source);
+
+            Console.WriteLine(ByteCodeDisassembler.Disassemble(program));
 
             var vm = new SmolVM(program);
 
             vm.Run();
 
-            //Assert.AreEqual(3.0, ((SmolValue)vm.globalEnv.Get("a")!).value);
+            Assert.AreEqual(3.0, ((SmolValue)vm.globalEnv.Get("a")!).value);
+
+            vm.Run();
+
+            Assert.AreEqual(4.0, ((SmolValue)vm.globalEnv.Get("a")!).value);
+
+            Assert.AreEqual(4.0, ((SmolValue)vm.globalEnv.Get("b")!).value);
         }
 
     }

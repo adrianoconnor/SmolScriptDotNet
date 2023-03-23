@@ -282,6 +282,7 @@ namespace SmolScript.Internals
             if (match(TokenType.IF)) return ifStatement();
             if (match(TokenType.WHILE)) return whileStatement();
             if (match(TokenType.TRY)) return tryStatement();
+            if (match(TokenType.THROW)) return throwStatement();
             if (match(TokenType.FOR)) return forStatement();
             if (match(TokenType.PRINT)) return printStatement();
             if (match(TokenType.RETURN)) return returnStatement();
@@ -297,6 +298,20 @@ namespace SmolScript.Internals
             var expr = expression();
             consume(TokenType.SEMICOLON, "Expected ;");
             return new PrintStatement(expr);
+        }
+
+        private Statement throwStatement()
+        {
+            if (match(TokenType.SEMICOLON))
+            {
+                return new ThrowStatement();
+            }
+            else
+            {
+                var expr = expression();
+                consume(TokenType.SEMICOLON, "Expected ;");
+                return new ThrowStatement(expr);
+            }
         }
 
         private Statement returnStatement()

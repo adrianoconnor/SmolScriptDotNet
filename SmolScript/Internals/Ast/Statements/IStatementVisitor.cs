@@ -14,6 +14,7 @@
         object? Visit(FunctionStatement stmt);
         object? Visit(DebuggerStatement stmt);
         object? Visit(TryStatement stmt);
+        object? Visit(ThrowStatement stmt);
     }
 }
 

@@ -54,7 +54,8 @@ namespace SmolScript.Internals
             { "undefined", TokenType.UNDEFINED },
             { "try", TokenType.TRY },
             { "catch", TokenType.CATCH },
-            { "finally", TokenType.FINALLY }
+            { "finally", TokenType.FINALLY },
+            { "throw", TokenType.THROW }
         };
 
         public Scanner(string source)

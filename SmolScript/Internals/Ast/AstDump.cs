@@ -145,6 +145,18 @@ namespace SmolScript.Internals.Ast
             return s.ToString();
         }
 
+        public object? Visit(ThrowStatement stmt)
+        {
+            if (stmt.expression != null)
+            {
+                return $"[throw {stmt.expression!.Accept(this)}]";
+            }
+            else
+            {
+                return "[throw]";
+            }
+        }
+
         public object? Visit(TryStatement stmt)
         {
             var s = new StringBuilder();

@@ -197,6 +197,24 @@ namespace SmolScript.Internals.Ast.Interpreter
             return null;
         }
 
+        public object? Visit(ThrowStatement stmt)
+        {
+            try
+            {
+                throw new Exception("Try/Catch not implemented in AST interpreter");
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
+            finally
+            {
+
+            }
+
+            return null;
+        }
+
         public object? Visit(TryStatement stmt)
         {
             try

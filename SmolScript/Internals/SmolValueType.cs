@@ -11,6 +11,7 @@
         FunctionRef, // Not sure
         SavedCallState,
         TryCheckPoint,
+        Exception,
         Unknown
     }
 }
