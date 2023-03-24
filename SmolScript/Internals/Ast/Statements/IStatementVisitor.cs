@@ -11,6 +11,7 @@
         object? Visit(TernaryStatement stmt);
         object? Visit(WhileStatement stmt);
         object? Visit(BreakStatement stmt);
+        object? Visit(ContinueStatement stmt);
         object? Visit(FunctionStatement stmt);
         object? Visit(DebuggerStatement stmt);
         object? Visit(TryStatement stmt);

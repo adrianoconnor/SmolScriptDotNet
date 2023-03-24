@@ -15,7 +15,7 @@ namespace SmolScript
         int code_section = 0;
         int PC = 0; // Program Counter / Instruction Pointer
 
-        bool debug = true; 
+        bool debug = false; 
 
         RunMode runMode = RunMode.Paused;
 
@@ -399,7 +399,7 @@ namespace SmolScript
                                     PC = this.PC,
                                     this_env = this.environment,
                                     jump_exception = jmplocs[(int)instr.operand1!]
-                    }
+                                }
                             });
 
                             if (exception != null)
@@ -424,6 +424,47 @@ namespace SmolScript
 
                                 throw new SmolRuntimeException();
                             }
+
+                        case OpCode.LOOP_START:
+
+                            stack.Push(new SmolValue()
+                            {
+                                type = SmolValueType.LoopMarker,
+                                value = new SmolLoopMarker()
+                                {
+                                    current_env = this.environment
+                                }
+                            });
+
+                            break;
+
+                        case OpCode.LOOP_END:
+
+                            stack.Pop();
+                            break;
+
+                        case OpCode.LOOP_EXIT:
+
+                            while (stack.Any())
+                            {
+                                var next = stack.Pop();
+
+                                if (next.type == SmolValueType.LoopMarker)
+                                {
+                                    this.environment = ((SmolLoopMarker)next.value!).current_env;
+
+                                    stack.Push(next); // Needs to still be on the stack
+
+                                    if (instr.operand1 != null)
+                                    {
+                                        this.PC = jmplocs[(int)instr.operand1!];
+                                    }
+
+                                    break;
+                                }
+                            }
+
+                            break;
 
                         default:
                             throw new Exception($"You forgot to handle an opcode: {instr.opcode}");

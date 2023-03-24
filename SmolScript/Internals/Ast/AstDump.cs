@@ -123,6 +123,11 @@ namespace SmolScript.Internals.Ast
             return $"[break]";
         }
 
+        public object? Visit(ContinueStatement stmt)
+        {
+            return $"[continue]";
+        }
+
         public object? Visit(IfStatement stmt)
         {
             var s = new StringBuilder();

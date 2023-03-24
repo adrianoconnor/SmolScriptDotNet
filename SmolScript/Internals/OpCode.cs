@@ -47,6 +47,10 @@
 
         POP_AND_DISCARD,
 
+        LOOP_EXIT,
+        LOOP_START,
+        LOOP_END,
+
         PRINT,
         DEBUGGER,
 

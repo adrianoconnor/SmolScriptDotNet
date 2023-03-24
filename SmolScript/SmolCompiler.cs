@@ -10,10 +10,8 @@ namespace SmolScript
     {
         private int _nextLabel = 1;
 
-        private int nextLabel {
-            get {
-                return _nextLabel++;
-            }
+        private int reserveLabelId() {
+            return _nextLabel++;            
         }
 
         private List<SmolFunctionDefn> function_table = new List<SmolFunctionDefn>();
@@ -159,8 +157,8 @@ namespace SmolScript
         {
             var chunk = new List<ByteCodeInstruction>();
 
-            int shortcutLabel = nextLabel;
-            int testCompleteLabel = nextLabel;
+            int shortcutLabel = reserveLabelId();
+            int testCompleteLabel = reserveLabelId();
 
             switch (expr.op.type)
             {
@@ -282,8 +280,8 @@ namespace SmolScript
                 {
                     chunk.AppendChunk(expr.right.Accept(this));
 
-                    int isTrueLabel = nextLabel;
-                    int endLabel = nextLabel;
+                    int isTrueLabel = reserveLabelId();
+                    int endLabel = reserveLabelId();
             
                     chunk.AppendChunk(new ByteCodeInstruction()
                     {
@@ -575,20 +573,21 @@ namespace SmolScript
         {
             var chunk = new List<ByteCodeInstruction>();
 
-            chunk.AppendChunk(new ByteCodeInstruction()
-            {
-                opcode = OpCode.ENTER_SCOPE
-            });
+            chunk.AppendInstruction(OpCode.ENTER_SCOPE);
 
             foreach (var blockStmt in stmt.statements)
             {
                 chunk.AppendChunk(blockStmt.Accept(this));
             }
 
-            chunk.AppendChunk(new ByteCodeInstruction()
+            if (stmt.isFunctionBody)
             {
-                opcode = OpCode.LEAVE_SCOPE
-            });
+                // If this block is the block for a function body we always stick a return void at the end,
+                // just incase the user is not explicitly returning. We def want to go back.
+                chunk.AppendInstruction(OpCode.RETURN);
+            }
+
+            chunk.AppendInstruction(OpCode.LEAVE_SCOPE);
 
             return chunk;
         }
@@ -625,20 +624,11 @@ namespace SmolScript
             return chunk;
         }
 
-        public object? Visit(BreakStatement stmt)
-        {
-            return new ByteCodeInstruction()
-            {
-                opcode = OpCode.JMP,
-                operand1 = -1 // Needs to be label from top of break stack
-            };
-        }
-
         public object? Visit(IfStatement stmt)
         {
             var chunk = new List<ByteCodeInstruction>();
 
-            int notTrueLabel = nextLabel;
+            int notTrueLabel = reserveLabelId();
 
             chunk.AppendChunk(stmt.testExpression.Accept(this));
 
@@ -661,7 +651,7 @@ namespace SmolScript
             }
             else
             {
-                int skipElseLabel = nextLabel;
+                int skipElseLabel = reserveLabelId();
 
                 chunk.AppendChunk(new ByteCodeInstruction()
                 {
@@ -706,43 +696,60 @@ namespace SmolScript
             return s.ToString();
         }
 
+        private struct WhileLoop
+        {
+            public int startOfLoop;
+            public int endOfLoop;
+        }
+
+        private Stack<WhileLoop> loopStack = new Stack<WhileLoop>();
+
         public object? Visit(WhileStatement stmt)
         {
             var chunk = new List<ByteCodeInstruction>();
 
-            int startOfLoop = nextLabel;
-            int notTrueLabel = nextLabel;
+            int startOfLoop = reserveLabelId();
+            int endOfLoop = reserveLabelId();
 
-            chunk.AppendChunk(new ByteCodeInstruction()
-            {
-                opcode = OpCode.LABEL,
-                operand1 = startOfLoop
-            });
+            loopStack.Push(new WhileLoop() { startOfLoop = startOfLoop, endOfLoop = endOfLoop });
+
+            chunk.AppendInstruction(OpCode.LOOP_START);
+
+            chunk.AppendInstruction(OpCode.LABEL, startOfLoop);
 
             chunk.AppendChunk(stmt.whileCondition.Accept(this));
 
-            chunk.AppendChunk(new ByteCodeInstruction()
-            {
-                opcode = OpCode.JMPFALSE,
-                operand1 = notTrueLabel
-            });
+            chunk.AppendInstruction(OpCode.JMPFALSE, endOfLoop);
 
             chunk.AppendChunk(stmt.executeStatement.Accept(this));
 
-            chunk.AppendChunk(new ByteCodeInstruction()
-            {
-                opcode = OpCode.JMP,
-                operand1 = startOfLoop
-            });
+            chunk.AppendInstruction(OpCode.JMP, startOfLoop);
 
-            chunk.AppendChunk(new ByteCodeInstruction()
-            {
-                opcode = OpCode.LABEL,
-                operand1 = notTrueLabel
-            });
+            chunk.AppendInstruction(OpCode.LABEL, endOfLoop);
+
+            chunk.AppendInstruction(OpCode.LOOP_END);
+
+            loopStack.Pop();
 
             return chunk;
+        }
 
+        public object? Visit(BreakStatement stmt)
+        {
+            return new ByteCodeInstruction()
+            {
+                opcode = OpCode.LOOP_EXIT,
+                operand1 = loopStack.Peek().endOfLoop
+            };
+        }
+
+        public object? Visit(ContinueStatement stmt)
+        {
+            return new ByteCodeInstruction()
+            {
+                opcode = OpCode.LOOP_EXIT,
+                operand1 = loopStack.Peek().startOfLoop
+            };
         }
 
         public object? Visit(ThrowStatement stmt)
@@ -766,9 +773,9 @@ namespace SmolScript
         {
             var chunk = new List<ByteCodeInstruction>();
 
-            var exceptionLabel = nextLabel;
-            var finallyLabel = nextLabel;
-            var finallyWithExceptionLabel = nextLabel;
+            var exceptionLabel = reserveLabelId();
+            var finallyLabel = reserveLabelId();
+            var finallyWithExceptionLabel = reserveLabelId();
 
             // This will create a try 'checkpoint' in the vm. If we hit an exception the
             // vm will rewind the stack back to this instruction and jump to the catch/finally.
@@ -886,15 +893,7 @@ namespace SmolScript
             });
 
             var body = (List<ByteCodeInstruction>)stmt.functionBody.Accept(this)!;
-            /*
-            body.AppendChunk(new ByteCodeInstruction()
-            {
-                // Not sure if this is the way to do this, seems like it should work.
-                // Guess we can make it optional if the last statmeent of the body was already return?
-                opcode = OpCode.RETURN
-                // void?
-            });
-            */
+
             function_bodies.Add(body);
 
             // We are declaring a function, we don't add anything to the byte stream at the current loc.

@@ -257,6 +257,8 @@ namespace SmolScript.Internals
 
             var functionBody = block();
 
+            functionBody.isFunctionBody = true;
+
             _ = _statementCallStack.Pop();
 
             return new FunctionStatement(functionName, functionParams, functionBody);
@@ -287,6 +289,7 @@ namespace SmolScript.Internals
             if (match(TokenType.PRINT)) return printStatement();
             if (match(TokenType.RETURN)) return returnStatement();
             if (match(TokenType.BREAK)) return breakStatement();
+            if (match(TokenType.CONTINUE)) return continueStatement();
             if (match(TokenType.LEFT_BRACE)) return block();
             if (match(TokenType.DEBUGGER)) return debuggerStatement();
 
@@ -338,6 +341,17 @@ namespace SmolScript.Internals
 
             consume(TokenType.SEMICOLON, "Expected ;");
             return new BreakStatement();
+        }
+
+        private Statement continueStatement()
+        {
+            if (!_statementCallStack.Contains("WHILE"))
+            {
+                throw error(previous(), "Continue should be inside a while or for loop");
+            }
+
+            consume(TokenType.SEMICOLON, "Expected ;");
+            return new ContinueStatement();
         }
 
         private Statement debuggerStatement()

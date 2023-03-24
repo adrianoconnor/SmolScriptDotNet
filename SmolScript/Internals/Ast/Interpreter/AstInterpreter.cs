@@ -26,6 +26,11 @@ namespace SmolScript.Internals.Ast.Interpreter
 
     }
 
+    public class ContinueInLoop : Exception
+    {
+
+    }
+
     public class AstInterpreter : IExpressionVisitor, IStatementVisitor
     {
         public readonly Environment globalEnv = new Environment();
@@ -130,6 +135,11 @@ namespace SmolScript.Internals.Ast.Interpreter
             throw new BreakFromLoop();
         }
 
+        public object? Visit(ContinueStatement stmt)
+        {
+            throw new ContinueInLoop();
+        }
+
         public object? Visit(VarStatement stmt)
         {
             object? value = null;
@@ -186,7 +196,13 @@ namespace SmolScript.Internals.Ast.Interpreter
             {
                 while (isTruthy(evaluate(stmt.whileCondition)))
                 {
-                    execute(stmt.executeStatement);
+                    try
+                    {
+                        execute(stmt.executeStatement);
+                    }
+                    catch(ContinueInLoop)
+                    {
+                    }
                 }
             }
             catch (BreakFromLoop)

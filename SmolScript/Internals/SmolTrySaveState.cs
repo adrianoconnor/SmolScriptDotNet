@@ -1,5 +1,4 @@
-﻿using System;
-namespace SmolScript.Internals
+﻿namespace SmolScript.Internals
 {
 	public struct SmolTrySaveState
 	{

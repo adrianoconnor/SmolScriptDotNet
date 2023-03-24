@@ -12,6 +12,7 @@
         SavedCallState,
         TryCheckPoint,
         Exception,
+        LoopMarker,
         Unknown
     }
 }
