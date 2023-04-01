@@ -696,6 +696,47 @@ namespace SmolScript
             return s.ToString();
         }
 
+        public object? Visit(TernaryExpression expr)
+        {
+            var chunk = new List<ByteCodeInstruction>();
+
+            int notTrueLabel = reserveLabelId();
+            int endLabel = reserveLabelId();
+
+            chunk.AppendChunk(expr.evaluationExpression.Accept(this));
+
+            chunk.AppendChunk(new ByteCodeInstruction()
+            {
+                opcode = OpCode.JMPFALSE,
+                operand1 = notTrueLabel
+            });
+
+            chunk.AppendChunk(expr.expressionIfTrue.Accept(this)); 
+
+            chunk.AppendChunk(new ByteCodeInstruction()
+            {
+                opcode = OpCode.JMP,
+                operand1 = endLabel
+            });
+
+            chunk.AppendChunk(new ByteCodeInstruction()
+            {
+                opcode = OpCode.LABEL,
+                operand1 = notTrueLabel
+            });
+
+            chunk.AppendChunk(expr.expresisonIfFalse.Accept(this));
+
+            chunk.AppendChunk(new ByteCodeInstruction()
+            {
+                opcode = OpCode.LABEL,
+                operand1 = endLabel
+            });
+           
+            return chunk;
+        }
+
+
         private struct WhileLoop
         {
             public int startOfLoop;

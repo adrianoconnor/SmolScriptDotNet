@@ -9,6 +9,7 @@
         object? Visit(UnaryExpression expr);
         object? Visit(VariableExpression expr);
         object? Visit(AssignExpression expr);
+        object? Visit(TernaryExpression expr);
         object? Visit(CallExpression expr);
     }
 }

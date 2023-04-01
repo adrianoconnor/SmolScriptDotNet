@@ -64,8 +64,8 @@ namespace SmolScript.Internals
 
             if (a.type == SmolValueType.Number && b.type == SmolValueType.Number)
             {
-                var right = (double)a.value!;
-                var left = (double)b.value!;
+                var left = (double)a.value!;
+                var right = (double)b.value!;
 
                 return new SmolValue()
                 {
@@ -98,8 +98,8 @@ namespace SmolScript.Internals
 
             if (a.type == SmolValueType.Number && b.type == SmolValueType.Number)
             {
-                var right = (double)a.value!;
-                var left = (double)b.value!;
+                var left = (double)a.value!;
+                var right = (double)b.value!;
 
                 return new SmolValue()
                 {
@@ -119,8 +119,8 @@ namespace SmolScript.Internals
 
             if (a.type == SmolValueType.Number && b.type == SmolValueType.Number)
             {
-                var right = (double)a.value!;
-                var left = (double)b.value!;
+                var left = (double)a.value!;
+                var right = (double)b.value!;
 
                 return new SmolValue()
                 {
@@ -140,8 +140,8 @@ namespace SmolScript.Internals
 
             if (a.type == SmolValueType.Number && b.type == SmolValueType.Number)
             {
-                var right = (double)a.value!;
-                var left = (double)b.value!;
+                var left = (double)a.value!;
+                var right = (double)b.value!;
 
                 return new SmolValue()
                 {
@@ -161,8 +161,8 @@ namespace SmolScript.Internals
 
             if (a.type == SmolValueType.Number && b.type == SmolValueType.Number)
             {
-                var right = (double)a.value!;
-                var left = (double)b.value!;
+                var left = (double)a.value!;
+                var right = (double)b.value!;
 
                 return new SmolValue()
                 {
@@ -178,8 +178,8 @@ namespace SmolScript.Internals
         {
             if (a.type == SmolValueType.Number && b.type == SmolValueType.Number)
             {
-                var right = (double)a.value!;
-                var left = (double)b.value!;
+                var left = (double)a.value!;
+                var right = (double)b.value!;
 
                 return new SmolValue()
                 {
@@ -195,8 +195,8 @@ namespace SmolScript.Internals
         {
             if (a.type == SmolValueType.Number && b.type == SmolValueType.Number)
             {
-                var right = (double)a.value!;
-                var left = (double)b.value!;
+                var left = (double)a.value!;
+                var right = (double)b.value!;
 
                 return new SmolValue()
                 {
@@ -212,8 +212,8 @@ namespace SmolScript.Internals
         {
             if (a.type == SmolValueType.Number && b.type == SmolValueType.Number)
             {
-                var right = (double)a.value!;
-                var left = (double)b.value!;
+                var left = (double)a.value!;
+                var right = (double)b.value!;
 
                 return new SmolValue()
                 {
@@ -229,8 +229,8 @@ namespace SmolScript.Internals
         {
             if (a.type == SmolValueType.Number && b.type == SmolValueType.Number)
             {
-                var right = (double)a.value!;
-                var left = (double)b.value!;
+                var left = (double)a.value!;
+                var right = (double)b.value!;
 
                 return new SmolValue()
                 {

@@ -117,6 +117,12 @@ namespace SmolScript.Internals
 
             if (errors.Any())
             {
+                Console.WriteLine("Errors:");
+                foreach (var error in errors)
+                {
+                    Console.WriteLine(error.Message);
+                }
+
                 throw new ParseError(errors, "Encounted one or more errors parsing");
             }
 
@@ -523,23 +529,25 @@ namespace SmolScript.Internals
         {
             var expr = expression();
 
-            if (match(TokenType.QUESTION_MARK))
-            {
-                var thenExpression = expression(); ;
-                consume(TokenType.COLON, "Expected :");
-                var elseExpression = expression(); ;
-                consume(TokenType.SEMICOLON, "Expected ;");
-
-                return new TernaryStatement(expr, thenExpression, elseExpression);
-            }
-
             consume(TokenType.SEMICOLON, "Expected ;");
             return new ExpressionStatement(expr);
         }
 
         private Expression expression()
         {
-            return assignment();
+            var expr = assignment();
+
+            if (match(TokenType.QUESTION_MARK))
+            {
+                var thenExpression = expression(); // This isn't right, need to work out correct order
+                consume(TokenType.COLON, "Expected :");
+                var elseExpression = expression();
+                //consume(TokenType.SEMICOLON, "Expected ;");
+
+                return new TernaryExpression(expr, thenExpression, elseExpression);
+            }
+
+            return expr;
         }
 
         private Expression assignment()

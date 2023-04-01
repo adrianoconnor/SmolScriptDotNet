@@ -26,6 +26,30 @@ namespace SmolTests
         }
 
         [TestMethod]
+        public void SubtractNumbers()
+        {
+            var program = SmolCompiler.Compile("var a = 3 - 1;");
+
+            var vm = new SmolVM(program);
+
+            vm.Run();
+
+            Assert.AreEqual(2.0, ((SmolValue)vm.globalEnv.Get("a")!).value);
+        }
+
+        [TestMethod]
+        public void DivideNumbers()
+        {
+            var program = SmolCompiler.Compile("var a = 6 / 2;");
+
+            var vm = new SmolVM(program);
+
+            vm.Run();
+
+            Assert.AreEqual(3.0, ((SmolValue)vm.globalEnv.Get("a")!).value);
+        }
+
+        [TestMethod]
         public void Bidmas()
         {
             var program = SmolCompiler.Compile("var a = 4 * 2 + 1 / 2;");

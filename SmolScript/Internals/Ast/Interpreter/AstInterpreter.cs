@@ -190,6 +190,20 @@ namespace SmolScript.Internals.Ast.Interpreter
             }
         }
 
+        public object? Visit(TernaryExpression expr)
+        {
+            var test = evaluate(expr.evaluationExpression);
+
+            if (isTruthy(test))
+            {
+                return evaluate(expr.expressionIfTrue);
+            }
+            else
+            {
+                return evaluate(expr.expresisonIfFalse);
+            }
+        }
+
         public object? Visit(WhileStatement stmt)
         {
             try
@@ -215,35 +229,34 @@ namespace SmolScript.Internals.Ast.Interpreter
 
         public object? Visit(ThrowStatement stmt)
         {
-            try
+            if (stmt.expression != null)
             {
-                throw new Exception("Try/Catch not implemented in AST interpreter");
+                throw new Exception((string)stmt.expression!.Accept(this)!);
             }
-            catch (Exception ex)
+            else
             {
-                throw;
+                throw new Exception();
             }
-            finally
-            {
-
-            }
-
-            return null;
         }
 
         public object? Visit(TryStatement stmt)
         {
             try
             {
-                throw new Exception("Try/Catch not implemented in AST interpreter");
+                stmt.tryBody.Accept(this);
             }
             catch (Exception ex)
             {
-                throw;
+                if (stmt.exceptionVariableName != null)
+                {
+                    this.environment.Define(stmt.exceptionVariableName.lexeme, ex);
+                }
+
+                stmt.catchBody?.Accept(this);
             }
             finally
             {
-
+                stmt.finallyBody?.Accept(this);
             }
 
             return null;

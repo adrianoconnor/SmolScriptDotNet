@@ -188,7 +188,7 @@ namespace SmolScript.Internals.Ast
         {
             var s = new StringBuilder();
 
-            s.AppendLine($"[ternary {stmt.testExpression.Accept(this)}]");
+            s.AppendLine($"[ternarystmt {stmt.testExpression.Accept(this)}]");
 
             s.AppendLine($"[then]");
             //s.Append($"{stmt.thenStatement.Accept(this)}");
@@ -197,6 +197,25 @@ namespace SmolScript.Internals.Ast
             s.AppendLine($"[else]");
             //s.Append($"{stmt.elseStatement!.Accept(this)}");
             s.AppendLine($"[/else]");
+
+            s.AppendLine("[end ternarystmt]");
+
+            return s.ToString();
+        }
+
+        public object? Visit(TernaryExpression expr)
+        {
+            var s = new StringBuilder();
+
+            s.AppendLine($"[ternary {expr.evaluationExpression.Accept(this)}]");
+
+            s.AppendLine($"[true]");
+            s.Append($"{expr.expressionIfTrue.Accept(this)}");
+            s.AppendLine($"[/true]");
+
+            s.AppendLine($"[false]");
+            s.Append($"{expr.expresisonIfFalse.Accept(this)}");
+            s.AppendLine($"[/false]");
 
             s.AppendLine("[end ternary]");
 

@@ -15,7 +15,7 @@ namespace SmolScript
         int code_section = 0;
         int PC = 0; // Program Counter / Instruction Pointer
 
-        bool debug = false; 
+        bool debug = true; 
 
         RunMode runMode = RunMode.Paused;
 
@@ -127,7 +127,6 @@ namespace SmolScript
                             for (int i = 0; i < (int)instr.operand1!; i++)
                             {
                                 paramValues.Add(this.stack.Pop());
-                                //env.Define(callData.variableNames[i], param_value);
                             }
 
                             var state = new SmolCallSaveState()
@@ -182,57 +181,123 @@ namespace SmolScript
                             }
 
                         case OpCode.SUB:
-                            stack.Push(stack.Pop() - stack.Pop());
-                            break;
+                            {
+                                var right = stack.Pop();
+                                var left = stack.Pop();
+
+                                stack.Push(left - right);
+
+                                break;
+                            }
 
                         case OpCode.MUL:
-                            stack.Push(stack.Pop() * stack.Pop());
-                            break;
+                            {
+                                var right = stack.Pop();
+                                var left = stack.Pop();
+
+                                stack.Push(left * right);
+
+                                break;
+                            }
 
                         case OpCode.DIV:
-                            stack.Push(stack.Pop() / stack.Pop());
-                            break;
+                            {
+                                var right = stack.Pop();
+                                var left = stack.Pop();
+
+                                stack.Push(left / right);
+
+                                break;
+                            }
 
                         case OpCode.REM:
-                            stack.Push(stack.Pop() % stack.Pop());
-                            break;
+                            {
+                                var right = stack.Pop();
+                                var left = stack.Pop();
+
+                                stack.Push(left % right);
+
+                                break;
+                            }
 
                         case OpCode.POW:
-                            stack.Push(stack.Pop().Power(stack.Pop()));
-                            break;
+                            {
+                                var right = stack.Pop();
+                                var left = stack.Pop();
+
+                                stack.Push(left.Power(right));
+
+                                break;
+                            }
 
 
                         case OpCode.EQL:
-                            stack.Push(new SmolValue()
                             {
-                                type = SmolValueType.Bool,
-                                value = stack.Pop()!.Equals(stack.Pop()!)
-                            });
-                            break;
+                                var right = stack.Pop();
+                                var left = stack.Pop();
+
+                                stack.Push(new SmolValue()
+                                {
+                                    type = SmolValueType.Bool,
+                                    value = left.Equals(right)
+                                });
+
+                                break;
+                            }
 
                         case OpCode.NEQ:
-                            stack.Push(new SmolValue()
                             {
-                                type = SmolValueType.Bool,
-                                value = !stack.Pop()!.Equals(stack.Pop()!)
-                            });
-                            break;
+                                var right = stack.Pop();
+                                var left = stack.Pop();
+
+                                stack.Push(new SmolValue()
+                                {
+                                    type = SmolValueType.Bool,
+                                    value = !left.Equals(right)
+                                });
+
+                                break;
+                            }
 
                         case OpCode.GT:
-                            stack.Push(stack.Pop() > stack.Pop());
-                            break;
+                            {
+                                var right = stack.Pop();
+                                var left = stack.Pop();
+
+                                stack.Push(left > right);
+
+                                break;
+                            }
 
                         case OpCode.LT:
-                            stack.Push(stack.Pop() < stack.Pop());
-                            break;
+                            {
+                                var right = stack.Pop();
+                                var left = stack.Pop();
+
+                                stack.Push(left < right);
+
+                                break;
+                            }
 
                         case OpCode.GTE:
-                            stack.Push(stack.Pop() >= stack.Pop());
-                            break;
+                            {
+                                var right = stack.Pop();
+                                var left = stack.Pop();
+
+                                stack.Push(left >= right);
+
+                                break;
+                            }
 
                         case OpCode.LTE:
-                            stack.Push(stack.Pop() <= stack.Pop());
-                            break;
+                            {
+                                var right = stack.Pop();
+                                var left = stack.Pop();
+
+                                stack.Push(left <= right);
+
+                                break;
+                            }
 
                         case OpCode.EOF:
                             // Needs to handle call stack scenario for functions that
