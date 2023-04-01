@@ -38,6 +38,21 @@ namespace SmolTests
             Assert.AreEqual(2.0, ((SmolValue)vm.globalEnv.Get("b")!).value);
         }
 
+        [TestMethod]
+        public void FunctionReturningVoid()
+        {
+            var program = SmolCompiler.Compile(@"
+var a = 1;
+function a2() { a = 2; }
+a2();");
+
+            var vm = new SmolVM(program);
+
+            vm.Run();
+
+            Assert.AreEqual(2.0, ((SmolValue)vm.globalEnv.Get("a")!).value);
+        }
+
     }
 }
 

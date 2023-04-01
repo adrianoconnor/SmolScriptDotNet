@@ -22,7 +22,9 @@ namespace SmolScript
             new SmolValue(true),
             new SmolValue(false),
             new SmolValue(0.0),
-            new SmolValue(1.0)
+            new SmolValue(1.0),
+            new SmolValue() { type = SmolValueType.Undefined },
+            new SmolValue() { type = SmolValueType.Null }
         };
 
         private List<ByteCodeInstruction> EmitChunk(IList<Statement> stmts) {
@@ -584,7 +586,7 @@ namespace SmolScript
             {
                 // If this block is the block for a function body we always stick a return void at the end,
                 // just incase the user is not explicitly returning. We def want to go back.
-                chunk.AppendInstruction(OpCode.RETURN);
+                //chunk.AppendInstruction(OpCode.RETURN);
             }
 
             chunk.AppendInstruction(OpCode.LEAVE_SCOPE);
@@ -610,10 +612,11 @@ namespace SmolScript
             }
             else
             {
-                /*chunk.AppendChunk(new ByteCodeInstruction()
+                chunk.AppendChunk(new ByteCodeInstruction()
                 {
-                    opcode = OpCode. // NULL // Check what JS does
-                });*/
+                    opcode = OpCode.CONST,
+                    operand1 = constants.FindIndex(e => e.type == SmolValueType.Undefined)
+                });
             }
 
             chunk.AppendChunk(new ByteCodeInstruction()
@@ -934,6 +937,16 @@ namespace SmolScript
             });
 
             var body = (List<ByteCodeInstruction>)stmt.functionBody.Accept(this)!;
+
+            if (!body.Any() || body.Last().opcode != OpCode.RETURN)
+            {
+                body.Add(new ByteCodeInstruction()
+                {
+                    opcode = OpCode.CONST,
+                    operand1 = constants.FindIndex(e => e.type == SmolValueType.Undefined)
+                });
+                body.Add(new ByteCodeInstruction() { opcode = OpCode.RETURN });
+            }
 
             function_bodies.Add(body);
 

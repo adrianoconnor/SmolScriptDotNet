@@ -31,14 +31,14 @@ var c = !a ? 1 : 2;
         [TestMethod]
         public void TernaryStatementExpression()
         {
-            var program = SmolCompiler.Compile(@"
+            var program = @"
 var a = 0;
 
 function a1() { a = 1; }
 function a2() { a = 2; }
 
-a == 0 ? 1 : 2; // Fails because we can't return void yet
-");
+a == 0 ? 1 : 2; // a1(), a2() Fails because we can't return void yet
+";
 
             var vm = new SmolVM(program);
 
