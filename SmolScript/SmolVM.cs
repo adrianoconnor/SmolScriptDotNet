@@ -1,7 +1,7 @@
 ﻿using System.Runtime.CompilerServices;
 using SmolScript.Internals;
 
-[assembly: InternalsVisibleTo("SmolTests")]
+[assembly: InternalsVisibleTo("SmolScript.Tests.Internal")]
 
 namespace SmolScript
 {
@@ -29,8 +29,8 @@ namespace SmolScript
 
         Dictionary<int, int> jmplocs = new Dictionary<int, int>();
 
-        public readonly Environment globalEnv = new Environment();
-        private Environment environment;
+        internal readonly SmolScript.Internals.Environment globalEnv = new SmolScript.Internals.Environment();
+        private SmolScript.Internals.Environment environment;
 
         public SmolVM(string source)
         {
@@ -41,7 +41,7 @@ namespace SmolScript
             BuildJumpTable();
         }
 
-        public SmolVM(SmolProgram program)
+        internal SmolVM(SmolProgram program)
         {
             environment = globalEnv;
 
@@ -140,7 +140,7 @@ namespace SmolScript
                                 treat_call_as_expression = true // Needs to come from function dfn, I guess
                             };
 
-                            var env = new Environment(this.globalEnv);
+                            var env = new SmolScript.Internals.Environment(this.globalEnv);
                             this.environment = env;
 
                             // Now prime the new environment with variables for
@@ -429,7 +429,7 @@ namespace SmolScript
 
                         case OpCode.ENTER_SCOPE:
                             {
-                                this.environment = new Environment(this.environment);
+                                this.environment = new SmolScript.Internals.Environment(this.environment);
                                 break;
                             }
 

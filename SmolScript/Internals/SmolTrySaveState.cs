@@ -1,6 +1,6 @@
 ﻿namespace SmolScript.Internals
 {
-	public struct SmolTrySaveState
+	internal struct SmolTrySaveState
 	{
         public int code_section;
 		public int PC;

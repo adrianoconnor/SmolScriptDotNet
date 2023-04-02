@@ -1,6 +1,6 @@
 namespace SmolScript.Internals.Ast.Interpreter
 {
-    public interface ICallableSmolFunction
+    internal interface ICallableSmolFunction
     {
         public object? call(AstInterpreter interpreter, IList<object?> args)
         {

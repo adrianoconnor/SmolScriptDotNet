@@ -2,7 +2,7 @@
 
 namespace SmolScript.Internals
 {
-    public struct ByteCodeInstruction
+    internal struct ByteCodeInstruction
     {
         public OpCode opcode { get; set; }
 
@@ -37,7 +37,7 @@ namespace SmolScript.Internals
     /// currently compiling/building. This makes it so much easier to handle
     /// different types of data from the AST tree walker.
     /// </summary>
-    public static class ByteCodeChunkExtension
+    internal static class ByteCodeChunkExtension
     {
         public static void AppendChunk(this List<ByteCodeInstruction> chunk, object? byteCodeChunkToAdd)
         {

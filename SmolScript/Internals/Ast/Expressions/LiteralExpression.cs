@@ -1,6 +1,6 @@
 ﻿namespace SmolScript.Internals.Ast.Expressions
 {
-    public class LiteralExpression : Expression
+    internal class LiteralExpression : Expression
     {
         public readonly object? value;
 

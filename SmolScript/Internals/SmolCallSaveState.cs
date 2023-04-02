@@ -1,7 +1,7 @@
 ﻿using System;
 namespace SmolScript.Internals
 {
-	public struct SmolCallSaveState
+	internal struct SmolCallSaveState
 	{
         public int code_section;
 		public int PC;

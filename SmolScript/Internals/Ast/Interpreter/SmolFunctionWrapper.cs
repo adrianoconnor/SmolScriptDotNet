@@ -6,7 +6,7 @@ namespace SmolScript.Internals.Ast.Interpreter
     /// Used by the AST interpreter to package everything needed to let us
     /// call this function at some point in the future
     /// </summary>
-    public class SmolFunctionWrapper : ICallableSmolFunction
+    internal class SmolFunctionWrapper : ICallableSmolFunction
     {
         public FunctionStatement declaration { get; private set; }
         private readonly Environment closure;

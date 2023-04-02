@@ -2,7 +2,7 @@
 
 namespace SmolScript.Internals.Ast.Expressions
 {
-    public class TernaryExpression : Expression
+    internal class TernaryExpression : Expression
     {
         public readonly Expression evaluationExpression;
         public readonly Expression expressionIfTrue;

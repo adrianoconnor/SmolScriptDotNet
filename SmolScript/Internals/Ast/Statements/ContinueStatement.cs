@@ -1,6 +1,6 @@
 ﻿namespace SmolScript.Internals.Ast.Statements
 {
-    public class ContinueStatement : Statement
+    internal class ContinueStatement : Statement
     {
         public ContinueStatement()
         {

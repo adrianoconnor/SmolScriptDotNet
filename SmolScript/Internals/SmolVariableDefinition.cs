@@ -1,6 +1,6 @@
 ﻿namespace SmolScript.Internals
 {
-    public struct SmolVariableDefinition
+    internal struct SmolVariableDefinition
     {
         public string name { get; set; }
 

@@ -2,7 +2,7 @@
 
 namespace SmolScript.Internals.Ast.Statements
 {
-    public class ClassStatement //: Statement
+    internal class ClassStatement //: Statement
     {
         public readonly Token? className;
         public readonly Token? parentClassName;

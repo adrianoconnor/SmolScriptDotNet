@@ -1,6 +1,6 @@
 ﻿namespace SmolScript.Internals.Ast.Expressions
 {
-    public class GroupingExpression : Expression
+    internal class GroupingExpression : Expression
     {
         public readonly Expression expr;
 

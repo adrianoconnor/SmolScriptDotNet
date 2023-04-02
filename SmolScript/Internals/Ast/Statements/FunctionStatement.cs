@@ -2,7 +2,7 @@
 
 namespace SmolScript.Internals.Ast.Statements
 {
-    public class FunctionStatement : Statement
+    internal class FunctionStatement : Statement
     {
         public readonly Token? name;
         public readonly IList<Token> parameters;

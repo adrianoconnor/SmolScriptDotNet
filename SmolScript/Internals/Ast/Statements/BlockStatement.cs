@@ -1,6 +1,6 @@
 ﻿namespace SmolScript.Internals.Ast.Statements
 {
-    public class BlockStatement : Statement
+    internal class BlockStatement : Statement
     {
         public readonly IList<Statement> statements;
         public bool isFunctionBody;

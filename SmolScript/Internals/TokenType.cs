@@ -1,6 +1,6 @@
 namespace SmolScript.Internals
 {
-    public enum TokenType
+    internal enum TokenType
     {
         LEFT_BRACKET, 
         RIGHT_BRACKET, 

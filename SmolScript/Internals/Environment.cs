@@ -1,6 +1,6 @@
-namespace SmolScript
+namespace SmolScript.Internals
 {
-    public class Environment
+    internal class Environment
     {
         public readonly Environment? enclosing = null;
         private IDictionary<string, object?> variables = new Dictionary<string, object?>();

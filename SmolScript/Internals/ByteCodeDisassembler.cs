@@ -3,7 +3,7 @@ using System.Text;
 
 namespace SmolScript.Internals
 {
-	public static class ByteCodeDisassembler
+    internal static class ByteCodeDisassembler
 	{
 		public static string Disassemble(SmolProgram program)
 		{

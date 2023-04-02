@@ -2,7 +2,7 @@
 
 namespace SmolScript.Internals.Ast.Expressions
 {
-    public class VariableExpression : Expression
+    internal class VariableExpression : Expression
     {
         public readonly Token name;
         public readonly TokenType? prepostfixop;

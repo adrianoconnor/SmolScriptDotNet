@@ -2,7 +2,7 @@
 
 namespace SmolScript.Internals.Ast.Expressions
 {
-    public class LogicalExpression : Expression
+    internal class LogicalExpression : Expression
     {
         public readonly Expression left;
         public readonly Token op;

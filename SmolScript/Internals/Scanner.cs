@@ -2,7 +2,7 @@ using System.Text;
 
 namespace SmolScript.Internals
 {
-    public record ScannerError
+    internal record ScannerError
     {
         public int line { get; set; }
         public string message { get; set; }
@@ -14,7 +14,7 @@ namespace SmolScript.Internals
         }
     }
 
-    public class Scanner
+    internal class Scanner
     {
         private string _source; 
         private char[] _sourceRaw;

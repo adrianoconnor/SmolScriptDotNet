@@ -2,7 +2,7 @@
 
 namespace SmolScript.Internals.Ast.Statements
 {
-    public class PrintStatement : Statement
+    internal class PrintStatement : Statement
     {
         public readonly Expression expression;
 

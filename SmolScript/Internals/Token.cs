@@ -1,6 +1,6 @@
 namespace SmolScript.Internals
 {
-    public class Token
+    internal class Token
     {
         public TokenType type { get; private set; }
 

@@ -2,7 +2,7 @@
 
 namespace SmolScript.Internals.Ast.Statements
 {
-    public class IfStatement : Statement
+    internal class IfStatement : Statement
     {
         public readonly Expression testExpression;
         public readonly Statement thenStatement;

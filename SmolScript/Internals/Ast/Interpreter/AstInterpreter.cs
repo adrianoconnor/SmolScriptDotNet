@@ -31,7 +31,7 @@ namespace SmolScript.Internals.Ast.Interpreter
 
     }
 
-    public class AstInterpreter : IExpressionVisitor, IStatementVisitor
+    internal class AstInterpreter : IExpressionVisitor, IStatementVisitor
     {
         public readonly Environment globalEnv = new Environment();
         private Environment environment;
@@ -55,7 +55,7 @@ namespace SmolScript.Internals.Ast.Interpreter
             this.Interpret(statements);
         }
 
-        public void Interpret(IList<Statement> statements)
+        internal void Interpret(IList<Statement> statements)
         {
             try
             {
@@ -70,7 +70,7 @@ namespace SmolScript.Internals.Ast.Interpreter
             }
         }
 
-        public void execute(Statement stmt)
+        internal void execute(Statement stmt)
         {
             var result = stmt.Accept(this);
 

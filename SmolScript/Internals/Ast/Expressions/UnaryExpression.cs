@@ -2,7 +2,7 @@
 
 namespace SmolScript.Internals.Ast.Expressions
 {
-    public class UnaryExpression : Expression
+    internal class UnaryExpression : Expression
     {
         public readonly Token op;
         public readonly Expression right;

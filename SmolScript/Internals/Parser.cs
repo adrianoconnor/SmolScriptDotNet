@@ -3,7 +3,7 @@ using SmolScript.Internals.Ast.Statements;
 
 namespace SmolScript.Internals
 {
-    public class ParseError : Exception
+    internal class ParseError : Exception
     {
         public int LineNumber { get; set; }
         public IList<ParseError>? Errors = null;
@@ -82,7 +82,7 @@ namespace SmolScript.Internals
                    | IDENTIFIER ;
     */
 
-    public class Parser
+    internal class Parser
     {
         private readonly Token[] _tokens;
         private int _current = 0;

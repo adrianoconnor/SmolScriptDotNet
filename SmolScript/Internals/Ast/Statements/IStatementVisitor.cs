@@ -1,6 +1,6 @@
 ﻿namespace SmolScript.Internals.Ast.Statements
 {
-    public interface IStatementVisitor
+    internal interface IStatementVisitor
     {
         object? Visit(ExpressionStatement stmt);
         object? Visit(PrintStatement stmt);

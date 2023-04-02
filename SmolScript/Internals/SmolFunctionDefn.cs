@@ -1,7 +1,7 @@
 ﻿using System;
 namespace SmolScript.Internals
 {
-	public class SmolFunctionDefn
+	internal class SmolFunctionDefn
 	{
         public string? globalFunctionName;
         public int code_section;

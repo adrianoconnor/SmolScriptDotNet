@@ -1,6 +1,6 @@
 ﻿namespace SmolScript.Internals.Ast.Expressions
 {
-    public interface IExpressionVisitor
+    internal interface IExpressionVisitor
     {
         object? Visit(BinaryExpression expr);
         object? Visit(LogicalExpression expr);

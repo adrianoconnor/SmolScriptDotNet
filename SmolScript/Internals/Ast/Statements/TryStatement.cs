@@ -1,6 +1,6 @@
 ﻿namespace SmolScript.Internals.Ast.Statements;
 
-public class TryStatement : Statement
+internal class TryStatement : Statement
 {
     public readonly BlockStatement tryBody;
     public readonly Token? exceptionVariableName;

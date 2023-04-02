@@ -8,7 +8,7 @@ namespace SmolScript.Internals
     /// function definitions, class instances etc. Also, there's nothing in
     /// the VM right now that's a .net value type -- everything gets boxed.
     /// </summary>
-    public struct SmolValue
+    internal struct SmolValue
     {
         public SmolValueType type { get; set; }
         public object? value { get; set; }

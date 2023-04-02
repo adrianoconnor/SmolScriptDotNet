@@ -1,6 +1,6 @@
 ﻿namespace SmolScript.Internals.Ast.Statements
 {
-    public class BreakStatement : Statement
+    internal class BreakStatement : Statement
     {
         public BreakStatement()
         {

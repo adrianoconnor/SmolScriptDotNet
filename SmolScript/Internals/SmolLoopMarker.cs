@@ -1,6 +1,6 @@
 ﻿namespace SmolScript.Internals
 {
-    public struct SmolLoopMarker
+    internal struct SmolLoopMarker
     {
         public Environment current_env;
     }

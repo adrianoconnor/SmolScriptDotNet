@@ -1,6 +1,6 @@
 ﻿namespace SmolScript.Internals
 {
-    public enum OpCode
+    internal enum OpCode
     {
         NOP,
 

@@ -2,7 +2,7 @@
 
 namespace SmolScript.Internals.Ast.Statements
 {
-    public class WhileStatement : Statement
+    internal class WhileStatement : Statement
     {
         public readonly Expression whileCondition;
         public readonly Statement executeStatement;

@@ -2,11 +2,10 @@ using System.Text;
 
 using SmolScript.Internals.Ast.Expressions;
 using SmolScript.Internals.Ast.Statements;
-using SmolScript.Internals;
 
-namespace SmolScript
+namespace SmolScript.Internals
 {
-    public class SmolCompiler : IExpressionVisitor, IStatementVisitor
+    internal class SmolCompiler : IExpressionVisitor, IStatementVisitor
     {
         private int _nextLabel = 1;
 
@@ -43,7 +42,7 @@ namespace SmolScript
             return chunk;
         }
 
-        public static SmolProgram Compile(string source)
+        internal static SmolProgram Compile(string source)
         {
             var compiler = new SmolCompiler();
 

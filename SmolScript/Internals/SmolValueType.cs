@@ -1,6 +1,6 @@
 ﻿namespace SmolScript.Internals
 {
-    public enum SmolValueType
+    internal enum SmolValueType
     {
         Null,
         Undefined,

@@ -5,7 +5,9 @@ VisualStudioVersion = 25.0.1704.2
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmolScript", "SmolScript\SmolScript.csproj", "{F7BF4E96-390C-418B-8A61-3CF003578907}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmolTests", "SmolScriptTests\SmolTests.csproj", "{BCC4040E-E0D5-4E80-8256-4B041B449558}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmolScript.Tests.Internal", "SmolScriptTests\SmolScript.Tests.Internal.csproj", "{BCC4040E-E0D5-4E80-8256-4B041B449558}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmolScript.Tests", "SmolScript.Tests\SmolScript.Tests.csproj", "{D83FDCA3-8B98-4B57-9162-0CAC9550B80B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,10 @@ Global
 		{BCC4040E-E0D5-4E80-8256-4B041B449558}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BCC4040E-E0D5-4E80-8256-4B041B449558}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BCC4040E-E0D5-4E80-8256-4B041B449558}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D83FDCA3-8B98-4B57-9162-0CAC9550B80B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D83FDCA3-8B98-4B57-9162-0CAC9550B80B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D83FDCA3-8B98-4B57-9162-0CAC9550B80B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D83FDCA3-8B98-4B57-9162-0CAC9550B80B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -2,7 +2,7 @@
 
 namespace SmolScript.Internals.Ast.Expressions
 {
-    public class CallExpression : Expression
+    internal class CallExpression : Expression
     {
         public readonly Expression callee;
         public readonly Token paren;

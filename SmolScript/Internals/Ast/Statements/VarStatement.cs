@@ -3,7 +3,7 @@ using SmolScript.Internals.Ast.Expressions;
 
 namespace SmolScript.Internals.Ast.Statements
 {
-    public class VarStatement : Statement
+    internal class VarStatement : Statement
     {
         public readonly Token name;
         public readonly Expression? initializerExpression;

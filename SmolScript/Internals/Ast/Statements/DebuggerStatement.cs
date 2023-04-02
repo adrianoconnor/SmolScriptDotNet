@@ -1,6 +1,6 @@
 namespace SmolScript.Internals.Ast.Statements;
 
-public class DebuggerStatement : Statement
+internal class DebuggerStatement : Statement
 {
     public DebuggerStatement()
     {

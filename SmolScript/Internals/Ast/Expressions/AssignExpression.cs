@@ -2,7 +2,7 @@
 
 namespace SmolScript.Internals.Ast.Expressions
 {
-    public class AssignExpression : Expression
+    internal class AssignExpression : Expression
     {
         public readonly Token name;
         public readonly Expression value;

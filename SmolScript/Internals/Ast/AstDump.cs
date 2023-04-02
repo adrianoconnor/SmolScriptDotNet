@@ -4,7 +4,7 @@ using SmolScript.Internals.Ast.Statements;
 
 namespace SmolScript.Internals.Ast
 {
-    public class AstDump : IExpressionVisitor, IStatementVisitor
+    internal class AstDump : IExpressionVisitor, IStatementVisitor
     {
 
         public string? Print(Expression expr)
