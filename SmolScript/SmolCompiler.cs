@@ -486,6 +486,17 @@ namespace SmolScript
                 }
             });
 
+            // This is so inefficient
+
+            chunk.AppendChunk(new ByteCodeInstruction()
+            {
+                opcode = OpCode.FETCH,
+                operand1 = new SmolVariableDefinition()
+                {
+                    name = (string)(expr.name.lexeme)
+                }
+            });
+
             return chunk;
         }
 
@@ -568,7 +579,12 @@ namespace SmolScript
 
         public object? Visit(ExpressionStatement stmt)
         {
-            return stmt.expression.Accept(this);
+            var chunk = new List<ByteCodeInstruction>();
+
+            chunk.AppendChunk(stmt.expression.Accept(this));
+            chunk.AppendInstruction(OpCode.POP_AND_DISCARD);
+
+            return chunk;
         }
 
         public object? Visit(BlockStatement stmt)
@@ -678,25 +694,6 @@ namespace SmolScript
             }
 
             return chunk;
-        }
-
-        public object? Visit(TernaryStatement stmt)
-        {
-            var s = new StringBuilder();
-            
-            s.AppendLine($"[ternary {stmt.testExpression.Accept(this)}]");
-
-            s.AppendLine($"[then]");
-            //s.Append($"{stmt.thenStatement.Accept(this)}");
-            s.AppendLine($"[/then]");
-        
-            s.AppendLine($"[else]");
-            //s.Append($"{stmt.elseStatement!.Accept(this)}");
-            s.AppendLine($"[/else]");
-        
-            s.AppendLine("[end ternary]");
-
-            return s.ToString();
         }
 
         public object? Visit(TernaryExpression expr)

@@ -173,4 +173,28 @@ public class UnitTest1
         Console.WriteLine(output);
     }
     */
+
+    [TestMethod]
+    public void StackIsEmptyAfterExpression()
+    {
+        var program = SmolCompiler.Compile(@"function f() { return 1 == 2; } f(); 1 == 2; 2 == 3; f();");
+
+        var vm = new SmolVM(program);
+
+        vm.Run();
+
+        Assert.AreEqual(0, vm.stack.Count);
+    }
+
+    [TestMethod]
+    public void UndefinedVar()
+    {
+        var program = SmolCompiler.Compile(@"var b = 0; function f() { return a == 2; } 1 == 2; 2 == 3; f();");
+
+        var vm = new SmolVM(program);
+
+        vm.Run();
+
+        Assert.AreEqual(0, vm.stack.Count);
+    }
 }

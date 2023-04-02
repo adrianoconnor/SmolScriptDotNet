@@ -184,25 +184,6 @@ namespace SmolScript.Internals.Ast
             return s.ToString();
         }
 
-        public object? Visit(TernaryStatement stmt)
-        {
-            var s = new StringBuilder();
-
-            s.AppendLine($"[ternarystmt {stmt.testExpression.Accept(this)}]");
-
-            s.AppendLine($"[then]");
-            //s.Append($"{stmt.thenStatement.Accept(this)}");
-            s.AppendLine($"[/then]");
-
-            s.AppendLine($"[else]");
-            //s.Append($"{stmt.elseStatement!.Accept(this)}");
-            s.AppendLine($"[/else]");
-
-            s.AppendLine("[end ternarystmt]");
-
-            return s.ToString();
-        }
-
         public object? Visit(TernaryExpression expr)
         {
             var s = new StringBuilder();

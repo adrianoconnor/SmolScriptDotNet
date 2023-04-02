@@ -176,20 +176,6 @@ namespace SmolScript.Internals.Ast.Interpreter
             return null;
         }
 
-        public object? Visit(TernaryStatement stmt)
-        {
-            var test = evaluate(stmt.testExpression);
-
-            if (isTruthy(test))
-            {
-                return evaluate(stmt.thenExpression);
-            }
-            else
-            {
-                return evaluate(stmt.elseExpression);
-            }
-        }
-
         public object? Visit(TernaryExpression expr)
         {
             var test = evaluate(expr.evaluationExpression);

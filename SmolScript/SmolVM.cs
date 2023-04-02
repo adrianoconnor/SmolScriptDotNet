@@ -1,4 +1,7 @@
-﻿using SmolScript.Internals;
+﻿using System.Runtime.CompilerServices;
+using SmolScript.Internals;
+
+[assembly: InternalsVisibleTo("SmolTests")]
 
 namespace SmolScript
 {
@@ -22,7 +25,7 @@ namespace SmolScript
         // This is a stack based VM, so this is for our working data.
         // We store everything here as SmolValue, which is a wrapper
         // for all of our types
-        Stack<SmolValue> stack = new Stack<SmolValue>();
+        internal Stack<SmolValue> stack = new Stack<SmolValue>();
 
         Dictionary<int, int> jmplocs = new Dictionary<int, int>();
 
@@ -385,6 +388,10 @@ namespace SmolScript
                                         value = program.function_table.First(f => f.globalFunctionName == name)
                                     });
                                 }
+                                else
+                                {
+                                    stack.Push(new SmolValue() { type = SmolValueType.Undefined });
+                                }
                             }
 
                             break;
@@ -439,7 +446,11 @@ namespace SmolScript
                             }
 
                         case OpCode.POP_AND_DISCARD:
-                            stack.Pop();
+                            // operand1 is optional bool, default true means fail if nothing to pop
+                            if (stack.Count > 0 || instr.operand1 == null || (bool)instr.operand1)
+                            {
+                                stack.Pop();
+                            }
                             break;
 
                         case OpCode.TRY:

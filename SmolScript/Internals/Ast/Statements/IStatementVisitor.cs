@@ -8,7 +8,6 @@
         object? Visit(VarStatement stmt);
         object? Visit(BlockStatement stmt);
         object? Visit(IfStatement stmt);
-        object? Visit(TernaryStatement stmt);
         object? Visit(WhileStatement stmt);
         object? Visit(BreakStatement stmt);
         object? Visit(ContinueStatement stmt);
