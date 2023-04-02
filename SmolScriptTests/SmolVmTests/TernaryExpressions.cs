@@ -37,14 +37,33 @@ var a = 0;
 function a1() { a = 1; }
 function a2() { a = 2; }
 
-a == 0 ? 1 : 2; // a1(), a2() Fails because we can't return void yet
+a == 0 ? a1() : a2();
 ";
 
             var vm = new SmolVM(program);
 
             vm.Run();
 
-            Assert.AreEqual(0.0, ((SmolValue)vm.globalEnv.Get("a")!).value);
+            Assert.AreEqual(1.0, ((SmolValue)vm.globalEnv.Get("a")!).value);
+        }
+
+        [TestMethod]
+        public void TernaryInsideTernary()
+        {
+            var program = @"
+var a = 2;
+var b = 0;
+var c = 0;
+
+b = ((a == 0) ? 1 : ((a == 1) ? 2 : 3)); // TODO: This only works with grouping, take that away and it fails
+c = a == 0 ? 1 : a == 1 ? 2 : 3; "; // TODO: this should also work...
+
+            var vm = new SmolVM(program);
+
+            vm.Run();
+
+            Assert.AreEqual(3.0, ((SmolValue)vm.globalEnv.Get("b")!).value);
+            //Assert.AreEqual(3.0, ((SmolValue)vm.globalEnv.Get("c")!).value);
         }
     }
 }
