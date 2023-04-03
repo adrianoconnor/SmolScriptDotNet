@@ -7,6 +7,7 @@ namespace SmolScript.Internals
 		public int PC;
 		public Environment previous_env;
 		public bool treat_call_as_expression;
+		public bool call_is_extern;
 	}
 }
 

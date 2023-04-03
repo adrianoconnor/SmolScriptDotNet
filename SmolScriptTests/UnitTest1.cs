@@ -16,7 +16,7 @@ public class UnitTest1
             return ++calls;
         }
     }
-
+    
     [TestMethod]
     public void ReallySimpleAstInterpreterTest()
     {
@@ -178,6 +178,18 @@ public class UnitTest1
     public void StackIsEmptyAfterExpression()
     {
         var program = SmolCompiler.Compile(@"function f() { return 1 == 2; } f(); 1 == 2; 2 == 3; f();");
+
+        var vm = new SmolVM(program);
+
+        vm.Run();
+
+        Assert.AreEqual(0, vm.stack.Count);
+    }
+
+    [TestMethod]
+    public void StackIsEmptyAfterExpression2()
+    {
+        var program = SmolCompiler.Compile(@"var a = 1; a++;");
 
         var vm = new SmolVM(program);
 

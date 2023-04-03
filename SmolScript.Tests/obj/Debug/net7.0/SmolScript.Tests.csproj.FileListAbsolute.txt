@@ -4,9 +4,6 @@
 /Users/adrian/Projects/Temp/smolscript-dotnet/smolscript/SmolScript.Tests/obj/Debug/net7.0/SmolScript.Tests.AssemblyInfo.cs
 /Users/adrian/Projects/Temp/smolscript-dotnet/smolscript/SmolScript.Tests/obj/Debug/net7.0/SmolScript.Tests.csproj.CoreCompileInputs.cache
 /Users/adrian/Projects/Temp/smolscript-dotnet/smolscript/SmolScript.Tests/bin/Debug/net7.0/CoverletSourceRootsMapping
-/Users/adrian/Projects/Temp/smolscript-dotnet/smolscript/SmolScript.Tests/bin/Debug/net7.0/SmolScript.deps.json
-/Users/adrian/Projects/Temp/smolscript-dotnet/smolscript/SmolScript.Tests/bin/Debug/net7.0/SmolScript.runtimeconfig.json
-/Users/adrian/Projects/Temp/smolscript-dotnet/smolscript/SmolScript.Tests/bin/Debug/net7.0/SmolScript
 /Users/adrian/Projects/Temp/smolscript-dotnet/smolscript/SmolScript.Tests/bin/Debug/net7.0/Microsoft.VisualStudio.TestPlatform.MSTest.TestAdapter.dll
 /Users/adrian/Projects/Temp/smolscript-dotnet/smolscript/SmolScript.Tests/bin/Debug/net7.0/Microsoft.VisualStudio.TestPlatform.MSTestAdapter.PlatformServices.Interface.dll
 /Users/adrian/Projects/Temp/smolscript-dotnet/smolscript/SmolScript.Tests/bin/Debug/net7.0/Microsoft.VisualStudio.TestPlatform.MSTestAdapter.PlatformServices.dll

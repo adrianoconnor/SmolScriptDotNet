@@ -1,19 +1,36 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System;
+using System.Runtime.CompilerServices;
 using SmolScript.Internals;
 
 [assembly: InternalsVisibleTo("SmolScript.Tests.Internal")]
 
 namespace SmolScript
 {
-    public enum RunMode {
-        Run,
-        Paused,
-        Step
-    }
-
-    public class SmolVM
+    public class SmolVM : ISmolRuntime
     {
+        enum RunMode
+        {
+            Run,
+            Paused,
+            Step
+        }
+
         SmolProgram program;
+
+
+        int _MaxStackSize = int.MaxValue;
+
+        public int MaxStackSize
+        {
+            get
+            {
+                return _MaxStackSize;
+            }
+            set
+            {
+                _MaxStackSize = value;
+            }
+        }
 
         int code_section = 0;
         int PC = 0; // Program Counter / Instruction Pointer
@@ -31,6 +48,44 @@ namespace SmolScript
 
         internal readonly SmolScript.Internals.Environment globalEnv = new SmolScript.Internals.Environment();
         private SmolScript.Internals.Environment environment;
+
+        public T GetGlobalVar<T>(string variableName)
+        {
+            var v = (SmolValue)globalEnv.Get(variableName)!;
+            return (T)Convert.ChangeType(v.value!, typeof(T));
+        }
+
+        public void Call(string functionName)
+        {
+            var state = new SmolCallSaveState()
+            {
+                code_section = this.code_section,
+                PC = this.PC,
+                previous_env = this.environment,
+                treat_call_as_expression = true, // Needs to come from function dfn, I guess
+                call_is_extern = true
+            };
+
+            var env = new SmolScript.Internals.Environment(this.globalEnv);
+            this.environment = env;
+
+            stack.Push(new SmolValue()
+            {
+                type = SmolValueType.SavedCallState,
+                value = state
+            });
+
+            PC = 0;
+            code_section = program.function_table.First(f => f.globalFunctionName == functionName).code_section;
+
+            Run();
+        }
+
+        public static ISmolRuntime Compile(string source)
+        {
+            return (ISmolRuntime)new SmolVM(source);
+        }
+
 
         public SmolVM(string source)
         {
@@ -80,10 +135,15 @@ namespace SmolScript
 
         public void Step()
         {
-            this.Run(RunMode.Step);
+            _Run(RunMode.Step);
         }
 
-        public void Run(RunMode newRunMode = RunMode.Run)
+        public void Run()
+        {
+            _Run(RunMode.Run);
+        }
+
+        void _Run(RunMode newRunMode)
         {
             this.runMode = newRunMode;
 
@@ -341,6 +401,10 @@ namespace SmolScript
                             this.PC = savedCallState.PC;
                             this.code_section = savedCallState.code_section;
 
+                            if (savedCallState.call_is_extern) {
+                                this.runMode = RunMode.Paused;
+                                return; // Don't like this, error prone
+                            }
 
                             break;
 
@@ -587,7 +651,7 @@ namespace SmolScript
                     return;
                 }
 
-                if (this.stack.Count > 20) throw new Exception("Stack too big!");
+                if (this.stack.Count > _MaxStackSize) throw new Exception("Stack overflow");
             }
         }
     }

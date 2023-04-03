@@ -188,7 +188,7 @@ namespace SmolScript.Internals
                 };
             }
 
-            throw new Exception($"Unable to modulo {a.type} and {b.type}");
+            throw new Exception($"Unable to compare {a.type} and {b.type}");
         }
 
         public static SmolValue operator <(SmolValue a, SmolValue b)
@@ -205,7 +205,7 @@ namespace SmolScript.Internals
                 };
             }
 
-            throw new Exception($"Unable to modulo {a.type} and {b.type}");
+            throw new Exception($"Unable to compare {a.type} and {b.type}");
         }
 
         public static SmolValue operator >=(SmolValue a, SmolValue b)
@@ -222,7 +222,7 @@ namespace SmolScript.Internals
                 };
             }
 
-            throw new Exception($"Unable to modulo {a.type} and {b.type}");
+            throw new Exception($"Unable to compare {a.type} and {b.type}");
         }
 
         public static SmolValue operator <=(SmolValue a, SmolValue b)
@@ -239,7 +239,7 @@ namespace SmolScript.Internals
                 };
             }
 
-            throw new Exception($"Unable to modulo {a.type} and {b.type}");
+            throw new Exception($"Unable to compare {a.type} and {b.type}");
         }
 
         public SmolValue Power(SmolValue power)
@@ -251,7 +251,7 @@ namespace SmolScript.Internals
 
                 return new SmolValue()
                 {
-                    type = SmolValueType.Bool,
+                    type = SmolValueType.Number,
                     value = double.Pow(left, right)
                 };
             }
