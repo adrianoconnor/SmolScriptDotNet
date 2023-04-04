@@ -35,7 +35,7 @@ namespace SmolScript
         int code_section = 0;
         int PC = 0; // Program Counter / Instruction Pointer
 
-        bool debug = true; 
+        bool debug = false; 
 
         RunMode runMode = RunMode.Paused;
 

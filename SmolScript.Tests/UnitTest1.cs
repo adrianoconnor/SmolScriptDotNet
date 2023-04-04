@@ -48,7 +48,7 @@ aPlusPlus(); // Call it once during initialization just to show this also is fin
 
         Assert.AreEqual("3", a2);       
     }
-    /*
+    
     [TestMethod]
     public void TestMethod3()
     {
@@ -58,9 +58,8 @@ aPlusPlus(); // Call it once during initialization just to show this also is fin
   return fibonacci(num - 1) + fibonacci(num - 2);
 }
 
-var f = fibonacci(50);
-
-print f;";
+var f = fibonacci(30);
+";
 
         var vm = new SmolVM(code);
 
@@ -68,6 +67,6 @@ print f;";
 
         var f = vm.GetGlobalVar<int>("f");
 
-        Assert.AreEqual(1, f);
-    }*/
+        Assert.AreEqual(1346269, f);
+    }
 }

@@ -507,21 +507,7 @@ namespace SmolScript.Internals
 
             foreach (var arg in expr.args)
             {
-                // Maybe there's a better way to do this... feels a bit dumb
-                switch (arg!.GetType().Name)
-                {
-                    case "LiteralExpression":
-                        chunk.AppendChunk(((LiteralExpression)arg!).Accept(this));
-                        break;
-
-                    case "VariableExpression":
-                        chunk.AppendChunk(((VariableExpression)arg!).Accept(this));
-                        break;
-
-                    default:
-                        throw new NotImplementedException($"Unable to process type '{arg!.GetType().Name}' as a function argument, we haven't implemented this yet");
-                }
-                
+                chunk.AppendChunk(((Expression)arg!).Accept(this));
             }
 
             chunk.AppendChunk(expr.callee.Accept(this)); // Load the function name onto the stack
