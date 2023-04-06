@@ -15,6 +15,7 @@
         object? Visit(DebuggerStatement stmt);
         object? Visit(TryStatement stmt);
         object? Visit(ThrowStatement stmt);
+        object? Visit(ClassStatement stmt);
     }
 }
 

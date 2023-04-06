@@ -15,6 +15,7 @@ namespace SmolScript.Internals
 
         private List<SmolFunctionDefn> function_table = new List<SmolFunctionDefn>();
         private List<List<ByteCodeInstruction>> function_bodies = new List<List<ByteCodeInstruction>>();
+        private Dictionary<string, string?> class_table = new Dictionary<string, string?>();
 
         private List<SmolValue> constants = new List<SmolValue>()
         {
@@ -77,7 +78,9 @@ namespace SmolScript.Internals
             {
                 constants = this.constants,
                 code_sections = code_sections,
-                function_table = function_table
+                function_table = function_table,
+                class_table = class_table,
+                astStatements = statements
             };
         }
 
@@ -946,6 +949,47 @@ namespace SmolScript.Internals
             return new ByteCodeInstruction()
             {
                 opcode = OpCode.DEBUGGER
+            };
+        }
+
+        public object? Visit(ClassStatement stmt)
+        {
+            this.class_table.Add(stmt.className.lexeme, stmt.superclassName?.lexeme);
+
+            foreach (var fn in stmt.functions)
+            {
+                var function_index = function_bodies.Count() + 1;
+                var function_name = $"@{stmt.className.lexeme}.{fn.name!.lexeme}";
+
+                function_table.Add(new SmolFunctionDefn()
+                {
+                    globalFunctionName = function_name,
+                    code_section = function_index,
+                    arity = fn.parameters.Count(),
+                    param_variable_names = fn.parameters.Select(p => p.lexeme).ToList()
+                });
+
+                var body = (List<ByteCodeInstruction>)fn.functionBody.Accept(this)!;
+
+                if (!body.Any() || body.Last().opcode != OpCode.RETURN)
+                {
+                    body.Add(new ByteCodeInstruction()
+                    {
+                        opcode = OpCode.CONST,
+                        operand1 = constants.FindIndex(e => e.type == SmolValueType.Undefined)
+                    });
+                    body.Add(new ByteCodeInstruction() { opcode = OpCode.RETURN });
+                }
+
+                function_bodies.Add(body);
+            }
+
+            // We are declaring a function, we don't add anything to the byte stream at the current loc.
+            // When we allow functions as expressions and assignments we'll need to do something
+            // here, I guess something more like load constant but for functions
+            return new ByteCodeInstruction()
+            {
+                opcode = OpCode.NOP
             };
         }
     }

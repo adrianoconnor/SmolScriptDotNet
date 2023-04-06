@@ -12,6 +12,9 @@ namespace SmolScript
 
         void Run();
 		//Task RunAsync();
+
+		string Decompile();
+		string DumpAst();
 	}
 }
 

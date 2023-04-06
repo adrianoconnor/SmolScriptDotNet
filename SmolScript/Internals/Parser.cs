@@ -143,15 +143,15 @@ namespace SmolScript.Internals
             return false;
         }
 
-        private bool check(TokenType tokenType)
+        private bool check(TokenType tokenType, int skip = 0)
         {
             if (ReachedEnd()) return false;
-            return peek().type == tokenType;
+            return peek(skip).type == tokenType;
         }
 
-        private Token peek()
+        private Token peek(int skip = 0)
         {
-            return _tokens[_current];
+            return _tokens[_current + skip];
         }
 
         private Token advance()
@@ -219,6 +219,7 @@ namespace SmolScript.Internals
             {
                 if (match(TokenType.FUNC)) return functionDeclaration();
                 if (match(TokenType.VAR)) return varDeclaration();
+                if (match(TokenType.CLASS)) return classDeclaration();
 
                 return statement();
             }
@@ -285,6 +286,38 @@ namespace SmolScript.Internals
             return new VarStatement(name, initializer);
         }
 
+        private Statement classDeclaration()
+        {
+            Token className = consume(TokenType.IDENTIFIER, "Expected class name");
+            Token? superclassName = null;
+            FunctionStatement? ctor = null;
+            List<FunctionStatement> functions = new List<FunctionStatement>();
+
+            if (match(TokenType.COLON))
+            {
+                superclassName = consume(TokenType.IDENTIFIER, "Expected superclass name");
+            }
+
+            consume(TokenType.LEFT_BRACE, "Expected {");
+
+            while (!check(TokenType.RIGHT_BRACE) && !ReachedEnd())
+            {
+                if (check(TokenType.IDENTIFIER) && check(TokenType.LEFT_BRACKET, 1))
+                {
+                    functions.Add((FunctionStatement)functionDeclaration());
+                }
+                else
+                {
+                    throw new Exception($"Didn't expect to find {peek()} in the class body");
+                }
+            }
+
+            consume(TokenType.RIGHT_BRACE, "Expected }");
+
+            return new ClassStatement(className, superclassName, ctor, functions);
+        }
+
+
         private Statement statement()
         {
             if (match(TokenType.IF)) return ifStatement();
@@ -298,6 +331,7 @@ namespace SmolScript.Internals
             if (match(TokenType.CONTINUE)) return continueStatement();
             if (match(TokenType.LEFT_BRACE)) return block();
             if (match(TokenType.DEBUGGER)) return debuggerStatement();
+            if (match(TokenType.CLASS)) return classDeclaration();
 
             return expressionStatement();
         }

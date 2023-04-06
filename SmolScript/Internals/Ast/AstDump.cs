@@ -229,5 +229,14 @@ namespace SmolScript.Internals.Ast
             return s.ToString();
         }
 
+        public object? Visit(ClassStatement stmt)
+        {
+            var s = new StringBuilder();
+
+            s.AppendLine($"[declare class {stmt.className?.lexeme ?? ""} ()]");
+
+            return s.ToString();
+        }
+
     }
 }

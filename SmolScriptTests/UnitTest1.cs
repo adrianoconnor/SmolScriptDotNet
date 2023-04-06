@@ -1,6 +1,6 @@
 ﻿using SmolScript;
 using SmolScript.Internals;
-using SmolScript.Internals.Ast.Interpreter;
+//using SmolScript.Internals.Ast.Interpreter;
 
 namespace SmolTests;
 
@@ -16,7 +16,8 @@ public class UnitTest1
             return ++calls;
         }
     }
-    
+
+    /*
     [TestMethod]
     public void ReallySimpleAstInterpreterTest()
     {
@@ -60,6 +61,7 @@ public class UnitTest1
         Assert.AreEqual(1, interpreter.globalEnv.Get("x"));
         Assert.AreEqual(2, cf.calls);
     }
+    */
 
     [TestMethod]
     public void ReallySimpleByteCodeCompilationTest()

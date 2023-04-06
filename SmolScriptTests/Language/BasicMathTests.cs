@@ -9,8 +9,6 @@ namespace SmolTests
 	{
         public BasicMathTests()
 		{
-
-
 		}
 
         [TestMethod]

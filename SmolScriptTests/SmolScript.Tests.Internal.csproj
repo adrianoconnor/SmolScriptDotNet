@@ -22,6 +22,6 @@
     <None Remove="SmolVmTests\" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="SmolVmTests\" />
+    <Folder Include="Language\" />
   </ItemGroup>
 </Project>

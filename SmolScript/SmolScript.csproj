@@ -11,4 +11,9 @@
     <Folder Include="Internals\Ast\" />
     <Folder Include="Internals\Ast\Interpreter\" />
   </ItemGroup>
+  <ItemGroup>
+    <Compile Remove="Internals\Ast\Interpreter\AstInterpreter.cs" />
+    <Compile Remove="Internals\Ast\Interpreter\ICallableSmolFunction.cs" />
+    <Compile Remove="Internals\Ast\Interpreter\SmolFunctionWrapper.cs" />
+  </ItemGroup>
 </Project>

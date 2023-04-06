@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Runtime.CompilerServices;
 using SmolScript.Internals;
+using SmolScript.Internals.Ast;
 
 [assembly: InternalsVisibleTo("SmolScript.Tests.Internal")]
 
@@ -84,6 +85,16 @@ namespace SmolScript
         public static ISmolRuntime Compile(string source)
         {
             return (ISmolRuntime)new SmolVM(source);
+        }
+
+        public string Decompile()
+        {
+            return ByteCodeDisassembler.Disassemble(this.program);
+        }
+
+        public string DumpAst()
+        {
+            return new AstDump().Print(program.astStatements);
         }
 
 
