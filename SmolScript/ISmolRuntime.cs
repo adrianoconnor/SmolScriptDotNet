@@ -11,6 +11,7 @@ namespace SmolScript
 		void Call(string functionName);
 
         void Run();
+		void RunInDebug();
 		//Task RunAsync();
 
 		string Decompile();

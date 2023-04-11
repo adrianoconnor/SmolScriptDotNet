@@ -94,7 +94,7 @@ namespace SmolScript
 
         public string DumpAst()
         {
-            return new AstDump().Print(program.astStatements);
+            return new AstDump().Print(program.astStatements)!;
         }
 
 
@@ -151,6 +151,12 @@ namespace SmolScript
 
         public void Run()
         {
+            _Run(RunMode.Run);
+        }
+
+        public void RunInDebug()
+        {
+            debug = true;
             _Run(RunMode.Run);
         }
 
@@ -212,6 +218,14 @@ namespace SmolScript
                             };
 
                             var env = new SmolScript.Internals.Environment(this.globalEnv);
+
+                            if ((bool)instr.operand2!)
+                            {
+                                var objectRef = (SmolObjectRef)stack.Pop().value!;
+
+                                env = objectRef.object_env;
+                            }
+
                             this.environment = env;
 
                             // Now prime the new environment with variables for
@@ -442,7 +456,31 @@ namespace SmolScript
                             // Could be a variable or a function
                             var name = ((SmolVariableDefinition)instr.operand1!).name;
 
-                            var fetchedValue = environment.TryGet(name);
+                            var env_in_context = environment;
+
+                            /* Hack... */
+
+                            // We're going to peek ahead, and see if the next instruction is
+                            // a CALL with operand2 set to true... if so, we've got something else
+                            // we need to do...
+
+                            var peek_instr = program.code_sections[code_section][PC];
+
+                            if (peek_instr.opcode == OpCode.CALL && (bool)peek_instr.operand2!)
+                            {
+                                env_in_context = ((SmolObjectRef)stack.ElementAt((int)peek_instr.operand1!).value!).object_env;
+                            }
+
+                            var fetchedValue = env_in_context.TryGet(name);
+
+                            if (fetchedValue?.GetType() == typeof(SmolFunctionDefn))
+                            {
+                                fetchedValue = new SmolValue()
+                                {
+                                    type = SmolValueType.FunctionRef,
+                                    value = fetchedValue
+                                };
+                            }
 
                             if (fetchedValue != null)
                             {
@@ -614,6 +652,57 @@ namespace SmolScript
                                     break;
                                 }
                             }
+
+                            break;
+
+                        case OpCode.CREATE_OBJECT:
+
+                            // Create a new environment and store it as an instance/ref variable
+                            // For now we'll just have it 'inherit' the global env, but scope is
+                            // a thing we need to think about, but I'll work out how JS does it
+                            // first and try and do the same (I think class hierarchies all share
+                            // a single env?!
+
+                            var class_name = (string)instr.operand1!;
+
+                            var obj_environment = new SmolScript.Internals.Environment(this.globalEnv);
+
+                            foreach(var classFunc in program.function_table.Where(f => f.globalFunctionName!.StartsWith($"@{class_name}.")))
+                            {
+                                var funcName = classFunc.globalFunctionName!.Substring(class_name.Length + 2);
+
+                                obj_environment.Define(funcName, new SmolFunctionDefn()
+                                {
+                                    arity = classFunc.arity,
+                                    code_section = classFunc.code_section,
+                                    globalFunctionName = classFunc.globalFunctionName,
+                                    param_variable_names = classFunc.param_variable_names
+                                });                                
+                            }
+
+                            stack.Push(new SmolValue()
+                            {
+                                type = SmolValueType.ObjectRef,
+                                value = new SmolObjectRef()
+                                {
+                                    object_env = obj_environment,
+                                    class_name = class_name
+                                }
+                            });
+
+                            break;
+
+                        case OpCode.DUPLICATE_VALUE:
+
+                            stack.Push(stack.Peek());
+
+                            break;
+
+                        case OpCode.PRINT:
+
+                            var whatevs = stack.Pop();
+
+                            Console.WriteLine(whatevs);
 
                             break;
 

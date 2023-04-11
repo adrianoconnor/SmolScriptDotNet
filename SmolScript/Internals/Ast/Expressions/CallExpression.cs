@@ -7,12 +7,14 @@ namespace SmolScript.Internals.Ast.Expressions
         public readonly Expression callee;
         public readonly Token paren;
         public readonly IList<object?> args;
+        public readonly bool useObjectRef;
 
-        public CallExpression(Expression callee, Token paren, IList<object?> args)
+        public CallExpression(Expression callee, Token paren, IList<object?> args, bool useObjectRef = false)
         {
             this.callee = callee;
             this.paren = paren;
             this.args = args;
+            this.useObjectRef = useObjectRef;
         }
 
         public override object? Accept(IExpressionVisitor visitor)

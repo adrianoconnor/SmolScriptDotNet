@@ -781,15 +781,21 @@ namespace SmolScript.Internals
             return call();
         }
 
-        private Expression call()
+        private Expression call(bool isDotChain = false)
         {
-            var expr = primary();
+            var expr = primary(isDotChain);
 
             while (true)
             {
                 if (match(TokenType.LEFT_BRACKET))
                 {
-                    expr = finishCall(expr);
+                    expr = finishCall(expr, isDotChain);
+                }
+                else if (match(TokenType.DOT))
+                {
+                    // [var x = (a.b.c().d)]
+
+                    return new DotExpression(expr, call(true));
                 }
                 else
                 {
@@ -800,7 +806,7 @@ namespace SmolScript.Internals
             return expr;
         }
 
-        private Expression finishCall(Expression callee)
+        private Expression finishCall(Expression callee, bool isDotChain = false)
         {
             var args = new List<object?>();
 
@@ -822,11 +828,23 @@ namespace SmolScript.Internals
 
             var closingParen = consume(TokenType.RIGHT_BRACKET, "Expected )");
 
-            return new CallExpression(callee, closingParen, args);
+            return new CallExpression(callee, closingParen, args, isDotChain);
         }
 
-        private Expression primary()
+        private Expression primary(bool isDotChain = false)
         {
+            if (isDotChain)
+            {
+                if (match(TokenType.IDENTIFIER))
+                {
+                    return new VariableExpression(previous());
+                }
+                else
+                {
+                    throw new Exception("Failed to process something in the dot-call chain, sorry");
+                }
+            }
+
             if (match(TokenType.FALSE)) return new LiteralExpression(false);
             if (match(TokenType.TRUE)) return new LiteralExpression(true);
             if (match(TokenType.NULL)) return new LiteralExpression(null);
@@ -866,6 +884,16 @@ namespace SmolScript.Internals
                 {
                     return new VariableExpression(previous());
                 }
+            }
+
+            if (match(TokenType.NEW))
+            {
+                var className = consume(TokenType.IDENTIFIER, "Expected identifier after new");
+
+                consume(TokenType.LEFT_BRACKET, "Expect ')' after expression.");
+                consume(TokenType.RIGHT_BRACKET, "Expect ')' after expression.");
+
+                return new NewInstanceExpression(className);
             }
 
             if (match(TokenType.LEFT_BRACKET))

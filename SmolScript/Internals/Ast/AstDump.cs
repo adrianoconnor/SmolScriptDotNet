@@ -6,20 +6,8 @@ namespace SmolScript.Internals.Ast
 {
     internal class AstDump : IExpressionVisitor, IStatementVisitor
     {
-
-        public string? Print(Expression expr)
-        {
-            return expr.Accept(this) as string;
-        }
-
-        public string? Print(Statement stmt)
-        {
-            return stmt.Accept(this) as string;
-        }
-
         public string? Print(IList<Statement> stmts)
-        {
-
+        { 
             StringBuilder sb = new StringBuilder();
 
             foreach (var stmt in stmts)
@@ -32,17 +20,23 @@ namespace SmolScript.Internals.Ast
 
         public object? Visit(BinaryExpression expr)
         {
-            return $"({expr.op.lexeme} {expr.left.Accept(this)} {expr.right.Accept(this)})";
+            var s = $"({expr.op.lexeme} {expr.left.Accept(this)} {expr.right.Accept(this)})";
+
+            return s;
         }
 
         public object? Visit(LogicalExpression expr)
         {
-            return $"({expr.op.lexeme} {expr.left.Accept(this)} {expr.right.Accept(this)})";
+            var s =  $"({expr.op.lexeme} {expr.left.Accept(this)} {expr.right.Accept(this)})";
+
+            return s;
         }
 
         public object? Visit(GroupingExpression expr)
         {
-            return $"(group {expr.expr.Accept(this)})";
+            var s = $"(group {expr.expr.Accept(this)})";
+
+            return s;
         }
 
         public object? Visit(LiteralExpression expr)
@@ -233,7 +227,32 @@ namespace SmolScript.Internals.Ast
         {
             var s = new StringBuilder();
 
-            s.AppendLine($"[declare class {stmt.className?.lexeme ?? ""} ()]");
+            s.AppendLine($"[declare class {stmt.className.lexeme} ()]");
+
+            //s.Append($"{stmt.constructor?.Accept(this) ?? "no ctor"}");
+
+            foreach (var function in stmt.functions)
+            {
+                s.Append($"{function.Accept(this)}");
+            }
+
+            return s.ToString();
+        }
+
+        public object? Visit(NewInstanceExpression expr)
+        {
+            var s = new StringBuilder();
+
+            s.AppendLine($"[new instance of {expr.className.lexeme} ()]");
+
+            return s.ToString();
+        }
+
+        public object? Visit(DotExpression expr)
+        {
+            var s = new StringBuilder();
+
+            s.AppendLine($"[{expr.objectRefExpression.Accept(this)} . {expr.nextExpressionInChain.Accept(this)}]");
 
             return s.ToString();
         }

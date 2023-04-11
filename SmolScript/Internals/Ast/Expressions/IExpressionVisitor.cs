@@ -11,5 +11,7 @@
         object? Visit(AssignExpression expr);
         object? Visit(TernaryExpression expr);
         object? Visit(CallExpression expr);
+        object? Visit(NewInstanceExpression expr);
+        object? Visit(DotExpression expr);
     }
 }

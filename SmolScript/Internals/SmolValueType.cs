@@ -13,6 +13,7 @@
         TryCheckPoint,
         Exception,
         LoopMarker,
+        ObjectRef, // Not sure either
         Unknown
     }
 }

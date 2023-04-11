@@ -21,6 +21,7 @@ namespace SmolTests
 class testClass {
     constructor() {
         // this.x = 1;
+        print('In the CTOR!');
     }
 
     addOne(n) {
@@ -31,15 +32,20 @@ class testClass {
         return n + 2;
     }
 }
+
+var t = new testClass();
+var a = t.addOne(1);
 ");
 
             var vm = new SmolVM(program);
 
-            vm.Decompile();
+            //Console.WriteLine(vm.Decompile());
+            //Console.WriteLine(vm.DumpAst());
+            vm.RunInDebug();
 
-            vm.Run();
+            var t = (SmolValue)vm.globalEnv.Get("t")!;
 
-            Console.WriteLine(vm.DumpAst());
+            Assert.AreEqual(SmolValueType.ObjectRef, t.type);
 
             //Assert.AreEqual(2.0, ((SmolValue)vm.globalEnv.Get("a")!).value);
         }
@@ -71,6 +77,8 @@ var a = c.getTest();
 ");
 
             var vm = new SmolVM(program);
+
+            Console.WriteLine(vm.DumpAst());
 
             vm.Run();
 

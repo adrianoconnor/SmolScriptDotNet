@@ -46,10 +46,14 @@
         NEW,
 
         POP_AND_DISCARD,
+        DUPLICATE_VALUE,
 
         LOOP_EXIT,
         LOOP_START,
         LOOP_END,
+
+        CREATE_OBJECT,
+
 
         PRINT,
         DEBUGGER,
