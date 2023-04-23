@@ -77,7 +77,7 @@ namespace SmolScript.Internals
         RETURN,
         SUPER,
         SWITCH,
-        THIS,
+       // THIS,
         TRUE,
         VAR,
         WHILE,

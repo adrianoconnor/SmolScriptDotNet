@@ -103,15 +103,15 @@ namespace SmolScript.Internals
 
             while (!ReachedEnd())
             {
-                try
+                //try
                 {
                     while (peek().type == TokenType.SEMICOLON) consume(TokenType.SEMICOLON, "");
 
                     statements.Add(declaration());
                 }
-                catch (ParseError e)
+                //catch (ParseError e)
                 {
-                    errors.Add(e);
+                //    errors.Add(e);
                 }
             }
 
@@ -597,6 +597,11 @@ namespace SmolScript.Internals
                 {
                     var name = ((VariableExpression)expr).name;
                     return new AssignExpression(name, value);
+                } 
+                else if (expr.GetType() == typeof(GetExpression))
+                {
+                    var getExpr = (GetExpression)expr;
+                    return new SetExpression(getExpr.obj, getExpr.name, value);
                 }
 
                 throw error(equals, "Invalid assignment target.");
@@ -789,13 +794,16 @@ namespace SmolScript.Internals
             {
                 if (match(TokenType.LEFT_BRACKET))
                 {
-                    expr = finishCall(expr, isDotChain);
+                    expr = finishCall(expr, expr.GetType() == typeof(GetExpression));
                 }
                 else if (match(TokenType.DOT))
                 {
+                    Token name = consume(TokenType.IDENTIFIER, "Expect property name after '.'.");
+                    expr = new GetExpression(expr, name);
+
                     // [var x = (a.b.c().d)]
 
-                    return new DotExpression(expr, call(true));
+                    //return new DotExpression(expr, call(true));
                 }
                 else
                 {

@@ -6,6 +6,23 @@ namespace SmolScript.Internals.Ast
 {
     internal class AstDump : IExpressionVisitor, IStatementVisitor
     {
+        string newline = System.Environment.NewLine;
+        private int depth = 0;
+        private string indent
+        {
+            get { return "".PadLeft(depth * 2); }
+        }
+
+        private void enter()
+        {
+            depth++;
+        }
+
+        private void leave()
+        {
+            depth--;
+        }
+
         public string? Print(IList<Statement> stmts)
         { 
             StringBuilder sb = new StringBuilder();
@@ -66,13 +83,22 @@ namespace SmolScript.Internals.Ast
 
         public object? Visit(VarStatement stmt)
         {
+            enter();
+
             if (stmt.initializerExpression != null)
             {
-                return $"[var {stmt.name} = {stmt.initializerExpression.Accept(this)}]";
+                var output = $"[declare var {stmt.name.lexeme} with initial value]";
+                output += System.Environment.NewLine;
+                output += $"initializer: {stmt.initializerExpression.Accept(this)}";
+                output += System.Environment.NewLine;
+                output += "[/declare var]";
+
+
+                return output;
             }
             else
             {
-                return $"[var {stmt.name} = <<NULL REFERENCE>>]";
+                return $"[declare var {stmt.name.lexeme} (undefined) /]";
             }
         }
 
@@ -247,13 +273,32 @@ namespace SmolScript.Internals.Ast
 
             return s.ToString();
         }
-
+        /*
         public object? Visit(DotExpression expr)
         {
             var s = new StringBuilder();
 
             s.AppendLine($"[{expr.objectRefExpression.Accept(this)} . {expr.nextExpressionInChain.Accept(this)}]");
 
+            return s.ToString();
+        }
+        */
+
+        public object? Visit(GetExpression expr)
+        {
+            var s = new StringBuilder();
+
+            s.AppendLine($"[getter obj={expr.obj.Accept(this)}, property name={expr.name}]");
+
+            return s.ToString();
+        }
+
+        public object? Visit(SetExpression expr)
+        {
+            var s = new StringBuilder();
+
+            s.AppendLine($"[getter obj={expr.obj.Accept(this)}, property name={expr.name} value ={expr.value.Accept(this)}]");
+            
             return s.ToString();
         }
 

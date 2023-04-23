@@ -1,11 +1,11 @@
 class Parent2 {
     constructor() {
         console.log('Parent2 ctor');
+        this.z = 0;
     }
 
     moo() {
         console.log('parent moo2()');
-
     }
 
     beep() {
@@ -41,9 +41,7 @@ class Test extends Parent1 {
     moof() {
         console.log('test moo() ' + this.y);
         super.moo();
-        this.moo();
-        super.beep();
-        this.beep();
+
         // No: super.super.moo();
     }
 
@@ -55,4 +53,4 @@ var t = new Test();
 
 console.log(t);
 
-t.moof();
+//t.moof();

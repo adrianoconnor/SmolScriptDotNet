@@ -221,7 +221,11 @@ namespace SmolScript
 
                             if ((bool)instr.operand2!)
                             {
-                                var objectRef = (SmolObjectRef)stack.Pop().value!;
+                                // We need the object ref to get the function def, but we
+                                // also need to leave that object ref on the stack so when
+                                // we call the function it's still there to set the env.
+                                // That's why we're using peek
+                                var objectRef = (SmolObjectRef)stack.Peek().value!;
 
                                 env = objectRef.object_env;
                             }
@@ -441,7 +445,18 @@ namespace SmolScript
                             {
                                 var value = stack.Pop();
 
-                                environment.Assign(((SmolVariableDefinition)instr.operand1!).name, value);
+                                var env_in_context = environment;
+                                bool isPropertySetter = false;
+
+                                if (instr.operand2 != null && (bool)instr.operand2)
+                                {
+                                    var objRef = stack.Pop();
+
+                                    isPropertySetter = true;
+                                    env_in_context = ((SmolObjectRef)objRef.value!).object_env;
+                                }
+
+                                env_in_context.Assign(((SmolVariableDefinition)instr.operand1!).name, value, isPropertySetter);
 
 
                                 if (debug)
@@ -453,61 +468,72 @@ namespace SmolScript
                             }
 
                         case OpCode.FETCH:
-                            // Could be a variable or a function
-                            var name = ((SmolVariableDefinition)instr.operand1!).name;
-
-                            var env_in_context = environment;
-
-                            /* Hack... */
-
-                            // We're going to peek ahead, and see if the next instruction is
-                            // a CALL with operand2 set to true... if so, we've got something else
-                            // we need to do...
-
-                            var peek_instr = program.code_sections[code_section][PC];
-
-                            if (peek_instr.opcode == OpCode.CALL && (bool)peek_instr.operand2!)
                             {
-                                env_in_context = ((SmolObjectRef)stack.ElementAt((int)peek_instr.operand1!).value!).object_env;
-                            }
+                                // Could be a variable or a function
+                                var name = ((SmolVariableDefinition)instr.operand1!).name;
 
-                            var fetchedValue = env_in_context.TryGet(name);
+                                var env_in_context = environment;
 
-                            if (fetchedValue?.GetType() == typeof(SmolFunctionDefn))
-                            {
-                                fetchedValue = new SmolValue()
+                                if (instr.operand2 != null && (bool)instr.operand2)
                                 {
-                                    type = SmolValueType.FunctionRef,
-                                    value = fetchedValue
-                                };
-                            }
+                                    var objRef = stack.Pop();
 
-                            if (fetchedValue != null)
-                            {
-                                stack.Push((SmolValue)fetchedValue);
-
-                                if (debug)
-                                {
-                                    Console.WriteLine($"              [Loaded ${fetchedValue}]");
+                                    env_in_context = ((SmolObjectRef)objRef.value!).object_env;
                                 }
-                            }
-                            else
-                            {
-                                if (program.function_table.Any(f => f.globalFunctionName == name))
+
+                                /* Hack... */
+
+                                // We're going to peek ahead, and see if the next instruction is
+                                // a CALL with operand2 set to true... if so, we've got something else
+                                // we need to do...
+
+                                /*
+                                var peek_instr = program.code_sections[code_section][PC];
+
+                                if (peek_instr.opcode == OpCode.CALL && (bool)peek_instr.operand2!)
                                 {
-                                    stack.Push(new SmolValue()
+                                    env_in_context = ((SmolObjectRef)stack.ElementAt((int)peek_instr.operand1!).value!).object_env;
+                                }
+                                */
+
+                                var fetchedValue = env_in_context.TryGet(name);
+
+                                if (fetchedValue?.GetType() == typeof(SmolFunctionDefn))
+                                {
+                                    fetchedValue = new SmolValue()
                                     {
                                         type = SmolValueType.FunctionRef,
-                                        value = program.function_table.First(f => f.globalFunctionName == name)
-                                    });
+                                        value = fetchedValue
+                                    };
+                                }
+
+                                if (fetchedValue != null)
+                                {
+                                    stack.Push((SmolValue)fetchedValue);
+
+                                    if (debug)
+                                    {
+                                        Console.WriteLine($"              [Loaded ${fetchedValue}]");
+                                    }
                                 }
                                 else
                                 {
-                                    stack.Push(new SmolValue() { type = SmolValueType.Undefined });
+                                    if (program.function_table.Any(f => f.globalFunctionName == name))
+                                    {
+                                        stack.Push(new SmolValue()
+                                        {
+                                            type = SmolValueType.FunctionRef,
+                                            value = program.function_table.First(f => f.globalFunctionName == name)
+                                        });
+                                    }
+                                    else
+                                    {
+                                        stack.Push(new SmolValue() { type = SmolValueType.Undefined });
+                                    }
                                 }
-                            }
 
-                            break;
+                                break;
+                            }
 
                         case OpCode.JMPFALSE:
                             {
@@ -689,6 +715,8 @@ namespace SmolScript
                                     class_name = class_name
                                 }
                             });
+
+                            obj_environment.Define("this", stack.Peek());
 
                             break;
 

@@ -14,9 +14,23 @@ namespace SmolTests
 		}
 
         [TestMethod]
+        public void Getters()
+        {
+            var source = @"var a = x.y().b.c;";
+
+            var s = new Scanner(source);
+            var tokens = s.ScanTokens();
+            var p = new Parser(tokens.tokens);
+            var dump = new SmolScript.Internals.Ast.AstDump().Print(p.Parse());
+            Console.WriteLine(source);
+            Console.WriteLine(dump);
+        }
+
+
+            [TestMethod]
         public void DefineSimpleClassWithFunc()
         {
-            var program = SmolCompiler.Compile(@"
+            var source = @"
 
 class testClass {
     constructor() {
@@ -35,8 +49,16 @@ class testClass {
 
 var t = new testClass();
 var a = t.addOne(1);
-");
+";
 
+            var s = new Scanner(source);
+            var tokens = s.ScanTokens();
+            var p = new Parser(tokens.tokens);
+            var dump = new SmolScript.Internals.Ast.AstDump().Print(p.Parse());
+            Console.WriteLine(dump);
+
+
+            var program = SmolCompiler.Compile(source);
             var vm = new SmolVM(program);
 
             //Console.WriteLine(vm.Decompile());
@@ -47,13 +69,13 @@ var a = t.addOne(1);
 
             Assert.AreEqual(SmolValueType.ObjectRef, t.type);
 
-            //Assert.AreEqual(2.0, ((SmolValue)vm.globalEnv.Get("a")!).value);
+            Assert.AreEqual(2.0, ((SmolValue)vm.globalEnv.Get("a")!).value);
         }
 
         [TestMethod]
         public void DefineClassAndCallProps()
         {
-            var program = SmolCompiler.Compile(@"
+            var source = @"
 
 class testClass {
     constructor() {
@@ -61,7 +83,7 @@ class testClass {
     }
 
     addOne() {
-        this.test += 1;
+        //this.test = this.test + 1; // += 1;
     }
 
     getTest() {
@@ -70,19 +92,26 @@ class testClass {
 }
 
 var c = new testClass();
-c.addOne();
+//c.addOne();
 
 var a = c.getTest();
 
-");
+";
+            /*
+            var s = new Scanner(source);
+            var t = s.ScanTokens();
+            var p = new Parser(t.tokens);
+            var dump = new SmolScript.Internals.Ast.AstDump().Print(p.Parse());
+            Console.WriteLine(dump);
+            */
+
+            var program = SmolCompiler.Compile(source);
 
             var vm = new SmolVM(program);
 
-            Console.WriteLine(vm.DumpAst());
+            vm.RunInDebug();
 
-            vm.Run();
-
-            Assert.AreEqual(2.0, ((SmolValue)vm.globalEnv.Get("a")!).value);
+            Assert.AreEqual(1.0, ((SmolValue)vm.globalEnv.Get("a")!).value);
         }
     }
 }

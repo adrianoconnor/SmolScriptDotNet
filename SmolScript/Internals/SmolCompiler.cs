@@ -1069,7 +1069,7 @@ namespace SmolScript.Internals
 
             return chunk;
         }
-
+        /*
         public object? Visit(DotExpression expr)
         {
             var chunk = new List<ByteCodeInstruction>();
@@ -1079,6 +1079,55 @@ namespace SmolScript.Internals
             chunk.AppendChunk(expr.objectRefExpression.Accept(this));
 
             chunk.AppendChunk(expr.nextExpressionInChain.Accept(this));
+
+            return chunk;
+        }*/
+
+        public object? Visit(GetExpression expr)
+        {
+            var chunk = new List<ByteCodeInstruction>();
+
+            chunk.AppendChunk(expr.obj.Accept(this));
+
+            chunk.AppendInstruction(OpCode.FETCH,
+                new SmolVariableDefinition()
+                {
+                    name = expr.name.lexeme
+                }, true);
+
+            // Who knows if this will work... :)
+
+            return chunk;
+        }
+
+        public object? Visit(SetExpression expr)
+        {
+            var chunk = new List<ByteCodeInstruction>();
+
+            chunk.AppendChunk(expr.obj.Accept(this));
+
+            chunk.AppendChunk(expr.value.Accept(this));
+
+            chunk.AppendChunk(new ByteCodeInstruction()
+            {
+                opcode = OpCode.STORE,
+                operand1 = new SmolVariableDefinition()
+                {
+                    name = (string)(expr.name.lexeme)
+                },
+                operand2 = true // Means object reference on stack
+            });
+
+            // This is so inefficient, but we need to read the saved value back onto the stack
+
+            chunk.AppendChunk(expr.obj.Accept(this));
+
+            chunk.AppendInstruction(OpCode.FETCH,
+                new SmolVariableDefinition()
+                {
+                    name = expr.name.lexeme
+                }, true);
+
 
             return chunk;
         }

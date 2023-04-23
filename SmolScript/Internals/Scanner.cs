@@ -46,7 +46,7 @@ namespace SmolScript.Internals
             { "return", TokenType.RETURN },
             { "super", TokenType.SUPER },
             { "switch", TokenType.SWITCH },
-            { "this", TokenType.THIS },
+            //{ "this", TokenType.THIS },
             { "true", TokenType.TRUE },
             { "var", TokenType.VAR },
             { "let", TokenType.VAR },

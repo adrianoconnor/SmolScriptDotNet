@@ -2,6 +2,8 @@
 
 namespace SmolScript.Internals.Ast.Expressions
 {
+    // I think this needs to go
+    /*
     internal class DotExpression : Expression
     {
         public readonly Expression objectRefExpression;
@@ -18,5 +20,6 @@ namespace SmolScript.Internals.Ast.Expressions
             return visitor.Visit(this);
         }
     }
+    */
 }
 

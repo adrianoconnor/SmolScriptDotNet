@@ -19,11 +19,16 @@ namespace SmolScript.Internals
             variables[variable] = value;
         }
 
-        public void Assign(string variable, object? value)
+        public void Assign(string variable, object? value, bool isThis = false)
         {
             if (variables.ContainsKey(variable))
             {
                 variables[variable] = value;
+            }
+            else if (isThis)
+            {
+                // Having to do this for now so that class ivars work
+                this.Define(variable, value);
             }
             else if (enclosing != null)
             {
