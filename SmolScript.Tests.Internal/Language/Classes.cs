@@ -86,6 +86,22 @@ class testClass {
         this.test += 1;
     }
 
+    subOne() {
+        this.test -= 1;
+    }
+
+    square() {
+        this.test **= 2;
+    }
+
+    div() {
+        this.test /= 2;
+    }
+
+    mul() {
+        this.test *= 2;
+    }
+
     getTest() {
         return this.test;
     }
@@ -93,6 +109,11 @@ class testClass {
 
 var c = new testClass();
 c.addOne();
+c.addOne();
+c.subOne();
+c.square();
+c.div();
+c.mul();
 
 var a = c.getTest();
 
@@ -111,7 +132,7 @@ var a = c.getTest();
 
             vm.RunInDebug();
 
-            Assert.AreEqual(2.0, ((SmolValue)vm.globalEnv.Get("a")!).value);
+            Assert.AreEqual(4.0, ((SmolValue)vm.globalEnv.Get("a")!).value);
         }
     }
 }

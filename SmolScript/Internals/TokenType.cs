@@ -41,7 +41,7 @@ namespace SmolScript.Internals
 
         PLUS_EQUALS,
         MINUS_EQUALS,
-        MULTIPY_EQUALS,
+        MULTIPLY_EQUALS,
         POW_EQUALS,
         DIVIDE_EQUALS,
         REMAINER_EQUALS,

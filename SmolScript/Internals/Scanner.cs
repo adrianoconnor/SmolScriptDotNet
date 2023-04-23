@@ -139,11 +139,18 @@ namespace SmolScript.Internals
                 case '*': 
                     if (MatchNext('*'))
                     {
-                       AddToken(TokenType.POW);
+                        if (MatchNext('='))
+                        {
+                            AddToken(TokenType.POW_EQUALS);
+                        }
+                        else
+                        {
+                            AddToken(TokenType.POW);
+                        }
                     }
                     else if (MatchNext('='))
                     {
-                       AddToken(TokenType.POW_EQUALS);
+                       AddToken(TokenType.MULTIPLY_EQUALS);
                     }
                     else
                     {
@@ -194,6 +201,10 @@ namespace SmolScript.Internals
                     if (MatchNext('/'))
                     {
                         while(Peek() != '\n' && !ReachedEnd()) _ = NextChar();
+                    }
+                    else if (MatchNext('='))
+                    {
+                        AddToken(TokenType.DIVIDE_EQUALS);
                     }
                     else if (MatchNext('*'))
                     {

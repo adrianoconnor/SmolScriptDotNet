@@ -682,6 +682,56 @@ namespace SmolScript.Internals
                 throw error(equals, "Invalid assignment target.");
             }
 
+            if (match(TokenType.DIVIDE_EQUALS))
+            {
+                var equals = previous();
+                var value = assignment();
+
+                if (expr.GetType() == typeof(VariableExpression))
+                {
+                    var name = ((VariableExpression)expr).name;
+
+                    var divExpr = new BinaryExpression(((VariableExpression)expr), new Token(TokenType.DIVIDE, "/=", null, 0), value);
+
+                    return new AssignExpression(name, divExpr);
+                }
+                else if (expr.GetType() == typeof(GetExpression))
+                {
+                    var getExpr = (GetExpression)expr;
+
+                    var divExpr = new BinaryExpression(((GetExpression)expr), new Token(TokenType.DIVIDE, "/=", null, 0), value);
+
+                    return new SetExpression(getExpr.obj, getExpr.name, divExpr);
+                }
+
+                throw error(equals, "Invalid assignment target.");
+            }
+
+            if (match(TokenType.MULTIPLY_EQUALS))
+            {
+                var equals = previous();
+                var value = assignment();
+
+                if (expr.GetType() == typeof(VariableExpression))
+                {
+                    var name = ((VariableExpression)expr).name;
+
+                    var mulExpr = new BinaryExpression(((VariableExpression)expr), new Token(TokenType.MULTIPLY, "*=", null, 0), value);
+
+                    return new AssignExpression(name, mulExpr);
+                }
+                else if (expr.GetType() == typeof(GetExpression))
+                {
+                    var getExpr = (GetExpression)expr;
+
+                    var mulExpr = new BinaryExpression(((GetExpression)expr), new Token(TokenType.MULTIPLY, "*=", null, 0), value);
+
+                    return new SetExpression(getExpr.obj, getExpr.name, mulExpr);
+                }
+
+                throw error(equals, "Invalid assignment target.");
+            }
+
             return expr;
         }
 
