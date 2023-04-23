@@ -611,20 +611,15 @@ namespace SmolScript.Internals
             {
                 var equals = previous();
                 var value = assignment();
+                var additionExpr = new BinaryExpression(expr, new Token(TokenType.PLUS, "+=", null, 0), value);
 
                 if (expr.GetType() == typeof(VariableExpression))
-                {
-                    var name = ((VariableExpression)expr).name;
-
-                    var additionExpr = new BinaryExpression(((VariableExpression)expr), new Token(TokenType.PLUS, "+=", null, 0), value);
-
-                    return new AssignExpression(name, additionExpr);
+                {                   
+                    return new AssignExpression(((VariableExpression)expr).name, additionExpr);
                 }
                 else if (expr.GetType() == typeof(GetExpression))
                 {
                     var getExpr = (GetExpression)expr;
-
-                    var additionExpr = new BinaryExpression(((GetExpression)expr), new Token(TokenType.PLUS, "+=", null, 0), value);
 
                     return new SetExpression(getExpr.obj, getExpr.name, additionExpr);
                 }
@@ -636,20 +631,15 @@ namespace SmolScript.Internals
             {
                 var equals = previous();
                 var value = assignment();
+                var subtractExpr = new BinaryExpression(expr, new Token(TokenType.MINUS, "-=", null, 0), value);
 
                 if (expr.GetType() == typeof(VariableExpression))
-                {
-                    var name = ((VariableExpression)expr).name;
-
-                    var subtractExpr = new BinaryExpression(((VariableExpression)expr), new Token(TokenType.MINUS, "-=", null, 0), value);
-
-                    return new AssignExpression(name, subtractExpr);
+                {                    
+                    return new AssignExpression(((VariableExpression)expr).name, subtractExpr);
                 }
                 else if (expr.GetType() == typeof(GetExpression))
                 {
                     var getExpr = (GetExpression)expr;
-
-                    var subtractExpr = new BinaryExpression(((GetExpression)expr), new Token(TokenType.MINUS, "-=", null, 0), value);
 
                     return new SetExpression(getExpr.obj, getExpr.name, subtractExpr);
                 }
@@ -661,21 +651,15 @@ namespace SmolScript.Internals
             {
                 var equals = previous();
                 var value = assignment();
+                var powExpr = new BinaryExpression(expr, new Token(TokenType.POW, "*=", null, 0), value);
 
                 if (expr.GetType() == typeof(VariableExpression))
                 {
-                    var name = ((VariableExpression)expr).name;
-
-                    var powExpr = new BinaryExpression(((VariableExpression)expr), new Token(TokenType.POW, "*=", null, 0), value);
-
-                    return new AssignExpression(name, powExpr);
+                    return new AssignExpression(((VariableExpression)expr).name, powExpr);
                 }
                 else if (expr.GetType() == typeof(GetExpression))
                 {
                     var getExpr = (GetExpression)expr;
-
-                    var powExpr = new BinaryExpression(((GetExpression)expr), new Token(TokenType.POW, "*=", null, 0), value);
-
                     return new SetExpression(getExpr.obj, getExpr.name, powExpr);
                 }
 
@@ -686,20 +670,15 @@ namespace SmolScript.Internals
             {
                 var equals = previous();
                 var value = assignment();
+                var divExpr = new BinaryExpression(expr, new Token(TokenType.DIVIDE, "/=", null, 0), value);
 
                 if (expr.GetType() == typeof(VariableExpression))
                 {
-                    var name = ((VariableExpression)expr).name;
-
-                    var divExpr = new BinaryExpression(((VariableExpression)expr), new Token(TokenType.DIVIDE, "/=", null, 0), value);
-
-                    return new AssignExpression(name, divExpr);
+                    return new AssignExpression(((VariableExpression)expr).name, divExpr);
                 }
                 else if (expr.GetType() == typeof(GetExpression))
                 {
                     var getExpr = (GetExpression)expr;
-
-                    var divExpr = new BinaryExpression(((GetExpression)expr), new Token(TokenType.DIVIDE, "/=", null, 0), value);
 
                     return new SetExpression(getExpr.obj, getExpr.name, divExpr);
                 }
@@ -711,20 +690,15 @@ namespace SmolScript.Internals
             {
                 var equals = previous();
                 var value = assignment();
+                var mulExpr = new BinaryExpression(expr, new Token(TokenType.MULTIPLY, "*=", null, 0), value);
 
                 if (expr.GetType() == typeof(VariableExpression))
                 {
-                    var name = ((VariableExpression)expr).name;
-
-                    var mulExpr = new BinaryExpression(((VariableExpression)expr), new Token(TokenType.MULTIPLY, "*=", null, 0), value);
-
-                    return new AssignExpression(name, mulExpr);
+                    return new AssignExpression(((VariableExpression)expr).name, mulExpr);
                 }
                 else if (expr.GetType() == typeof(GetExpression))
                 {
                     var getExpr = (GetExpression)expr;
-
-                    var mulExpr = new BinaryExpression(((GetExpression)expr), new Token(TokenType.MULTIPLY, "*=", null, 0), value);
 
                     return new SetExpression(getExpr.obj, getExpr.name, mulExpr);
                 }
