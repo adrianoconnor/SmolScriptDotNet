@@ -786,9 +786,9 @@ namespace SmolScript.Internals
             return call();
         }
 
-        private Expression call(bool isDotChain = false)
+        private Expression call()
         {
-            var expr = primary(isDotChain);
+            var expr = primary();
 
             while (true)
             {
@@ -800,10 +800,6 @@ namespace SmolScript.Internals
                 {
                     Token name = consume(TokenType.IDENTIFIER, "Expect property name after '.'.");
                     expr = new GetExpression(expr, name);
-
-                    // [var x = (a.b.c().d)]
-
-                    //return new DotExpression(expr, call(true));
                 }
                 else
                 {
@@ -814,7 +810,7 @@ namespace SmolScript.Internals
             return expr;
         }
 
-        private Expression finishCall(Expression callee, bool isDotChain = false)
+        private Expression finishCall(Expression callee, bool isFollowingGetter = false)
         {
             var args = new List<object?>();
 
@@ -836,23 +832,11 @@ namespace SmolScript.Internals
 
             var closingParen = consume(TokenType.RIGHT_BRACKET, "Expected )");
 
-            return new CallExpression(callee, closingParen, args, isDotChain);
+            return new CallExpression(callee, closingParen, args, isFollowingGetter);
         }
 
-        private Expression primary(bool isDotChain = false)
+        private Expression primary()
         {
-            if (isDotChain)
-            {
-                if (match(TokenType.IDENTIFIER))
-                {
-                    return new VariableExpression(previous());
-                }
-                else
-                {
-                    throw new Exception("Failed to process something in the dot-call chain, sorry");
-                }
-            }
-
             if (match(TokenType.FALSE)) return new LiteralExpression(false);
             if (match(TokenType.TRUE)) return new LiteralExpression(true);
             if (match(TokenType.NULL)) return new LiteralExpression(null);

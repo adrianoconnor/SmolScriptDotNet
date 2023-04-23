@@ -83,7 +83,7 @@ class testClass {
     }
 
     addOne() {
-        //this.test = this.test + 1; // += 1;
+        this.test = this.test + 1; // += 1;
     }
 
     getTest() {
@@ -92,7 +92,7 @@ class testClass {
 }
 
 var c = new testClass();
-//c.addOne();
+c.addOne();
 
 var a = c.getTest();
 
@@ -111,7 +111,7 @@ var a = c.getTest();
 
             vm.RunInDebug();
 
-            Assert.AreEqual(1.0, ((SmolValue)vm.globalEnv.Get("a")!).value);
+            Assert.AreEqual(2.0, ((SmolValue)vm.globalEnv.Get("a")!).value);
         }
     }
 }
