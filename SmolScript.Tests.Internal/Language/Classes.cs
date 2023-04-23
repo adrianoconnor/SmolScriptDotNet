@@ -83,7 +83,7 @@ class testClass {
     }
 
     addOne() {
-        this.test = this.test + 1; // += 1;
+        this.test += 1;
     }
 
     getTest() {

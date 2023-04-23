@@ -616,10 +616,17 @@ namespace SmolScript.Internals
                 {
                     var name = ((VariableExpression)expr).name;
 
-                    // DESUGAR!!!
-                    var x = new BinaryExpression(((VariableExpression)expr), new Token(TokenType.PLUS, "+=", null, 0), value);
+                    var additionExpr = new BinaryExpression(((VariableExpression)expr), new Token(TokenType.PLUS, "+=", null, 0), value);
 
-                    return new AssignExpression(name, x);
+                    return new AssignExpression(name, additionExpr);
+                }
+                else if (expr.GetType() == typeof(GetExpression))
+                {
+                    var getExpr = (GetExpression)expr;
+
+                    var additionExpr = new BinaryExpression(((GetExpression)expr), new Token(TokenType.PLUS, "+=", null, 0), value);
+
+                    return new SetExpression(getExpr.obj, getExpr.name, additionExpr);
                 }
 
                 throw error(equals, "Invalid assignment target.");
@@ -634,9 +641,17 @@ namespace SmolScript.Internals
                 {
                     var name = ((VariableExpression)expr).name;
 
-                    var x = new BinaryExpression(((VariableExpression)expr), new Token(TokenType.MINUS, "-=", null, 0), value);
+                    var subtractExpr = new BinaryExpression(((VariableExpression)expr), new Token(TokenType.MINUS, "-=", null, 0), value);
 
-                    return new AssignExpression(name, x);
+                    return new AssignExpression(name, subtractExpr);
+                }
+                else if (expr.GetType() == typeof(GetExpression))
+                {
+                    var getExpr = (GetExpression)expr;
+
+                    var subtractExpr = new BinaryExpression(((GetExpression)expr), new Token(TokenType.MINUS, "-=", null, 0), value);
+
+                    return new SetExpression(getExpr.obj, getExpr.name, subtractExpr);
                 }
 
                 throw error(equals, "Invalid assignment target.");
@@ -651,9 +666,17 @@ namespace SmolScript.Internals
                 {
                     var name = ((VariableExpression)expr).name;
 
-                    var x = new BinaryExpression(((VariableExpression)expr), new Token(TokenType.POW, "*=", null, 0), value);
+                    var powExpr = new BinaryExpression(((VariableExpression)expr), new Token(TokenType.POW, "*=", null, 0), value);
 
-                    return new AssignExpression(name, x);
+                    return new AssignExpression(name, powExpr);
+                }
+                else if (expr.GetType() == typeof(GetExpression))
+                {
+                    var getExpr = (GetExpression)expr;
+
+                    var powExpr = new BinaryExpression(((GetExpression)expr), new Token(TokenType.POW, "*=", null, 0), value);
+
+                    return new SetExpression(getExpr.obj, getExpr.name, powExpr);
                 }
 
                 throw error(equals, "Invalid assignment target.");
