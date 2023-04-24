@@ -36,7 +36,7 @@ aPlusPlus(); // Call it once during initialization just to show this also is fin
 
         vm.MaxStackSize = 4;
        
-        vm.Run(); // this executes the code above -- declares a, sets to 1, declares a functiona and calls it
+        vm.RunInDebug(); // this executes the code above -- declares a, sets to 1, declares a functiona and calls it
 
         var a = vm.GetGlobalVar<int>("a"); // verify that the var has the value we expect
 
@@ -53,7 +53,7 @@ aPlusPlus(); // Call it once during initialization just to show this also is fin
     public void TestMethod3()
     {
         var code = @"function fibonacci(num) {
-  if (num <= 1) return 1;
+  if (num <= 1) return num;
 
   return fibonacci(num - 1) + fibonacci(num - 2);
 }
@@ -67,6 +67,25 @@ var f = fibonacci(30);
 
         var f = vm.GetGlobalVar<int>("f");
 
-        Assert.AreEqual(1346269, f);
+        Assert.AreEqual(832040, f);
+    }
+
+    public int fib(int n)
+    {
+        if (n <= 1) return n;
+
+        return fib(n - 1) + fib(n - 2);
+    }
+
+    [TestMethod]
+    public void TestMethod4()
+    {
+        var s = Environment.TickCount;
+
+        var f = fib(30);
+
+        Assert.AreEqual(832040, f);
+
+        Console.WriteLine($"TOOK {Environment.TickCount - s}");
     }
 }

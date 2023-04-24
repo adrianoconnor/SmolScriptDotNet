@@ -36,7 +36,7 @@ namespace SmolScript
         int code_section = 0;
         int PC = 0; // Program Counter / Instruction Pointer
 
-        bool debug = false; 
+        bool debug = false;
 
         RunMode runMode = RunMode.Paused;
 
@@ -63,7 +63,6 @@ namespace SmolScript
                 code_section = this.code_section,
                 PC = this.PC,
                 previous_env = this.environment,
-                treat_call_as_expression = true, // Needs to come from function dfn, I guess
                 call_is_extern = true
             };
 
@@ -198,85 +197,78 @@ namespace SmolScript
                             break;
 
                         case OpCode.CALL:
-                            var callData = (SmolFunctionDefn)stack.Pop().value!;
-
-
-
-
-                            var env = new SmolScript.Internals.Environment(this.globalEnv);
-
-                            if ((bool)instr.operand2!)
                             {
-                                // We need the object ref to get the function def, but we
-                                // also need to leave that object ref on the stack so when
-                                // we call the function it's still there to set the env.
-                                // That's why we're using peek
-                                //var objectRef = (SmolObjectRef)stack.Peek().value!;
+                                var callData = (SmolFunctionDefn)stack.Pop().value!;
 
-                                var objectRef = (SmolObjectRef)stack.Pop().value!;
+                                // First create the env for our function
 
-                                env = objectRef.object_env;
-                            }
+                                var env = new SmolScript.Internals.Environment(this.globalEnv);
 
-
-
-
-
-
-                            // First we need to pop the args off the stack                        
-
-                            List<SmolValue> paramValues = new List<SmolValue>();
-
-                            for (int i = 0; i < (int)instr.operand1!; i++)
-                            {
-                                paramValues.Add(this.stack.Pop());
-                            }
-
-                            var state = new SmolCallSaveState()
-                            {
-                                code_section = this.code_section,
-                                PC = this.PC,
-                                previous_env = this.environment,
-                                treat_call_as_expression = true // Needs to come from function dfn, I guess
-                            };
-
-
-
-                            // Came from here...
-
-
-
-                            this.environment = env;
-
-                            // Now prime the new environment with variables for
-                            // the parameters in the function declaration (actual number
-                            // passed might be different)
-
-                            for (int i = 0; i < callData.arity; i++)
-                            {
-                                if (paramValues.Count > i)
+                                if ((bool)instr.operand2!)
                                 {
-                                    env.Define(callData.param_variable_names[i], paramValues[i]);
+                                    // If op2 is true, that means we're calling a method
+                                    // on an object/class, so we need to get the objref
+                                    // (from the next value on the stack) and use that
+                                    // objects environment instead.
+
+                                    env = ((SmolObjectRef)stack.Pop().value!).object_env;
                                 }
-                                else
+
+                                // Next pop args off the stack. Op1 is number of args.                    
+
+                                List<SmolValue> paramValues = new List<SmolValue>();
+
+                                for (int i = 0; i < (int)instr.operand1!; i++)
                                 {
-                                    env.Define(callData.param_variable_names[i], new SmolValue()
+                                    paramValues.Add(this.stack.Pop());
+                                }
+
+                                // Now prime the new environment with variables for
+                                // the parameters in the function declaration (actual number
+                                // passed might be different)
+
+                                for (int i = 0; i < callData.arity; i++)
+                                {
+                                    if (paramValues.Count > i)
                                     {
-                                        type = SmolValueType.Undefined
-                                    });
+                                        env.Define(callData.param_variable_names[i], paramValues[i]);
+                                    }
+                                    else
+                                    {
+                                        env.Define(callData.param_variable_names[i], new SmolValue()
+                                        {
+                                            type = SmolValueType.Undefined
+                                        });
+                                    }
                                 }
+
+
+                                // Store our current program/vm state so we can restor
+
+                                var state = new SmolCallSaveState()
+                                {
+                                    code_section = this.code_section,
+                                    PC = this.PC,
+                                    previous_env = this.environment,
+                                };
+
+                                // Switch the active env in the vm over to the one we prepared for the call
+
+                                this.environment = env;
+
+                                stack.Push(new SmolValue()
+                                {
+                                    type = SmolValueType.SavedCallState,
+                                    value = state
+                                });
+
+                                // Finally set our PC to the start of the function we're about to execute
+
+                                PC = 0;
+                                code_section = callData.code_section;
+
+                                break;
                             }
-
-                            stack.Push(new SmolValue()
-                            {
-                                type = SmolValueType.SavedCallState,
-                                value = state
-                            });
-
-                            PC = 0;
-                            code_section = callData.code_section;
-
-                            break;
 
                         case OpCode.ADD:
                             {
@@ -419,22 +411,17 @@ namespace SmolScript
                             return;
 
                         case OpCode.RETURN:
-                            // Needs to return to the previous code section, putting
+
+                            // Return to the previous code section, putting
                             // a return value on the stack and restoring the PC
 
                             // Top value on the stack is the return value
 
                             var return_value = stack.Pop();
 
-                            var _savedCallState = stack.Pop();
+                            // Next value should be the original pre-call state that we saved
 
-                            while(_savedCallState.type != SmolValueType.SavedCallState)
-                            {
-                                // This is such a hack. In some situations (assigning new instances of classes to ivars
-                                // we're seeing junk left on the stack, so we can't return. This just skips over the junk,
-                                // but I need to work out why the junk is there.
-                                _savedCallState = stack.Pop();
-                            }
+                            var _savedCallState = stack.Pop();
 
                             if (_savedCallState.type != SmolValueType.SavedCallState)
                             {
@@ -443,18 +430,17 @@ namespace SmolScript
 
                             var savedCallState = (SmolCallSaveState)_savedCallState.value!;
 
-                            if (savedCallState.treat_call_as_expression)
-                            {
-                                // Means we're using the return value as an expression
-                                // in some other statement
-                                stack.Push(return_value);
-                            }
-
                             this.environment = savedCallState.previous_env;
                             this.PC = savedCallState.PC;
                             this.code_section = savedCallState.code_section;
 
-                            if (savedCallState.call_is_extern) {
+                            // Return value needs to go back on the stack
+                            stack.Push(return_value);
+
+                            if (savedCallState.call_is_extern)
+                            {
+                                // Not sure what to do about return value here
+
                                 this.runMode = RunMode.Paused;
                                 return; // Don't like this, error prone
                             }
@@ -725,7 +711,7 @@ namespace SmolScript
 
                             var obj_environment = new SmolScript.Internals.Environment(this.globalEnv);
 
-                            foreach(var classFunc in program.function_table.Where(f => f.globalFunctionName!.StartsWith($"@{class_name}.")))
+                            foreach (var classFunc in program.function_table.Where(f => f.globalFunctionName!.StartsWith($"@{class_name}.")))
                             {
                                 var funcName = classFunc.globalFunctionName!.Substring(class_name.Length + 2);
 
@@ -735,7 +721,7 @@ namespace SmolScript
                                     code_section = classFunc.code_section,
                                     globalFunctionName = classFunc.globalFunctionName,
                                     param_variable_names = classFunc.param_variable_names
-                                });                                
+                                });
                             }
 
                             stack.Push(new SmolValue()
@@ -770,11 +756,11 @@ namespace SmolScript
                             throw new Exception($"You forgot to handle an opcode: {instr.opcode}");
                     }
                 }
-                catch(SmolRuntimeException e)
+                catch (SmolRuntimeException e)
                 {
                     bool handled = false;
 
-                    while(stack.Any())
+                    while (stack.Any())
                     {
                         var next = stack.Pop();
 
