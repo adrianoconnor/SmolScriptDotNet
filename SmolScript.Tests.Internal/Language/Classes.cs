@@ -24,6 +24,9 @@ namespace SmolTests
             var dump = new SmolScript.Internals.Ast.AstDump().Print(p.Parse());
             Console.WriteLine(source);
             Console.WriteLine(dump);
+
+            var vm = SmolVM.Compile(source);
+            Assert.ThrowsException<NullReferenceException>(vm.RunInDebug);
         }
 
 
@@ -130,7 +133,7 @@ var a = c.getTest();
 
             var vm = new SmolVM(program);
 
-            vm.RunInDebug();
+            vm.Run();
 
             Assert.AreEqual(4.0, ((SmolValue)vm.globalEnv.Get("a")!).value);
         }
@@ -142,20 +145,10 @@ var a = c.getTest();
 
 class testClass1 {
     constructor() {
-        this.x = 2;
-
-        //debugger;
-        var m = new testClass2();
-
-        this.testClass = m;
-        //print(m);
-        //print(this.testClass);
-        //print('leaving ctor');
+        this.testClass = new testClass2();
     }
 
     getTestClass() {
-        //print('getTestClass()');
-        //print(this.testClass);
         return this.testClass;
     }
 }
@@ -170,17 +163,20 @@ class testClass2 {
     }
 }
 
-function x() {
-   var t = new testClass1();
-    //print ('?');
-   return t;
-}
+var c = new testClass1();
 
-var c = new testClass1(); // x();
-//print ('?');
 var a = c.testClass;
 var b = a.test2;
-//var c = c.testClass.test2; // Above works, this does not :(
+
+debugger;
+
+var d = c.testClass.test2;
+
+var e = c.getTestClass().test2;
+
+var f = c.getTestClass().getTestValue();
+
+var g = c.testClass.getTestValue();
 
 ";
             var program = SmolCompiler.Compile(source);
@@ -191,6 +187,13 @@ var b = a.test2;
 
             Assert.AreEqual(2.0, ((SmolValue)vm.globalEnv.Get("b")!).value);
             Assert.AreEqual(0, vm.stack.Count);
+
+            vm.RunInDebug();
+
+            Assert.AreEqual(2.0, ((SmolValue)vm.globalEnv.Get("d")!).value);
+            Assert.AreEqual(2.0, ((SmolValue)vm.globalEnv.Get("e")!).value);
+            Assert.AreEqual(2.0, ((SmolValue)vm.globalEnv.Get("f")!).value);
+            Assert.AreEqual(2.0, ((SmolValue)vm.globalEnv.Get("g")!).value);
         }
 
         [TestMethod]
@@ -199,12 +202,15 @@ var b = a.test2;
             var source = @"
 
 class testClass1 {
-constructor()
-{
-}
+  constructor()
+  {
+    var a = 1;
+    1 + 2;
+    return a;
+  }
 }
 
-
+3 + 4;
 var c = new testClass1();
 
 ";
