@@ -200,6 +200,29 @@ namespace SmolScript
                         case OpCode.CALL:
                             var callData = (SmolFunctionDefn)stack.Pop().value!;
 
+
+
+
+                            var env = new SmolScript.Internals.Environment(this.globalEnv);
+
+                            if ((bool)instr.operand2!)
+                            {
+                                // We need the object ref to get the function def, but we
+                                // also need to leave that object ref on the stack so when
+                                // we call the function it's still there to set the env.
+                                // That's why we're using peek
+                                //var objectRef = (SmolObjectRef)stack.Peek().value!;
+
+                                var objectRef = (SmolObjectRef)stack.Pop().value!;
+
+                                env = objectRef.object_env;
+                            }
+
+
+
+
+
+
                             // First we need to pop the args off the stack                        
 
                             List<SmolValue> paramValues = new List<SmolValue>();
@@ -217,18 +240,11 @@ namespace SmolScript
                                 treat_call_as_expression = true // Needs to come from function dfn, I guess
                             };
 
-                            var env = new SmolScript.Internals.Environment(this.globalEnv);
 
-                            if ((bool)instr.operand2!)
-                            {
-                                // We need the object ref to get the function def, but we
-                                // also need to leave that object ref on the stack so when
-                                // we call the function it's still there to set the env.
-                                // That's why we're using peek
-                                var objectRef = (SmolObjectRef)stack.Peek().value!;
 
-                                env = objectRef.object_env;
-                            }
+                            // Came from here...
+
+
 
                             this.environment = env;
 
@@ -412,6 +428,14 @@ namespace SmolScript
 
                             var _savedCallState = stack.Pop();
 
+                            while(_savedCallState.type != SmolValueType.SavedCallState)
+                            {
+                                // This is such a hack. In some situations (assigning new instances of classes to ivars
+                                // we're seeing junk left on the stack, so we can't return. This just skips over the junk,
+                                // but I need to work out why the junk is there.
+                                _savedCallState = stack.Pop();
+                            }
+
                             if (_savedCallState.type != SmolValueType.SavedCallState)
                             {
                                 throw new Exception("Tried to return but found something unexecpted on the stack");
@@ -479,6 +503,13 @@ namespace SmolScript
                                     var objRef = stack.Pop();
 
                                     env_in_context = ((SmolObjectRef)objRef.value!).object_env;
+
+                                    var peek_instr = program.code_sections[code_section][PC];
+
+                                    if (peek_instr.opcode == OpCode.CALL && (bool)peek_instr.operand2!)
+                                    {
+                                        stack.Push(objRef);
+                                    }
                                 }
 
                                 /* Hack... */
@@ -580,6 +611,7 @@ namespace SmolScript
 
                         case OpCode.DEBUGGER:
                             {
+                                //break;
                                 this.runMode = RunMode.Paused;
                                 return;
                             }

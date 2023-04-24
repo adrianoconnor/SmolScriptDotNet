@@ -134,6 +134,89 @@ var a = c.getTest();
 
             Assert.AreEqual(4.0, ((SmolValue)vm.globalEnv.Get("a")!).value);
         }
+
+        [TestMethod]
+        public void DefineClassAndCallNested()
+        {
+            var source = @"
+
+class testClass1 {
+    constructor() {
+        this.x = 2;
+
+        //debugger;
+        var m = new testClass2();
+
+        this.testClass = m;
+        //print(m);
+        //print(this.testClass);
+        //print('leaving ctor');
+    }
+
+    getTestClass() {
+        //print('getTestClass()');
+        //print(this.testClass);
+        return this.testClass;
+    }
+}
+
+class testClass2 {
+    constructor() {
+        this.test2 = 2;
+    }
+
+    getTestValue() {
+        return this.test2;
+    }
+}
+
+function x() {
+   var t = new testClass1();
+    //print ('?');
+   return t;
+}
+
+var c = new testClass1(); // x();
+//print ('?');
+var a = c.testClass;
+var b = a.test2;
+//var c = c.testClass.test2; // Above works, this does not :(
+
+";
+            var program = SmolCompiler.Compile(source);
+
+            var vm = new SmolVM(program);
+
+            vm.RunInDebug();
+
+            Assert.AreEqual(2.0, ((SmolValue)vm.globalEnv.Get("b")!).value);
+            Assert.AreEqual(0, vm.stack.Count);
+        }
+
+        [TestMethod]
+        public void EmptyStackAfterNew()
+        {
+            var source = @"
+
+class testClass1 {
+constructor()
+{
+}
+}
+
+
+var c = new testClass1();
+
+";
+            var program = SmolCompiler.Compile(source);
+
+            var vm = new SmolVM(program);
+
+            vm.RunInDebug();
+
+            Assert.IsNotNull(vm.globalEnv.Get("c"));
+            Assert.AreEqual(0, vm.stack.Count);
+        }
     }
 }
 

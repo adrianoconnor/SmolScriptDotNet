@@ -17,12 +17,12 @@ namespace SmolScript.Internals
 
             if (this.operand1 != null)
             {
-                str += $" {this.operand1}";
+                str += $" [op1: {this.operand1}]";
             }
 
             if (this.operand2 != null)
             {
-                str += $" {this.operand2}";
+                str += $" [op2: {this.operand2}]";
             }
 
             str += "";
