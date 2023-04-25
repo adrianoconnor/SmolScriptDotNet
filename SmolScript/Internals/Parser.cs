@@ -902,18 +902,7 @@ namespace SmolScript.Internals
 
             if (!check(TokenType.RIGHT_BRACKET))
             {
-                do
-                {
-                    if (match(TokenType.FUNC))
-                    {
-                        // Anonymous function -- I think this needs to be functionExpression?
-                        args.Add(functionDeclaration());
-                    }
-                    else
-                    {
-                        args.Add(expression());
-                    }
-                } while (match(TokenType.COMMA));
+                do { args.Add(expression()); } while (match(TokenType.COMMA));
             }
 
             var closingParen = consume(TokenType.RIGHT_BRACKET, "Expected )");
