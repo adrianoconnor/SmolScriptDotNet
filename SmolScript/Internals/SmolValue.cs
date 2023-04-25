@@ -36,7 +36,7 @@ namespace SmolScript.Internals
                 else if (t == typeof(int))
                 {
                     this.type = SmolValueType.Number;
-                    this.value = (int)value;
+                    this.value = Convert.ToDouble(value);
                 }
                 else if (t == typeof(bool))
                 {

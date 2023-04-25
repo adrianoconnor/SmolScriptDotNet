@@ -8,14 +8,11 @@ namespace SmolScript
         int MaxStackSize { get; set; }
 
 		T GetGlobalVar<T>(string variableName);
-		void Call(string functionName);
+		void Call(string functionName, params object[] args);
+        T Call<T>(string functionName, params object[] args);
 
         void Run();
 		void RunInDebug();
-		//Task RunAsync();
-
-		string Decompile();
-		string DumpAst();
 	}
 }
 

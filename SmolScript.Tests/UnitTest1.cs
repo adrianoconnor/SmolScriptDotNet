@@ -6,6 +6,23 @@ namespace SmolScript.Tests;
 public class UnitTest1
 {
     [TestMethod]
+    public void StringLength()
+    {
+        var src = @"
+            var a = 'Test String';
+            var b = a.length;
+        ";
+
+        var vm = SmolVM.Compile(src);
+
+        vm.RunInDebug();
+
+        var a = vm.GetGlobalVar<int>("b");
+
+        Assert.AreEqual(11, a);
+    }
+
+    [TestMethod]
     public void TestMethod1()
     {
         var code = @"var a = 1; a++; a*=2; a = a % 3;";
@@ -87,5 +104,35 @@ var f = fibonacci(30);
         Assert.AreEqual(832040, f);
 
         Console.WriteLine($"TOOK {Environment.TickCount - s}");
+    }
+
+    [TestMethod]
+    public void TestMethod5()
+    {
+        var code = @"
+var a = 1; // Declare a global variable
+
+function aPlusNum(numToAdd) { // Declare a function we can call from .net, with args and return value
+  a += numToAdd;
+
+  return a;
+}
+
+";
+
+        ISmolRuntime vm = SmolVM.Compile(code);
+
+        vm.RunInDebug(); // this executes the code above -- declares a, sets to 1, declares a functiona and calls it
+
+        var a = vm.GetGlobalVar<int>("a"); // verify that the var has the value we expect
+
+        Assert.AreEqual(1, a);
+
+        var x = vm.Call<int>("aPlusNum", 10); // Now call the function with no params
+
+        var a2 = vm.GetGlobalVar<string>("a"); // And get the new value in variable a
+
+        Assert.AreEqual("11", a2);
+        Assert.AreEqual(11, x);
     }
 }

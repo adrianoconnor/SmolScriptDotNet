@@ -16,10 +16,10 @@ namespace SmolScript
             Step
         }
 
-        SmolProgram program;
+        internal SmolProgram program;
 
 
-        int _MaxStackSize = int.MaxValue;
+        private int _MaxStackSize = int.MaxValue;
 
         public int MaxStackSize
         {
@@ -48,7 +48,7 @@ namespace SmolScript
         Dictionary<int, int> jmplocs = new Dictionary<int, int>();
 
         internal readonly SmolScript.Internals.Environment globalEnv = new SmolScript.Internals.Environment();
-        private SmolScript.Internals.Environment environment;
+        internal SmolScript.Internals.Environment environment;
 
         public T GetGlobalVar<T>(string variableName)
         {
@@ -56,7 +56,12 @@ namespace SmolScript
             return (T)Convert.ChangeType(v.value!, typeof(T));
         }
 
-        public void Call(string functionName)
+        public void Call(string functionName, params object[] args)        
+        {
+            Call<object>(functionName, args);
+        }
+
+        public T Call<T>(string functionName, params object[] args)
         {
             var state = new SmolCallSaveState()
             {
@@ -69,6 +74,29 @@ namespace SmolScript
             var env = new SmolScript.Internals.Environment(this.globalEnv);
             this.environment = env;
 
+            var fn = program.function_table.First(f => f.globalFunctionName == functionName);
+
+        
+            // Prime the new environment with variables for
+            // the parameters in the function declaration (actual number
+            // passed might be different)
+
+            for (int i = 0; i < fn.arity; i++)
+            {
+                if (args.Count() > i)
+                {
+                    env.Define(fn.param_variable_names[i], new SmolValue(args[i]));
+                }
+                else
+                {
+                    env.Define(fn.param_variable_names[i], new SmolValue()
+                    {
+                        type = SmolValueType.Undefined
+                    });
+                }
+            }
+
+
             stack.Push(new SmolValue()
             {
                 type = SmolValueType.SavedCallState,
@@ -76,22 +104,25 @@ namespace SmolScript
             });
 
             PC = 0;
-            code_section = program.function_table.First(f => f.globalFunctionName == functionName).code_section;
+            code_section = fn.code_section;
 
             Run();
+
+            return (T)Convert.ChangeType(stack.Pop().value!, typeof(T));
         }
+
 
         public static ISmolRuntime Compile(string source)
         {
-            return (ISmolRuntime)new SmolVM(source);
+            return new SmolVM(source);
         }
 
-        public string Decompile()
+        internal string Decompile()
         {
             return ByteCodeDisassembler.Disassemble(this.program);
         }
 
-        public string DumpAst()
+        internal string DumpAst()
         {
             return new AstDump().Print(program.astStatements)!;
         }
@@ -400,8 +431,6 @@ namespace SmolScript
                             }
 
                         case OpCode.EOF:
-                            // Needs to handle call stack scenario for functions that
-                            // implicitly return void
 
                             //if (debug)
                             {
@@ -497,21 +526,6 @@ namespace SmolScript
                                         stack.Push(objRef);
                                     }
                                 }
-
-                                /* Hack... */
-
-                                // We're going to peek ahead, and see if the next instruction is
-                                // a CALL with operand2 set to true... if so, we've got something else
-                                // we need to do...
-
-                                /*
-                                var peek_instr = program.code_sections[code_section][PC];
-
-                                if (peek_instr.opcode == OpCode.CALL && (bool)peek_instr.operand2!)
-                                {
-                                    env_in_context = ((SmolObjectRef)stack.ElementAt((int)peek_instr.operand1!).value!).object_env;
-                                }
-                                */
 
                                 var fetchedValue = env_in_context.TryGet(name);
 
