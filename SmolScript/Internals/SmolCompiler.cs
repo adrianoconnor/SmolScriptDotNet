@@ -943,7 +943,7 @@ namespace SmolScript.Internals
                     opcode = OpCode.CONST,
                     operand1 = constants.FindIndex(e => e.type == SmolValueType.Undefined)
                 });
-                body.Add(new ByteCodeInstruction() { opcode = OpCode.RETURN });
+                body.AppendInstruction(OpCode.RETURN);
             }
 
             function_bodies.Add(body);
@@ -991,7 +991,7 @@ namespace SmolScript.Internals
                         opcode = OpCode.CONST,
                         operand1 = constants.FindIndex(e => e.type == SmolValueType.Undefined)
                     });
-                    body.Add(new ByteCodeInstruction() { opcode = OpCode.RETURN });
+                    body.AppendInstruction(OpCode.RETURN);
                 }
 
                 function_bodies.Add(body);
@@ -1069,19 +1069,6 @@ namespace SmolScript.Internals
 
             return chunk;
         }
-        /*
-        public object? Visit(DotExpression expr)
-        {
-            var chunk = new List<ByteCodeInstruction>();
-
-            // Who knows if this will work... :)
-
-            chunk.AppendChunk(expr.objectRefExpression.Accept(this));
-
-            chunk.AppendChunk(expr.nextExpressionInChain.Accept(this));
-
-            return chunk;
-        }*/
 
         public object? Visit(GetExpression expr)
         {
@@ -1090,10 +1077,11 @@ namespace SmolScript.Internals
             chunk.AppendChunk(expr.obj.Accept(this));
 
             chunk.AppendInstruction(OpCode.FETCH,
-                new SmolVariableDefinition()
+                operand1: new SmolVariableDefinition()
                 {
                     name = expr.name.lexeme
-                }, true);
+                },
+                operand2: true);
 
             // Who knows if this will work... :)
 
@@ -1130,6 +1118,45 @@ namespace SmolScript.Internals
 
 
             return chunk;
+        }
+
+        public object? Visit(FunctionExpression expr)
+        {
+            var function_index = function_bodies.Count() + 1;
+            var function_name = $"$_anon_{function_index}";
+
+            function_table.Add(new SmolFunctionDefn()
+            {
+                globalFunctionName = function_name,
+                code_section = function_index,
+                arity = expr.parameters.Count(),
+                param_variable_names = expr.parameters.Select(p => p.lexeme).ToList()
+            });
+
+            var body = (List<ByteCodeInstruction>)expr.functionBody.Accept(this)!;
+
+            if (!body.Any() || body.Last().opcode != OpCode.RETURN)
+            {
+                body.Add(new ByteCodeInstruction()
+                {
+                    opcode = OpCode.CONST,
+                    operand1 = constants.FindIndex(e => e.type == SmolValueType.Undefined)
+                });
+                body.AppendInstruction(OpCode.RETURN);
+            }
+
+            function_bodies.Add(body);
+
+            // We are declaring a function expression, so the reference to the function needs
+            // to go on the stack so some other code can grab and use it
+            return(new ByteCodeInstruction()
+            {
+                opcode = OpCode.FETCH,
+                operand1 = new SmolVariableDefinition()
+                {
+                    name = function_name
+                }
+            });
         }
     }
 }

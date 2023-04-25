@@ -135,4 +135,21 @@ function aPlusNum(numToAdd) { // Declare a function we can call from .net, with 
         Assert.AreEqual("11", a2);
         Assert.AreEqual(11, x);
     }
+
+    [TestMethod]
+    public void TestMethod6()
+    {
+        var code = @"var a = function() { return 1; };
+                     var b = a();";
+
+        ISmolRuntime vm = SmolVM.Compile(code);
+
+        Console.WriteLine(((SmolVM)vm).Decompile());
+
+        vm.Run();
+
+        var a = vm.GetGlobalVar<int>("b");
+
+        Assert.AreEqual(1, a);
+    }
 }

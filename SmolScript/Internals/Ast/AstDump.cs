@@ -302,5 +302,9 @@ namespace SmolScript.Internals.Ast
             return s.ToString();
         }
 
+        public object? Visit(FunctionExpression expr)
+        {
+            return null;
+        }
     }
 }

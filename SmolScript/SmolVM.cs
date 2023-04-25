@@ -36,7 +36,7 @@ namespace SmolScript
         int code_section = 0;
         int PC = 0; // Program Counter / Instruction Pointer
 
-        bool debug = false;
+        bool _debug = false;
 
         RunMode runMode = RunMode.Paused;
 
@@ -117,12 +117,12 @@ namespace SmolScript
             return new SmolVM(source);
         }
 
-        internal string Decompile()
+        public string Decompile()
         {
             return ByteCodeDisassembler.Disassemble(this.program);
         }
 
-        internal string DumpAst()
+        public string DumpAst()
         {
             return new AstDump().Print(program.astStatements)!;
         }
@@ -186,8 +186,13 @@ namespace SmolScript
 
         public void RunInDebug()
         {
-            debug = true;
+            _debug = true;
             _Run(RunMode.Run);
+        }
+
+        private void debug(string s)
+        {
+
         }
 
         void _Run(RunMode newRunMode)
@@ -200,13 +205,10 @@ namespace SmolScript
             {
                 var instr = program.code_sections[code_section][PC++];
 
-                if (debug)
-                {
-                    Console.WriteLine($"{instr}");//: {System.Environment.TickCount - t}");
+                debug($"{instr}");//: {System.Environment.TickCount - t}");
 
-                    t = System.Environment.TickCount;
-                }
-
+                t = System.Environment.TickCount;
+                
                 try
                 {
                     switch (instr.opcode)
@@ -220,11 +222,8 @@ namespace SmolScript
                             // and place it on the stack
                             stack.Push(program.constants[(int)instr.operand1!]);
 
-                            if (debug)
-                            {
-                                Console.WriteLine($"              [Pushed ${program.constants[(int)instr.operand1!]}]");
-                            }
-
+                            debug($"              [Pushed ${program.constants[(int)instr.operand1!]}]");
+                            
                             break;
 
                         case OpCode.CALL:
@@ -498,11 +497,8 @@ namespace SmolScript
                                 env_in_context.Assign(((SmolVariableDefinition)instr.operand1!).name, value, isPropertySetter);
 
 
-                                if (debug)
-                                {
-                                    Console.WriteLine($"              [Saved ${value}]");
-                                }
-
+                                debug($"              [Saved ${value}]");
+                                    
                                 break;
                             }
 
@@ -542,10 +538,7 @@ namespace SmolScript
                                 {
                                     stack.Push((SmolValue)fetchedValue);
 
-                                    if (debug)
-                                    {
-                                        Console.WriteLine($"              [Loaded ${fetchedValue}]");
-                                    }
+                                    debug($"              [Loaded ${fetchedValue}]");                                    
                                 }
                                 else
                                 {

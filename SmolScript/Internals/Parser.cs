@@ -60,7 +60,9 @@ namespace SmolScript.Internals
 
     expression     → assignment ;
     assignment     → IDENTIFIER "=" assignment
-                   | logical_or ;
+                   | function
+
+    function       -> "function" function | logical_or
 
     logical_or     → logical_and ( ( AND | OR ) logical_and )* ; // ?????
     logical_and    → equality ( ( AND | OR ) equality )* ; // ?????
@@ -576,7 +578,6 @@ namespace SmolScript.Internals
                 var thenExpression = expression(); // This isn't right, need to work out correct order
                 consume(TokenType.COLON, "Expected :");
                 var elseExpression = expression();
-                //consume(TokenType.SEMICOLON, "Expected ;");
 
                 return new TernaryExpression(expr, thenExpression, elseExpression);
             }
@@ -586,7 +587,7 @@ namespace SmolScript.Internals
 
         private Expression assignment()
         {
-            var expr = logicalOr();
+            var expr = functionExpression(); // logicalOr();
 
             if (match(TokenType.EQUAL))
             {
@@ -707,6 +708,44 @@ namespace SmolScript.Internals
             }
 
             return expr;
+        }
+
+        private Expression functionExpression()
+        {
+            if (match(TokenType.FUNC))
+            {
+                _statementCallStack.Push("FUNCTION");
+
+                var functionParams = new List<Token>();
+
+                consume(TokenType.LEFT_BRACKET, "Expected (");
+
+                if (!check(TokenType.RIGHT_BRACKET))
+                {
+                    do
+                    {
+                        if (functionParams.Count() >= 127)
+                        {
+                            error(peek(), "Can't define a function with more than 127 parameters.");
+                        }
+
+                        functionParams.Add(consume(TokenType.IDENTIFIER, "Expected parameter name"));
+                    } while (match(TokenType.COMMA));
+                }
+
+                consume(TokenType.RIGHT_BRACKET, "Expected )");
+                consume(TokenType.LEFT_BRACE, "Expected {");
+
+                var functionBody = block();
+
+                functionBody.isFunctionBody = true;
+
+                _ = _statementCallStack.Pop();
+
+                return new FunctionExpression(functionParams, functionBody);
+            }
+
+            return logicalOr();
         }
 
         private Expression logicalOr()
