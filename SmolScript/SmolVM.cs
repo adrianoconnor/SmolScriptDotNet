@@ -366,11 +366,7 @@ namespace SmolScript
                                 var right = stack.Pop();
                                 var left = stack.Pop();
 
-                                stack.Push(new SmolValue()
-                                {
-                                    type = SmolValueType.Bool,
-                                    value = left.Equals(right)
-                                });
+                                stack.Push(new SmolValue(left.Equals(right)));
 
                                 break;
                             }
@@ -380,11 +376,7 @@ namespace SmolScript
                                 var right = stack.Pop();
                                 var left = stack.Pop();
 
-                                stack.Push(new SmolValue()
-                                {
-                                    type = SmolValueType.Bool,
-                                    value = !left.Equals(right)
-                                });
+                                stack.Push(new SmolValue(!left.Equals(right)));
 
                                 break;
                             }
@@ -512,14 +504,46 @@ namespace SmolScript
                                 if (instr.operand2 != null && (bool)instr.operand2)
                                 {
                                     var objRef = stack.Pop();
-
-                                    env_in_context = ((SmolObjectRef)objRef.value!).object_env;
-
                                     var peek_instr = program.code_sections[code_section][PC];
 
-                                    if (peek_instr.opcode == OpCode.CALL && (bool)peek_instr.operand2!)
+                                    if (objRef.type == SmolValueType.ObjectRef)
                                     {
-                                        stack.Push(objRef);
+                                        env_in_context = ((SmolObjectRef)objRef.value!).object_env;
+
+                                        if (peek_instr.opcode == OpCode.CALL && (bool)peek_instr.operand2!)
+                                        {
+                                            stack.Push(objRef);
+                                        }
+                                    }
+                                    else if (objRef.type == SmolValueType.String)
+                                    {
+                                        // This section (hardcoded to String) is just a POC
+                                        // to show how it works on one specific type.
+                                        // Now we need to abstract it so it can
+                                        // be done for any type, even user types from .net
+
+                                        if (peek_instr.opcode == OpCode.CALL && (bool)peek_instr.operand2!)
+                                        {
+                                            stack.Push(objRef);
+
+                                            // This needs to leave stack so next instruction (CALL)
+                                            // can also lookup the right thing and also call the
+                                            // native func.
+                                        }
+                                        else
+                                        {
+                                            // This is a property getter on the native object
+
+                                            if (name == "length")
+                                            {
+                                                stack.Push(new SmolValue(((string)objRef.value!).Length));
+                                                break;
+                                            }
+                                        }
+                                    }
+                                    else
+                                    {
+                                        throw new Exception($"{objRef.type} is not a valid target for this call");
                                     }
                                 }
 

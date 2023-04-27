@@ -15,6 +15,8 @@ public class UnitTest1
 
         var vm = SmolVM.Compile(src);
 
+        Console.WriteLine(((SmolVM)vm).Decompile());
+
         vm.RunInDebug();
 
         var a = vm.GetGlobalVar<int>("b");

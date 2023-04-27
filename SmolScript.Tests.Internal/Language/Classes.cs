@@ -26,7 +26,7 @@ namespace SmolTests
             Console.WriteLine(dump);
 
             var vm = SmolVM.Compile(source);
-            Assert.ThrowsException<NullReferenceException>(vm.RunInDebug);
+            Assert.ThrowsException<Exception>(vm.RunInDebug);
         }
 
 
