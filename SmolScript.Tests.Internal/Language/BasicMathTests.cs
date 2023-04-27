@@ -24,6 +24,24 @@ namespace SmolTests
         }
 
         [TestMethod]
+        public void BitWiseOr()
+        {
+            var vm = SmolVM.Init("var a = 11 | 4; var b = 12 | 4;");
+
+            Assert.AreEqual(15, vm.GetGlobalVar<int>("a"));
+            Assert.AreEqual(12, vm.GetGlobalVar<int>("b"));
+        }
+
+        [TestMethod]
+        public void BitWiseAnd()
+        {
+            var vm = SmolVM.Init("var a = 11 & 4; var b = 12 & 4;");
+
+            Assert.AreEqual(0, vm.GetGlobalVar<int>("a"));
+            Assert.AreEqual(4, vm.GetGlobalVar<int>("b"));
+        }
+
+        [TestMethod]
         public void SubtractNumbers()
         {
             var program = SmolCompiler.Compile("var a = 3 - 1;");

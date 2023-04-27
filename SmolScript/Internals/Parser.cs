@@ -107,7 +107,7 @@ namespace SmolScript.Internals
             {
                 //try
                 {
-                    while (peek().type == TokenType.SEMICOLON) consume(TokenType.SEMICOLON, "");
+                    //while (peek().type == TokenType.SEMICOLON) consume(TokenType.SEMICOLON, "");
 
                     statements.Add(declaration());
                 }

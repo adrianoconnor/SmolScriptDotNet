@@ -13,11 +13,14 @@ namespace SmolScript
         {
             Run,
             Paused,
-            Step
+            Step,
+            Done
         }
 
         internal SmolProgram program;
 
+        private Action<string>? _DebugLogDelegate;
+        public Action<string> OnDebugLog { set { _DebugLogDelegate = value; } }
 
         private int _MaxStackSize = int.MaxValue;
 
@@ -31,6 +34,15 @@ namespace SmolScript
             {
                 _MaxStackSize = value;
             }
+        }
+
+        public void Reset()
+        {
+            stack.Clear();
+            this.globalEnv = new Internals.Environment();
+            environment = globalEnv;
+            code_section = 0;
+            PC = 0;
         }
 
         int code_section = 0;
@@ -47,7 +59,7 @@ namespace SmolScript
 
         Dictionary<int, int> jmplocs = new Dictionary<int, int>();
 
-        internal readonly SmolScript.Internals.Environment globalEnv = new SmolScript.Internals.Environment();
+        internal SmolScript.Internals.Environment globalEnv = new SmolScript.Internals.Environment();
         internal SmolScript.Internals.Environment environment;
 
         public T GetGlobalVar<T>(string variableName)
@@ -63,6 +75,13 @@ namespace SmolScript
 
         public T Call<T>(string functionName, params object[] args)
         {
+            if (this.runMode != RunMode.Done)
+            {
+                throw new Exception("Init() should be used before calling a function, to ensure the vm state is prepared");
+            }
+
+            this.runMode = RunMode.Paused;
+
             var state = new SmolCallSaveState()
             {
                 code_section = this.code_section,
@@ -116,6 +135,16 @@ namespace SmolScript
         {
             return new SmolVM(source);
         }
+
+        public static ISmolRuntime Init(string source)
+        {
+            var vm = new SmolVM(source);
+
+            vm.Run();
+
+            return vm;
+        }
+
 
         public string Decompile()
         {
@@ -176,23 +205,41 @@ namespace SmolScript
 
         public void Step()
         {
+            if (this.runMode != RunMode.Paused)
+            {
+                throw new Exception("Step() is only allowed when the vm is paused (after invoking the debugger)");
+            }
+
             _Run(RunMode.Step);
         }
 
         public void Run()
         {
+            if (this.runMode == RunMode.Done)
+            {
+                throw new Exception("Program execution is complete, either call Reset() before Run(), or invoke a specific function");
+            }
+
             _Run(RunMode.Run);
         }
 
         public void RunInDebug()
         {
+            if (this.runMode == RunMode.Done)
+            {
+                throw new Exception("Program execution is complete, either Reset() or call a specific function");
+            }
+
             _debug = true;
             _Run(RunMode.Run);
         }
 
         private void debug(string s)
         {
-
+            if (_debug && _DebugLogDelegate != null)
+            {
+                _DebugLogDelegate(s);
+            }
         }
 
         void _Run(RunMode newRunMode)
@@ -421,13 +468,30 @@ namespace SmolScript
                                 break;
                             }
 
-                        case OpCode.EOF:
-
-                            //if (debug)
+                        case OpCode.BITWISE_OR:
                             {
-                                Console.WriteLine($"DONE, TOOK {System.Environment.TickCount - t}");
+                                var right = stack.Pop();
+                                var left = stack.Pop();
+
+                                stack.Push(left | right);
+
+                                break;
                             }
 
+                        case OpCode.BITWISE_AND:
+                            {
+                                var right = stack.Pop();
+                                var left = stack.Pop();
+
+                                stack.Push(left & right);
+
+                                break;
+                            }
+
+                        case OpCode.EOF:
+
+                            this.runMode = RunMode.Done;
+                            
                             return;
 
                         case OpCode.RETURN:
@@ -822,13 +886,13 @@ namespace SmolScript
                     }
                 }
 
+                if (this.stack.Count > _MaxStackSize) throw new Exception("Stack overflow");
+
                 if (this.runMode == RunMode.Step && instr.StepCheckpoint == true)
                 {
                     this.runMode = RunMode.Paused;
                     return;
                 }
-
-                if (this.stack.Count > _MaxStackSize) throw new Exception("Stack overflow");
             }
         }
     }

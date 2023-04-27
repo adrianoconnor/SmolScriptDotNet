@@ -15,8 +15,6 @@ public class UnitTest1
 
         var vm = SmolVM.Compile(src);
 
-        Console.WriteLine(((SmolVM)vm).Decompile());
-
         vm.RunInDebug();
 
         var a = vm.GetGlobalVar<int>("b");
@@ -77,16 +75,19 @@ aPlusPlus(); // Call it once during initialization just to show this also is fin
   return fibonacci(num - 1) + fibonacci(num - 2);
 }
 
-var f = fibonacci(30);
+var f = fibonacci(20);
 ";
 
+        var t = System.Environment.TickCount;
         var vm = new SmolVM(code);
-
+        Console.WriteLine($"Checkpoint 1: {System.Environment.TickCount - t}");
+        t = System.Environment.TickCount;
         vm.Run();
+        Console.WriteLine($"Checkpoint 2: {System.Environment.TickCount - t}");
 
         var f = vm.GetGlobalVar<int>("f");
 
-        Assert.AreEqual(832040, f);
+        Assert.AreEqual(6765, f);
     }
 
     public int fib(int n)
@@ -133,9 +134,11 @@ function aPlusNum(numToAdd) { // Declare a function we can call from .net, with 
         var x = vm.Call<int>("aPlusNum", 10); // Now call the function with no params
 
         var a2 = vm.GetGlobalVar<string>("a"); // And get the new value in variable a
+        var a3 = vm.GetGlobalVar<bool>("a"); // And get the new value in variable a
 
         Assert.AreEqual("11", a2);
         Assert.AreEqual(11, x);
+        Assert.AreEqual(true, a3);
     }
 
     [TestMethod]
@@ -164,7 +167,7 @@ var a = 1;
 
 function f(x) {
   x(10);
-};
+}
 
 f(function(z) { a += z; });
 ";

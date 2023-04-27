@@ -242,6 +242,32 @@ namespace SmolScript.Internals
             throw new Exception($"Unable to compare {a.type} and {b.type}");
         }
 
+        public static SmolValue operator |(SmolValue a, SmolValue b)
+        {
+            if (a.type == SmolValueType.Number && b.type == SmolValueType.Number)
+            {
+                var left = Convert.ToInt64(a.value!);
+                var right = Convert.ToInt64(b.value!);
+
+                return new SmolValue(left | right);
+            }
+
+            throw new Exception($"Unable to compare {a.type} and {b.type}");
+        }
+
+        public static SmolValue operator &(SmolValue a, SmolValue b)
+        {
+            if (a.type == SmolValueType.Number && b.type == SmolValueType.Number)
+            {
+                var left = Convert.ToInt64(a.value!);
+                var right = Convert.ToInt64(b.value!);
+
+                return new SmolValue(left & right);
+            }
+
+            throw new Exception($"Unable to compare {a.type} and {b.type}");
+        }
+
         public SmolValue Power(SmolValue power)
         {
             if (this.type == SmolValueType.Number && power.type == SmolValueType.Number)

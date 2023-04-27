@@ -142,7 +142,7 @@ public class UnitTest1
     [TestMethod]
     public void SimpleVmFunctionTest()
     {
-        var program = SmolCompiler.Compile(@"function f() { return 2; }; var a = f();");
+        var program = SmolCompiler.Compile(@"function f() { return 2; } var a = f();");
 
         var vm = new SmolVM(program);
 
@@ -154,7 +154,7 @@ public class UnitTest1
     [TestMethod]
     public void SimpleDisassembleTest()
     {
-        var program = SmolCompiler.Compile(@"function f(p1) { return p1 * 2; }; var a = f(1);");
+        var program = SmolCompiler.Compile(@"function f(p1) { return p1 * 2; } var a = f(1);");
 
         var output = ByteCodeDisassembler.Disassemble(program);
 

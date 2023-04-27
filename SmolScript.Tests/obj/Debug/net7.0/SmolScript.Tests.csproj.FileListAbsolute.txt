@@ -5,7 +5,6 @@
 /Users/adrian/Projects/Temp/smolscript-dotnet/smolscript/SmolScript.Tests/obj/Debug/net7.0/SmolScript.Tests.csproj.CoreCompileInputs.cache
 /Users/adrian/Projects/Temp/smolscript-dotnet/smolscript/SmolScript.Tests/bin/Debug/net7.0/CoverletSourceRootsMapping
 /Users/adrian/Projects/Temp/smolscript-dotnet/smolscript/SmolScript.Tests/bin/Debug/net7.0/Microsoft.VisualStudio.TestPlatform.MSTest.TestAdapter.dll
-/Users/adrian/Projects/Temp/smolscript-dotnet/smolscript/SmolScript.Tests/bin/Debug/net7.0/Microsoft.VisualStudio.TestPlatform.MSTestAdapter.PlatformServices.Interface.dll
 /Users/adrian/Projects/Temp/smolscript-dotnet/smolscript/SmolScript.Tests/bin/Debug/net7.0/Microsoft.VisualStudio.TestPlatform.MSTestAdapter.PlatformServices.dll
 /Users/adrian/Projects/Temp/smolscript-dotnet/smolscript/SmolScript.Tests/bin/Debug/net7.0/Microsoft.TestPlatform.AdapterUtilities.dll
 /Users/adrian/Projects/Temp/smolscript-dotnet/smolscript/SmolScript.Tests/bin/Debug/net7.0/SmolScript.Tests.deps.json
@@ -99,3 +98,16 @@
 /Users/adrian/Projects/Temp/smolscript-dotnet/smolscript/SmolScript.Tests/obj/Debug/net7.0/SmolScript.Tests.pdb
 /Users/adrian/Projects/Temp/smolscript-dotnet/smolscript/SmolScript.Tests/obj/Debug/net7.0/SmolScript.Tests.genruntimeconfig.cache
 /Users/adrian/Projects/Temp/smolscript-dotnet/smolscript/SmolScript.Tests/obj/Debug/net7.0/ref/SmolScript.Tests.dll
+/Users/adrian/Projects/Temp/smolscript-dotnet/smolscript/SmolScript.Tests/bin/Debug/net7.0/cs/Microsoft.VisualStudio.TestPlatform.TestFramework.resources.dll
+/Users/adrian/Projects/Temp/smolscript-dotnet/smolscript/SmolScript.Tests/bin/Debug/net7.0/de/Microsoft.VisualStudio.TestPlatform.TestFramework.resources.dll
+/Users/adrian/Projects/Temp/smolscript-dotnet/smolscript/SmolScript.Tests/bin/Debug/net7.0/es/Microsoft.VisualStudio.TestPlatform.TestFramework.resources.dll
+/Users/adrian/Projects/Temp/smolscript-dotnet/smolscript/SmolScript.Tests/bin/Debug/net7.0/fr/Microsoft.VisualStudio.TestPlatform.TestFramework.resources.dll
+/Users/adrian/Projects/Temp/smolscript-dotnet/smolscript/SmolScript.Tests/bin/Debug/net7.0/it/Microsoft.VisualStudio.TestPlatform.TestFramework.resources.dll
+/Users/adrian/Projects/Temp/smolscript-dotnet/smolscript/SmolScript.Tests/bin/Debug/net7.0/ja/Microsoft.VisualStudio.TestPlatform.TestFramework.resources.dll
+/Users/adrian/Projects/Temp/smolscript-dotnet/smolscript/SmolScript.Tests/bin/Debug/net7.0/ko/Microsoft.VisualStudio.TestPlatform.TestFramework.resources.dll
+/Users/adrian/Projects/Temp/smolscript-dotnet/smolscript/SmolScript.Tests/bin/Debug/net7.0/pl/Microsoft.VisualStudio.TestPlatform.TestFramework.resources.dll
+/Users/adrian/Projects/Temp/smolscript-dotnet/smolscript/SmolScript.Tests/bin/Debug/net7.0/pt-BR/Microsoft.VisualStudio.TestPlatform.TestFramework.resources.dll
+/Users/adrian/Projects/Temp/smolscript-dotnet/smolscript/SmolScript.Tests/bin/Debug/net7.0/ru/Microsoft.VisualStudio.TestPlatform.TestFramework.resources.dll
+/Users/adrian/Projects/Temp/smolscript-dotnet/smolscript/SmolScript.Tests/bin/Debug/net7.0/tr/Microsoft.VisualStudio.TestPlatform.TestFramework.resources.dll
+/Users/adrian/Projects/Temp/smolscript-dotnet/smolscript/SmolScript.Tests/bin/Debug/net7.0/zh-Hans/Microsoft.VisualStudio.TestPlatform.TestFramework.resources.dll
+/Users/adrian/Projects/Temp/smolscript-dotnet/smolscript/SmolScript.Tests/bin/Debug/net7.0/zh-Hant/Microsoft.VisualStudio.TestPlatform.TestFramework.resources.dll

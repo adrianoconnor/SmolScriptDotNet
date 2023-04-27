@@ -143,14 +143,14 @@ namespace SmolScript.Internals
                     chunk.AppendInstruction(OpCode.LTE);
                     break;
 
-                /* We can live without these for now, let's do logical first
                 case TokenType.BITWISE_AND:
-                    chunk.AppendInstruction(OpCode.AND);
+                    chunk.AppendInstruction(OpCode.BITWISE_AND);
                     break;
 
                 case TokenType.BITWISE_OR:
-                    chunk.AppendInstruction(OpCode.OR);
-                */
+                    chunk.AppendInstruction(OpCode.BITWISE_OR);
+                    break;
+
                 default:
                     throw new NotImplementedException();
             }
