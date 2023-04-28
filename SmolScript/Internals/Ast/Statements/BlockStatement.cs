@@ -3,12 +3,10 @@
     internal class BlockStatement : Statement
     {
         public readonly IList<Statement> statements;
-        public bool isFunctionBody;
 
-        public BlockStatement(IList<Statement> statements, bool isFunctionBody = false)
+        public BlockStatement(IList<Statement> statements)
         {
             this.statements = statements;
-            this.isFunctionBody = isFunctionBody;
         }
 
         public override object? Accept(IStatementVisitor visitor)

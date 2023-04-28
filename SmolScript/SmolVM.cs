@@ -680,7 +680,7 @@ namespace SmolScript
 
                         case OpCode.ENTER_SCOPE:
                             {
-                                this.environment = new SmolScript.Internals.Environment(this.environment);
+                                this.environment = new Internals.Environment(this.environment);
                                 break;
                             }
 
@@ -692,7 +692,6 @@ namespace SmolScript
 
                         case OpCode.DEBUGGER:
                             {
-                                //break;
                                 this.runMode = RunMode.Paused;
                                 return;
                             }

@@ -598,13 +598,6 @@ namespace SmolScript.Internals
                 chunk.AppendChunk(blockStmt.Accept(this));
             }
 
-            if (stmt.isFunctionBody)
-            {
-                // If this block is the block for a function body we always stick a return void at the end,
-                // just incase the user is not explicitly returning. We def want to go back.
-                //chunk.AppendInstruction(OpCode.RETURN);
-            }
-
             chunk.AppendInstruction(OpCode.LEAVE_SCOPE);
 
             return chunk;

@@ -105,15 +105,15 @@ namespace SmolScript.Internals
 
             while (!ReachedEnd())
             {
-                //try
+                try
                 {
                     //while (peek().type == TokenType.SEMICOLON) consume(TokenType.SEMICOLON, "");
 
                     statements.Add(declaration());
                 }
-                //catch (ParseError e)
+                catch (ParseError e)
                 {
-                //    errors.Add(e);
+                    errors.Add(e);
                 }
             }
 
@@ -266,8 +266,6 @@ namespace SmolScript.Internals
 
             var functionBody = block();
 
-            functionBody.isFunctionBody = true;
-
             _ = _statementCallStack.Pop();
 
             return new FunctionStatement(functionName, functionParams, functionBody);
@@ -292,7 +290,6 @@ namespace SmolScript.Internals
         {
             Token className = consume(TokenType.IDENTIFIER, "Expected class name");
             Token? superclassName = null;
-            FunctionStatement? ctor = null;
             List<FunctionStatement> functions = new List<FunctionStatement>();
 
             if (match(TokenType.COLON))
@@ -316,7 +313,7 @@ namespace SmolScript.Internals
 
             consume(TokenType.RIGHT_BRACE, "Expected }");
 
-            return new ClassStatement(className, superclassName, ctor, functions);
+            return new ClassStatement(className, superclassName, functions);
         }
 
 
@@ -737,8 +734,6 @@ namespace SmolScript.Internals
                 consume(TokenType.LEFT_BRACE, "Expected {");
 
                 var functionBody = block();
-
-                functionBody.isFunctionBody = true;
 
                 _ = _statementCallStack.Pop();
 
