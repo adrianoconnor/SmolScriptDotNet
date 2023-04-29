@@ -218,7 +218,9 @@ f();");
 
         var vm = new SmolVM(program);
 
-        vm.OnDebugLog = Console.WriteLine;
+        Console.WriteLine(vm.Decompile());
+
+        //vm.OnDebugLog = Console.WriteLine;
 
         Assert.ThrowsException<NullReferenceException>(vm.RunInDebug);
 

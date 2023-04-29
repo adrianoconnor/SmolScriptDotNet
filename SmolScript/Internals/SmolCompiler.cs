@@ -262,7 +262,8 @@ namespace SmolScript.Internals
 
             var value = SmolStackValue.Create(expr.value);
 
-            var cIndex = constants.IndexOf(value);
+            // Todo: Got some real weirdness with comparison of SmolStackTypes, not sure what I've done here..
+            var cIndex = constants.FindIndex(c => c.GetType() == value.GetType() && (c.GetValue()?.Equals(value.GetValue()) ?? false)!);
 
             if (cIndex == -1)
             {

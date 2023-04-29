@@ -239,7 +239,7 @@ namespace SmolScript.Internals.SmolStackTypes
             throw new Exception($"Unable to calculate power for");// {this.type} and {power.type}");
         }
         
-
+        /*
         public override bool Equals([NotNullWhen(true)] object? obj)
         {
             return base.Equals(obj);
@@ -255,12 +255,12 @@ namespace SmolScript.Internals.SmolStackTypes
             {
                 return ((string)this.value!).GetHashCode();
             }
-            else */
+            else 
             {
                 return base.GetHashCode();
             }
         }
-
+*/
         public bool IsTruthy()
         {
             return (bool)this.GetValue()! == true;
