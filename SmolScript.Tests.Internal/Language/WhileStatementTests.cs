@@ -32,8 +32,8 @@ while(a < 100000 && alwaysTrue()) {
 
             vm.Run();
 
-            Assert.AreEqual(100000.0, ((SmolValue)vm.globalEnv.Get("a")!).value);
-            Assert.AreEqual(100000.0, ((SmolValue)vm.globalEnv.Get("alwaysTrueCalled")!).value);
+            Assert.AreEqual(100000.0, vm.GetGlobalVar<double>("a"));
+            Assert.AreEqual(100000.0, vm.GetGlobalVar<double>("alwaysTrueCalled"));
         }
 
         [TestMethod]
@@ -51,7 +51,7 @@ for(var b = 0; b < 10; b++) {
 
             vm.Run();
 
-            Assert.AreEqual(10.0, ((SmolValue)vm.globalEnv.Get("a")!).value);
+            Assert.AreEqual(10.0, vm.GetGlobalVar<double>("a"));
         }
 
         [TestMethod]
@@ -77,8 +77,8 @@ while(a <= 10) {
 
             vm.Run();
 
-            Assert.AreEqual(5.0, ((SmolValue)vm.globalEnv.Get("a")!).value);
-            Assert.AreEqual(6.0, ((SmolValue)vm.globalEnv.Get("b")!).value);
+            Assert.AreEqual(5.0, vm.GetGlobalVar<double>("a"));
+            Assert.AreEqual(6.0, vm.GetGlobalVar<double>("b"));
         }
     
 
@@ -103,8 +103,8 @@ while(++a <= 10) {
 
             vm.Run();
 
-            Assert.AreEqual(11.0, ((SmolValue)vm.globalEnv.Get("a")!).value);
-            Assert.AreEqual(4.0, ((SmolValue)vm.globalEnv.Get("b")!).value);
+            Assert.AreEqual(11.0, vm.GetGlobalVar<double>("a"));
+            Assert.AreEqual(4.0, vm.GetGlobalVar<double>("b"));
         }
 
     }

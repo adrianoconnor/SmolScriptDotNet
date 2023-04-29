@@ -2,6 +2,7 @@ using System.Text;
 
 using SmolScript.Internals.Ast.Expressions;
 using SmolScript.Internals.Ast.Statements;
+using SmolScript.Internals.SmolStackTypes;
 
 namespace SmolScript.Internals
 {
@@ -14,18 +15,18 @@ namespace SmolScript.Internals
             return _nextLabel++;
         }
 
-        private List<SmolFunctionDefn> function_table = new List<SmolFunctionDefn>();
+        private List<SmolFunction> function_table = new List<SmolFunction>();
         private List<List<ByteCodeInstruction>> function_bodies = new List<List<ByteCodeInstruction>>();
         private Dictionary<string, string?> class_table = new Dictionary<string, string?>();
 
-        private List<SmolValue> constants = new List<SmolValue>()
+        private List<SmolStackValue> constants = new List<SmolStackValue>()
         {
-            new SmolValue(true),
-            new SmolValue(false),
-            new SmolValue(0.0),
-            new SmolValue(1.0),
-            new SmolValue() { type = SmolValueType.Undefined },
-            new SmolValue() { type = SmolValueType.Null }
+            new SmolBool(true),
+            new SmolBool(false),
+            new SmolNumber(0.0),
+            new SmolNumber(1.0),
+            new SmolUndefined(),
+            new SmolNull()
         };
 
         private List<ByteCodeInstruction> EmitChunk(IList<Statement> stmts)
@@ -199,7 +200,7 @@ namespace SmolScript.Internals
                     chunk.AppendChunk(new ByteCodeInstruction()
                     {
                         opcode = OpCode.CONST,
-                        operand1 = constants.FindIndex(e => e.type == SmolValueType.Bool && (bool)e.value! == false)
+                        operand1 = constants.FindIndex(e => e.GetType() == typeof(SmolBool) && (bool)e.GetValue()! == false)
                     });
 
                     chunk.AppendChunk(new ByteCodeInstruction()
@@ -234,7 +235,7 @@ namespace SmolScript.Internals
                     chunk.AppendChunk(new ByteCodeInstruction()
                     {
                         opcode = OpCode.CONST,
-                        operand1 = constants.FindIndex(e => e.type == SmolValueType.Bool && (bool)e.value! == true)
+                        operand1 = constants.FindIndex(e => e.GetType() == typeof(SmolBool) && (bool)e.GetValue()! == true)
                     });
 
                     chunk.AppendChunk(new ByteCodeInstruction()
@@ -259,7 +260,7 @@ namespace SmolScript.Internals
             // Literal is always a constant, so see if we've got this
             // literal in our list of constants and add it if we need to
 
-            var value = new SmolValue(expr.value);
+            var value = SmolStackValue.Create(expr.value);
 
             var cIndex = constants.IndexOf(value);
 
@@ -299,7 +300,7 @@ namespace SmolScript.Internals
                         chunk.AppendChunk(new ByteCodeInstruction()
                         {
                             opcode = OpCode.CONST,
-                            operand1 = constants.FindIndex(e => e.type == SmolValueType.Bool && (bool)e.value! == true)
+                            operand1 = constants.FindIndex(e => e.GetType() == typeof(SmolBool) && (bool)e.GetValue()! == true)
                         });
 
                         chunk.AppendChunk(new ByteCodeInstruction()
@@ -318,7 +319,7 @@ namespace SmolScript.Internals
                         chunk.AppendChunk(new ByteCodeInstruction()
                         {
                             opcode = OpCode.CONST,
-                            operand1 = constants.FindIndex(e => e.type == SmolValueType.Bool && (bool)e.value! == false)
+                            operand1 = constants.FindIndex(e => e.GetType() == typeof(SmolBool) && (bool)e.GetValue()! == false)
                         });
 
                         chunk.AppendChunk(new ByteCodeInstruction()
@@ -335,7 +336,7 @@ namespace SmolScript.Internals
                     chunk.AppendChunk(new ByteCodeInstruction()
                     {
                         opcode = OpCode.CONST,
-                        operand1 = constants.FindIndex(e => e.type == SmolValueType.Number && (double)e.value! == 0.0)
+                        operand1 = constants.FindIndex(e => e.GetType() == typeof(SmolNumber) && (double)e.GetValue()! == 0.0)
                     });
 
                     chunk.AppendChunk(expr.right.Accept(this));
@@ -378,7 +379,7 @@ namespace SmolScript.Internals
                     chunk.AppendChunk(new ByteCodeInstruction()
                     {
                         opcode = OpCode.CONST,
-                        operand1 = constants.FindIndex(e => e.type == SmolValueType.Number && (double)e.value! == 1.0)
+                        operand1 = constants.FindIndex(e => e.GetType() == typeof(SmolNumber) && (double)e.GetValue()! == 1.0)
                     });
 
                     chunk.AppendInstruction(OpCode.ADD);
@@ -407,7 +408,7 @@ namespace SmolScript.Internals
                     chunk.AppendChunk(new ByteCodeInstruction()
                     {
                         opcode = OpCode.CONST,
-                        operand1 = constants.FindIndex(e => e.type == SmolValueType.Number && (double)e.value! == 1.0)
+                        operand1 = constants.FindIndex(e => e.GetType() == typeof(SmolNumber) && (double)e.GetValue()! == 1.0)
                     });
 
                     chunk.AppendInstruction(OpCode.SUB);
@@ -427,7 +428,7 @@ namespace SmolScript.Internals
                     chunk.AppendChunk(new ByteCodeInstruction()
                     {
                         opcode = OpCode.CONST,
-                        operand1 = constants.FindIndex(e => e.type == SmolValueType.Number && (double)e.value! == 1.0)
+                        operand1 = constants.FindIndex(e => e.GetType() == typeof(SmolNumber) && (double)e.GetValue()! == 1.0)
                     });
 
                     chunk.AppendInstruction(OpCode.ADD);
@@ -456,7 +457,7 @@ namespace SmolScript.Internals
                     chunk.AppendChunk(new ByteCodeInstruction()
                     {
                         opcode = OpCode.CONST,
-                        operand1 = constants.FindIndex(e => e.type == SmolValueType.Number && (double)e.value! == 1.0)
+                        operand1 = constants.FindIndex(e => e.GetType() == typeof(SmolNumber) && (double)e.GetValue()! == 1.0)
                     });
 
                     chunk.AppendInstruction(OpCode.SUB);
@@ -625,7 +626,7 @@ namespace SmolScript.Internals
                 chunk.AppendChunk(new ByteCodeInstruction()
                 {
                     opcode = OpCode.CONST,
-                    operand1 = constants.FindIndex(e => e.type == SmolValueType.Undefined)
+                    operand1 = constants.FindIndex(e => e.GetType() == typeof(SmolUndefined))
                 });
             }
 
@@ -919,13 +920,12 @@ namespace SmolScript.Internals
             var function_index = function_bodies.Count() + 1;
             var function_name = stmt.name?.lexeme! ?? $"$_anon_{function_index}";
 
-            function_table.Add(new SmolFunctionDefn()
-            {
-                globalFunctionName = function_name,
-                code_section = function_index,
-                arity = stmt.parameters.Count(),
-                param_variable_names = stmt.parameters.Select(p => p.lexeme).ToList()
-            });
+            function_table.Add(new SmolFunction(            
+                global_function_name: function_name,
+                code_section: function_index,
+                arity: stmt.parameters.Count(),
+                param_variable_names: stmt.parameters.Select(p => p.lexeme).ToList()
+            ));
 
             var body = (List<ByteCodeInstruction>)stmt.functionBody.Accept(this)!;
 
@@ -934,7 +934,7 @@ namespace SmolScript.Internals
                 body.Add(new ByteCodeInstruction()
                 {
                     opcode = OpCode.CONST,
-                    operand1 = constants.FindIndex(e => e.type == SmolValueType.Undefined)
+                    operand1 = constants.FindIndex(e => e.GetType() == typeof(SmolUndefined))
                 });
                 body.AppendInstruction(OpCode.RETURN);
             }
@@ -967,13 +967,12 @@ namespace SmolScript.Internals
                 var function_index = function_bodies.Count() + 1;
                 var function_name = $"@{stmt.className.lexeme}.{fn.name!.lexeme}";
 
-                function_table.Add(new SmolFunctionDefn()
-                {
-                    globalFunctionName = function_name,
-                    code_section = function_index,
-                    arity = fn.parameters.Count(),
-                    param_variable_names = fn.parameters.Select(p => p.lexeme).ToList()
-                });
+                function_table.Add(new SmolFunction(
+                    global_function_name: function_name,
+                    code_section: function_index,
+                    arity: fn.parameters.Count(),
+                    param_variable_names: fn.parameters.Select(p => p.lexeme).ToList()
+                ));
 
                 var body = (List<ByteCodeInstruction>)fn.functionBody.Accept(this)!;
 
@@ -982,7 +981,7 @@ namespace SmolScript.Internals
                     body.Add(new ByteCodeInstruction()
                     {
                         opcode = OpCode.CONST,
-                        operand1 = constants.FindIndex(e => e.type == SmolValueType.Undefined)
+                        operand1 = constants.FindIndex(e => e.GetType() == typeof(SmolUndefined))
                     });
                     body.AppendInstruction(OpCode.RETURN);
                 }
@@ -1118,13 +1117,12 @@ namespace SmolScript.Internals
             var function_index = function_bodies.Count() + 1;
             var function_name = $"$_anon_{function_index}";
 
-            function_table.Add(new SmolFunctionDefn()
-            {
-                globalFunctionName = function_name,
-                code_section = function_index,
-                arity = expr.parameters.Count(),
-                param_variable_names = expr.parameters.Select(p => p.lexeme).ToList()
-            });
+            function_table.Add(new SmolFunction(
+                global_function_name: function_name,
+                code_section: function_index,
+                arity: expr.parameters.Count(),
+                param_variable_names: expr.parameters.Select(p => p.lexeme).ToList()
+            ));
 
             var body = (List<ByteCodeInstruction>)expr.functionBody.Accept(this)!;
 
@@ -1133,7 +1131,7 @@ namespace SmolScript.Internals
                 body.Add(new ByteCodeInstruction()
                 {
                     opcode = OpCode.CONST,
-                    operand1 = constants.FindIndex(e => e.type == SmolValueType.Undefined)
+                    operand1 = constants.FindIndex(e => e.GetType() == typeof(SmolUndefined))
                 });
                 body.AppendInstruction(OpCode.RETURN);
             }

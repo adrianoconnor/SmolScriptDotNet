@@ -24,11 +24,11 @@ namespace SmolTests
             
             vm.Step();
 
-            Assert.AreEqual(10.0, ((SmolValue)vm.globalEnv.Get("a")!).value);
+            Assert.AreEqual(10.0, vm.GetGlobalVar<double>("a"));
 
             vm.Run();
 
-            Assert.AreEqual(11.0, ((SmolValue)vm.globalEnv.Get("a")!).value);
+            Assert.AreEqual(11.0, vm.GetGlobalVar<double>("a"));
         }
 
     }

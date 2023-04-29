@@ -48,7 +48,7 @@ namespace SmolTests
 
             vm.Run();
 
-            Assert.AreEqual(2.0, ((SmolValue)vm.globalEnv.Get("a")!).value);
+            Assert.AreEqual(2.0, vm.GetGlobalVar<double>("a"));
         }
 
         [TestMethod]
@@ -89,13 +89,13 @@ namespace SmolTests
 
             vm.Run();
 
-            Assert.AreEqual(3.0, ((SmolValue)vm.globalEnv.Get("a")!).value);
+            Assert.AreEqual(3.0, vm.GetGlobalVar<double>("a"));
 
             vm.Run();
 
-            Assert.AreEqual(4.0, ((SmolValue)vm.globalEnv.Get("a")!).value);
+            Assert.AreEqual(4.0, vm.GetGlobalVar<double>("a"));
 
-            Assert.AreEqual(4.0, ((SmolValue)vm.globalEnv.Get("b")!).value);
+            Assert.AreEqual(4.0, vm.GetGlobalVar<double>("b"));
         }
 
     }

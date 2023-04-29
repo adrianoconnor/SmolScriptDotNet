@@ -21,7 +21,7 @@ namespace SmolScript.Internals
 
 			foreach (var fn in program.function_table)
 			{
-                sb.AppendLine($"Name: {fn.globalFunctionName} (code_section = {fn.code_section}, arity = {fn.arity})");
+                sb.AppendLine($"Name: {fn.global_function_name} (code_section = {fn.code_section}, arity = {fn.arity})");
             }
 
             for (int i = 0; i < program.code_sections.Count; i++)

@@ -20,8 +20,8 @@ namespace SmolTests
 
             vm.Run();
 
-            Assert.AreEqual(true, ((SmolValue)vm.globalEnv.Get("a")!).value);
-            Assert.AreEqual(false, ((SmolValue)vm.globalEnv.Get("b")!).value);
+            Assert.AreEqual(true, vm.GetGlobalVar<bool>("a"));
+            Assert.AreEqual(false, vm.GetGlobalVar<bool>("b"));
         }
 
         [TestMethod]
@@ -33,8 +33,8 @@ namespace SmolTests
 
             vm.Run();
 
-            Assert.AreEqual(true, ((SmolValue)vm.globalEnv.Get("a")!).value);
-            Assert.AreEqual(false, ((SmolValue)vm.globalEnv.Get("b")!).value);
+            Assert.AreEqual(false, vm.GetGlobalVar<bool>("b"));
+            Assert.AreEqual(true, vm.GetGlobalVar<bool>("a"));
         }
 
         [TestMethod]
@@ -46,8 +46,8 @@ namespace SmolTests
 
             vm.Run();
 
-            Assert.AreEqual(true, ((SmolValue)vm.globalEnv.Get("a")!).value);
-            Assert.AreEqual(false, ((SmolValue)vm.globalEnv.Get("b")!).value);
+            Assert.AreEqual(true, vm.GetGlobalVar<bool>("a"));
+            Assert.AreEqual(false, vm.GetGlobalVar<bool>("b"));
         }
 
         [TestMethod]
@@ -59,8 +59,8 @@ namespace SmolTests
 
             vm.Run();
 
-            Assert.AreEqual(true, ((SmolValue)vm.globalEnv.Get("a")!).value);
-            Assert.AreEqual(true, ((SmolValue)vm.globalEnv.Get("b")!).value);
+            Assert.AreEqual(true, vm.GetGlobalVar<bool>("a"));
+            Assert.AreEqual(true, vm.GetGlobalVar<bool>("b"));
         }
 
         [TestMethod]
@@ -72,8 +72,8 @@ namespace SmolTests
 
             vm.Run();
 
-            Assert.AreEqual(true, ((SmolValue)vm.globalEnv.Get("a")!).value);
-            Assert.AreEqual(false, ((SmolValue)vm.globalEnv.Get("b")!).value);
+            Assert.AreEqual(true, vm.GetGlobalVar<bool>("a"));
+            Assert.AreEqual(false, vm.GetGlobalVar<bool>("b"));
         }
 
         [TestMethod]
@@ -85,8 +85,8 @@ namespace SmolTests
 
             vm.Run();
 
-            Assert.AreEqual(true, ((SmolValue)vm.globalEnv.Get("a")!).value);
-            Assert.AreEqual(true, ((SmolValue)vm.globalEnv.Get("b")!).value);
+            Assert.AreEqual(true, vm.GetGlobalVar<bool>("a"));
+            Assert.AreEqual(true, vm.GetGlobalVar<bool>("b"));
         }
 
         [TestMethod]
@@ -98,8 +98,8 @@ namespace SmolTests
 
             vm.Run();
 
-            Assert.AreEqual(true, ((SmolValue)vm.globalEnv.Get("a")!).value);
-            Assert.AreEqual(false, ((SmolValue)vm.globalEnv.Get("b")!).value);
+            Assert.AreEqual(true, vm.GetGlobalVar<bool>("a"));
+            Assert.AreEqual(false, vm.GetGlobalVar<bool>("b"));
         }
     }
 }

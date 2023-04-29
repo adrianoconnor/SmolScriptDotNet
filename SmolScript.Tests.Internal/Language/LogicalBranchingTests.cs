@@ -39,9 +39,9 @@ else
 
             vm.Run();
 
-            Assert.AreEqual(2.0, ((SmolValue)vm.globalEnv.Get("a")!).value);
-            Assert.AreEqual(1.0, ((SmolValue)vm.globalEnv.Get("alwaysTrueCalled")!).value);
-            Assert.AreEqual(1.0, ((SmolValue)vm.globalEnv.Get("alwaysFalseCalled")!).value);
+            Assert.AreEqual(2.0, vm.GetGlobalVar<double>("a"));
+            Assert.AreEqual(1.0, vm.GetGlobalVar<double>("alwaysTrueCalled"));
+            Assert.AreEqual(1.0, vm.GetGlobalVar<double>("alwaysFalseCalled"));
         }
 
         [TestMethod]
@@ -72,9 +72,9 @@ else
 
             vm.Run();
 
-            Assert.AreEqual(2.0, ((SmolValue)vm.globalEnv.Get("a")!).value);
-            Assert.AreEqual(0.0, ((SmolValue)vm.globalEnv.Get("alwaysTrueCalled")!).value);
-            Assert.AreEqual(1.0, ((SmolValue)vm.globalEnv.Get("alwaysFalseCalled")!).value);
+            Assert.AreEqual(2.0, vm.GetGlobalVar<double>("a"));
+            Assert.AreEqual(0.0, vm.GetGlobalVar<double>("alwaysTrueCalled"));
+            Assert.AreEqual(1.0, vm.GetGlobalVar<double>("alwaysFalseCalled"));
         }
 
 
@@ -106,9 +106,9 @@ else
 
             vm.Run();
 
-            Assert.AreEqual(1.0, ((SmolValue)vm.globalEnv.Get("a")!).value);
-            Assert.AreEqual(1.0, ((SmolValue)vm.globalEnv.Get("alwaysTrueCalled")!).value);
-            Assert.AreEqual(1.0, ((SmolValue)vm.globalEnv.Get("alwaysFalseCalled")!).value);
+            Assert.AreEqual(1.0, vm.GetGlobalVar<double>("a"));
+            Assert.AreEqual(1.0, vm.GetGlobalVar<double>("alwaysTrueCalled"));
+            Assert.AreEqual(1.0, vm.GetGlobalVar<double>("alwaysFalseCalled"));
         }
 
         [TestMethod]
@@ -139,9 +139,9 @@ else
 
             vm.Run();
 
-            Assert.AreEqual(1.0, ((SmolValue)vm.globalEnv.Get("a")!).value);
-            Assert.AreEqual(1.0, ((SmolValue)vm.globalEnv.Get("alwaysTrueCalled")!).value);
-            Assert.AreEqual(0.0, ((SmolValue)vm.globalEnv.Get("alwaysFalseCalled")!).value);
+            Assert.AreEqual(1.0, vm.GetGlobalVar<double>("a"));
+            Assert.AreEqual(1.0, vm.GetGlobalVar<double>("alwaysTrueCalled"));
+            Assert.AreEqual(0.0, vm.GetGlobalVar<double>("alwaysFalseCalled"));
         }
     }
 }

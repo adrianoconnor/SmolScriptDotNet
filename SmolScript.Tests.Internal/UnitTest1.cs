@@ -1,5 +1,6 @@
 ﻿using SmolScript;
 using SmolScript.Internals;
+using SmolScript.Internals.SmolStackTypes;
 //using SmolScript.Internals.Ast.Interpreter;
 
 namespace SmolTests;
@@ -69,7 +70,7 @@ public class UnitTest1
         var program = SmolCompiler.Compile("5 * (3 - 1);");
 
         Assert.AreEqual(OpCode.CONST, program.code_sections[0][0].opcode);
-        Assert.AreEqual(5.0, ((SmolValue)program.constants[(int)((program.code_sections[0][0]).operand1!)]).value!);
+        Assert.AreEqual(5.0, ((SmolNumber)program.constants[(int)((program.code_sections[0][0]).operand1!)]).GetValue());
         Assert.AreEqual(OpCode.CONST, program.code_sections[0][1].opcode);
         Assert.AreEqual(OpCode.CONST, program.code_sections[0][2].opcode);
         Assert.AreEqual(OpCode.SUB, program.code_sections[0][3].opcode);
@@ -84,7 +85,7 @@ public class UnitTest1
         Assert.AreEqual(OpCode.DECLARE, program.code_sections[0][0].opcode);
         Assert.AreEqual("a", ((SmolVariableDefinition)program.code_sections[0][0].operand1!).name);
         Assert.AreEqual(OpCode.CONST, program.code_sections[0][1].opcode);
-        Assert.AreEqual(5.0, ((SmolValue)program.constants[(int)((program.code_sections[0][1]).operand1!)]).value!);
+        Assert.AreEqual(5.0, ((SmolNumber)program.constants[(int)((program.code_sections[0][1]).operand1!)]).GetValue());
         Assert.AreEqual(OpCode.CONST, program.code_sections[0][2].opcode);
         Assert.AreEqual(OpCode.CONST, program.code_sections[0][3].opcode);
         Assert.AreEqual(OpCode.SUB, program.code_sections[0][4].opcode);
@@ -112,7 +113,7 @@ public class UnitTest1
 
         vm.Run();
 
-        Assert.AreEqual(2.0, (double)(((SmolValue)vm.globalEnv.Get("a")!).value!));
+        Assert.AreEqual(2.0, vm.GetGlobalVar<double>("a"));
     }
 
     [TestMethod]
@@ -124,7 +125,7 @@ public class UnitTest1
 
         vm.Run();
 
-        Assert.AreEqual(2.0, (double)(((SmolValue)vm.globalEnv.Get("a")!).value!));
+        Assert.AreEqual(2.0, vm.GetGlobalVar<double>("a"));
     }
 
     [TestMethod]
@@ -136,7 +137,7 @@ public class UnitTest1
 
         vm.Run();
 
-        Assert.AreEqual(2.0, (double)(((SmolValue)vm.globalEnv.Get("a")!).value!));
+        Assert.AreEqual(2.0, vm.GetGlobalVar<double>("a"));
     }
 
     [TestMethod]
@@ -148,7 +149,7 @@ public class UnitTest1
 
         vm.Run();
 
-        Assert.AreEqual(2.0, (double)(((SmolValue)vm.globalEnv.Get("a")!).value!));
+        Assert.AreEqual(2.0, vm.GetGlobalVar<double>("a"));
     }
 
     [TestMethod]
@@ -203,11 +204,23 @@ public class UnitTest1
     [TestMethod]
     public void UndefinedVar()
     {
-        var program = SmolCompiler.Compile(@"var b = 0; function f() { return a == 2; } 1 == 2; 2 == 3; f();");
+        var program = SmolCompiler.Compile(@"
+var b = 0;
+
+function f() {
+  return a == 2; // a does not exist!
+}
+
+1 == 2;
+2 == 3;
+
+f();");
 
         var vm = new SmolVM(program);
 
-        vm.Run();
+        vm.OnDebugLog = Console.WriteLine;
+
+        Assert.ThrowsException<NullReferenceException>(vm.RunInDebug);
 
         Assert.AreEqual(0, vm.stack.Count);
     }

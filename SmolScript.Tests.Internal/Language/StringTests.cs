@@ -22,7 +22,7 @@ namespace SmolTests
 
             vm.Run();
 
-            Assert.AreEqual("test", ((SmolValue)vm.globalEnv.Get("a")!).value);
+            Assert.AreEqual("test", vm.GetGlobalVar<string>("a"));
         }
 
         [TestMethod]
@@ -34,7 +34,7 @@ namespace SmolTests
 
             vm.Run();
 
-            Assert.AreEqual("test1", ((SmolValue)vm.globalEnv.Get("a")!).value);
+            Assert.AreEqual("test1", vm.GetGlobalVar<string>("a"));
         }
 
         [TestMethod]
@@ -46,7 +46,7 @@ namespace SmolTests
 
             vm.Run();
 
-            Assert.AreEqual("test", ((SmolValue)vm.globalEnv.Get("a")!).value);
+            Assert.AreEqual("test", vm.GetGlobalVar<string>("a"));
         }
 
         [TestMethod]
@@ -58,7 +58,7 @@ namespace SmolTests
 
             vm.Run();
 
-            Assert.AreEqual("'test'", ((SmolValue)vm.globalEnv.Get("a")!).value);
+            Assert.AreEqual("'test'", vm.GetGlobalVar<string>("a"));
         }
 
         [TestMethod]
@@ -70,7 +70,7 @@ namespace SmolTests
 
             vm.Run();
 
-            Assert.AreEqual("\"test\t\r\n123\"", ((SmolValue)vm.globalEnv.Get("a")!).value);
+            Assert.AreEqual("\"test\t\r\n123\"", vm.GetGlobalVar<string>("a"));
         }
 
         [TestMethod]
@@ -82,7 +82,7 @@ namespace SmolTests
 
             vm.Run();
 
-            Assert.AreEqual("test123", ((SmolValue)vm.globalEnv.Get("c")!).value);
+            Assert.AreEqual("test123", vm.GetGlobalVar<string>("c"));
         }
 
         [TestMethod]
@@ -94,7 +94,7 @@ namespace SmolTests
 
             vm.Run();
 
-            Assert.AreEqual("test x", ((SmolValue)vm.globalEnv.Get("a")!).value);
+            Assert.AreEqual("test x", vm.GetGlobalVar<string>("a"));
         }
 
         [TestMethod]
@@ -117,7 +117,7 @@ namespace SmolTests
 
             vm.Run();
 
-            Assert.AreEqual("test x}x", ((SmolValue)vm.globalEnv.Get("a")!).value);
+            Assert.AreEqual("test x}x", vm.GetGlobalVar<string>("a"));
         }
     }
 }
