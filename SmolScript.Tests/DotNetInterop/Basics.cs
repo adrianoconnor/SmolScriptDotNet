@@ -108,9 +108,9 @@ function concat(strA, strB) {
 EOF          
 ENTER_SCOPE  
 FETCH         [op1: (var) strA]
-              [Loaded $(String) hello]
+              [Loaded $SmolScript.Internals.SmolStackTypes.SmolString hello]
 FETCH         [op1: (var) strB]
-              [Loaded $(String) world]
+              [Loaded $SmolScript.Internals.SmolStackTypes.SmolString world]
 ADD          
 RETURN       
 ", debugOutput.ToString());

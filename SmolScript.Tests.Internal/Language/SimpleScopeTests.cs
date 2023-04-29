@@ -30,8 +30,8 @@ if (true) {
 
             vm.Run();
 
-            Assert.AreEqual(1.0, ((SmolValue)vm.globalEnv.Get("a")!).value);
-            Assert.AreEqual(3.0, ((SmolValue)vm.globalEnv.Get("b")!).value);
+            Assert.AreEqual(1.0, vm.GetGlobalVar<double>("a"));
+            Assert.AreEqual(3.0, vm.GetGlobalVar<double>("b"));
         }
     }
 }

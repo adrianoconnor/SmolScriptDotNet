@@ -1,6 +1,7 @@
 ﻿using System;
 using SmolScript;
 using SmolScript.Internals;
+using SmolScript.Internals.SmolStackTypes;
 
 namespace SmolTests
 {
@@ -68,11 +69,11 @@ var a = t.addOne(1);
             //Console.WriteLine(vm.DumpAst());
             vm.RunInDebug();
 
-            var t = (SmolValue)vm.globalEnv.Get("t")!;
+            var t = vm.globalEnv.Get("t")!;
 
-            Assert.AreEqual(SmolValueType.ObjectRef, t.type);
+            Assert.AreEqual(typeof(SmolObject), t.GetType());
 
-            Assert.AreEqual(2.0, ((SmolValue)vm.globalEnv.Get("a")!).value);
+            Assert.AreEqual(2.0, vm.GetGlobalVar<double>("a"));
         }
 
         [TestMethod]
@@ -135,7 +136,7 @@ var a = c.getTest();
 
             vm.Run();
 
-            Assert.AreEqual(4.0, ((SmolValue)vm.globalEnv.Get("a")!).value);
+            Assert.AreEqual(4.0, vm.GetGlobalVar<double>("a"));
         }
 
         [TestMethod]
@@ -185,15 +186,15 @@ var g = c.testClass.getTestValue();
 
             vm.RunInDebug();
 
-            Assert.AreEqual(2.0, ((SmolValue)vm.globalEnv.Get("b")!).value);
+            Assert.AreEqual(2.0, vm.GetGlobalVar<double>("b"));
             Assert.AreEqual(0, vm.stack.Count);
 
             vm.RunInDebug();
 
-            Assert.AreEqual(2.0, ((SmolValue)vm.globalEnv.Get("d")!).value);
-            Assert.AreEqual(2.0, ((SmolValue)vm.globalEnv.Get("e")!).value);
-            Assert.AreEqual(2.0, ((SmolValue)vm.globalEnv.Get("f")!).value);
-            Assert.AreEqual(2.0, ((SmolValue)vm.globalEnv.Get("g")!).value);
+            Assert.AreEqual(2.0, vm.GetGlobalVar<double>("d"));
+            Assert.AreEqual(2.0, vm.GetGlobalVar<double>("e"));
+            Assert.AreEqual(2.0, vm.GetGlobalVar<double>("f"));
+            Assert.AreEqual(2.0, vm.GetGlobalVar<double>("g"));
         }
 
         [TestMethod]

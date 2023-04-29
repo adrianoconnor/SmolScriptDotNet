@@ -2,6 +2,7 @@
 using System.Runtime.CompilerServices;
 using SmolScript.Internals;
 using SmolScript.Internals.Ast;
+using SmolScript.Internals.SmolStackTypes;
 
 [assembly: InternalsVisibleTo("SmolScript.Tests.Internal")]
 
@@ -55,7 +56,7 @@ namespace SmolScript
         // This is a stack based VM, so this is for our working data.
         // We store everything here as SmolValue, which is a wrapper
         // for all of our types
-        internal Stack<SmolValue> stack = new Stack<SmolValue>();
+        internal Stack<SmolStackValue> stack = new Stack<SmolStackValue>();
 
         Dictionary<int, int> jmplocs = new Dictionary<int, int>();
 
@@ -64,8 +65,9 @@ namespace SmolScript
 
         public T GetGlobalVar<T>(string variableName)
         {
-            var v = (SmolValue)globalEnv.Get(variableName)!;
-            return (T)Convert.ChangeType(v.value!, typeof(T));
+            var v = (SmolStackValue)globalEnv.Get(variableName)!;
+
+            return (T)Convert.ChangeType(v.GetValue()!, typeof(T));
         }
 
         public void Call(string functionName, params object[] args)        
@@ -82,18 +84,17 @@ namespace SmolScript
 
             this.runMode = RunMode.Paused;
 
-            var state = new SmolCallSaveState()
-            {
-                code_section = this.code_section,
-                PC = this.PC,
-                previous_env = this.environment,
-                call_is_extern = true
-            };
+            var state = new SmolCallSiteSaveState(
+                code_section: this.code_section,
+                PC: this.PC,
+                previous_env: this.environment,
+                call_is_extern: true
+            );
 
             var env = new SmolScript.Internals.Environment(this.globalEnv);
             this.environment = env;
 
-            var fn = program.function_table.First(f => f.globalFunctionName == functionName);
+            var fn = program.function_table.First(f => f.global_function_name == functionName);
 
         
             // Prime the new environment with variables for
@@ -104,30 +105,23 @@ namespace SmolScript
             {
                 if (args.Count() > i)
                 {
-                    env.Define(fn.param_variable_names[i], new SmolValue(args[i]));
+                    env.Define(fn.param_variable_names[i], SmolStackValue.Create(args[i]));
                 }
                 else
                 {
-                    env.Define(fn.param_variable_names[i], new SmolValue()
-                    {
-                        type = SmolValueType.Undefined
-                    });
+                    env.Define(fn.param_variable_names[i], new SmolUndefined());
                 }
             }
 
 
-            stack.Push(new SmolValue()
-            {
-                type = SmolValueType.SavedCallState,
-                value = state
-            });
+            stack.Push(state!);
 
             PC = 0;
             code_section = fn.code_section;
 
             Run();
 
-            return (T)Convert.ChangeType(stack.Pop().value!, typeof(T));
+            return (T)Convert.ChangeType(stack.Pop().GetValue()!, typeof(T));
         }
 
 
@@ -275,7 +269,7 @@ namespace SmolScript
 
                         case OpCode.CALL:
                             {
-                                var callData = (SmolFunctionDefn)stack.Pop().value!;
+                                var callData = (SmolFunction)stack.Pop();
 
                                 // First create the env for our function
 
@@ -288,12 +282,12 @@ namespace SmolScript
                                     // (from the next value on the stack) and use that
                                     // objects environment instead.
 
-                                    env = ((SmolObjectRef)stack.Pop().value!).object_env;
+                                    env = ((SmolObject)stack.Pop()).object_env;
                                 }
 
                                 // Next pop args off the stack. Op1 is number of args.                    
 
-                                List<SmolValue> paramValues = new List<SmolValue>();
+                                List<SmolStackValue> paramValues = new List<SmolStackValue>();
 
                                 for (int i = 0; i < (int)instr.operand1!; i++)
                                 {
@@ -312,32 +306,25 @@ namespace SmolScript
                                     }
                                     else
                                     {
-                                        env.Define(callData.param_variable_names[i], new SmolValue()
-                                        {
-                                            type = SmolValueType.Undefined
-                                        });
+                                        env.Define(callData.param_variable_names[i], new SmolUndefined());
                                     }
                                 }
 
 
                                 // Store our current program/vm state so we can restor
 
-                                var state = new SmolCallSaveState()
-                                {
-                                    code_section = this.code_section,
-                                    PC = this.PC,
-                                    previous_env = this.environment,
-                                };
+                                var state = new SmolCallSiteSaveState(
+                                    code_section: this.code_section,
+                                    PC: this.PC,
+                                    previous_env:  this.environment,
+                                    call_is_extern: false
+                                );
 
                                 // Switch the active env in the vm over to the one we prepared for the call
 
                                 this.environment = env;
 
-                                stack.Push(new SmolValue()
-                                {
-                                    type = SmolValueType.SavedCallState,
-                                    value = state
-                                });
+                                stack.Push(state);
 
                                 // Finally set our PC to the start of the function we're about to execute
 
@@ -413,7 +400,7 @@ namespace SmolScript
                                 var right = stack.Pop();
                                 var left = stack.Pop();
 
-                                stack.Push(new SmolValue(left.Equals(right)));
+                                stack.Push(SmolStackValue.Create(left.GetValue().Equals(right.GetValue())));
 
                                 break;
                             }
@@ -423,7 +410,7 @@ namespace SmolScript
                                 var right = stack.Pop();
                                 var left = stack.Pop();
 
-                                stack.Push(new SmolValue(!left.Equals(right)));
+                                stack.Push(SmolStackValue.Create(!left.GetValue().Equals(right.GetValue())));
 
                                 break;
                             }
@@ -507,12 +494,12 @@ namespace SmolScript
 
                             var _savedCallState = stack.Pop();
 
-                            if (_savedCallState.type != SmolValueType.SavedCallState)
+                            if (_savedCallState.GetType() != typeof(SmolCallSiteSaveState))
                             {
                                 throw new Exception("Tried to return but found something unexecpted on the stack");
                             }
 
-                            var savedCallState = (SmolCallSaveState)_savedCallState.value!;
+                            var savedCallState = (SmolCallSiteSaveState)_savedCallState;
 
                             this.environment = savedCallState.previous_env;
                             this.PC = savedCallState.PC;
@@ -547,7 +534,7 @@ namespace SmolScript
                                     var objRef = stack.Pop();
 
                                     isPropertySetter = true;
-                                    env_in_context = ((SmolObjectRef)objRef.value!).object_env;
+                                    env_in_context = ((SmolObject)objRef).object_env;
                                 }
 
                                 env_in_context.Assign(((SmolVariableDefinition)instr.operand1!).name, value, isPropertySetter);
@@ -570,16 +557,16 @@ namespace SmolScript
                                     var objRef = stack.Pop();
                                     var peek_instr = program.code_sections[code_section][PC];
 
-                                    if (objRef.type == SmolValueType.ObjectRef)
+                                    if (objRef.GetType() == typeof(SmolObject))
                                     {
-                                        env_in_context = ((SmolObjectRef)objRef.value!).object_env;
+                                        env_in_context = ((SmolObject)objRef).object_env;
 
                                         if (peek_instr.opcode == OpCode.CALL && (bool)peek_instr.operand2!)
                                         {
                                             stack.Push(objRef);
                                         }
                                     }
-                                    else if (objRef.type == SmolValueType.String)
+                                    else if (objRef.GetType() == typeof(SmolString))
                                     {
                                         // This section (hardcoded to String) is just a POC
                                         // to show how it works on one specific type.
@@ -600,47 +587,39 @@ namespace SmolScript
 
                                             if (name == "length")
                                             {
-                                                stack.Push(new SmolValue(((string)objRef.value!).Length));
+                                                stack.Push(SmolStackValue.Create(((string)objRef.GetValue()!).Length));
                                                 break;
                                             }
                                         }
                                     }
                                     else
                                     {
-                                        throw new Exception($"{objRef.type} is not a valid target for this call");
+                                        throw new Exception($"{objRef.GetType()} is not a valid target for this call");
                                     }
                                 }
 
                                 var fetchedValue = env_in_context.TryGet(name);
 
-                                if (fetchedValue?.GetType() == typeof(SmolFunctionDefn))
+                                if (fetchedValue?.GetType() == typeof(SmolFunction))
                                 {
-                                    fetchedValue = new SmolValue()
-                                    {
-                                        type = SmolValueType.FunctionRef,
-                                        value = fetchedValue
-                                    };
+                                    fetchedValue = (SmolFunction)fetchedValue;
                                 }
 
                                 if (fetchedValue != null)
                                 {
-                                    stack.Push((SmolValue)fetchedValue);
+                                    stack.Push((SmolStackValue)fetchedValue!);
 
-                                    debug($"              [Loaded ${fetchedValue}]");                                    
+                                    debug($"              [Loaded ${fetchedValue.GetType()} {((SmolStackValue)fetchedValue!).GetValue()}]");                                    
                                 }
                                 else
                                 {
-                                    if (program.function_table.Any(f => f.globalFunctionName == name))
+                                    if (program.function_table.Any(f => f.global_function_name == name))
                                     {
-                                        stack.Push(new SmolValue()
-                                        {
-                                            type = SmolValueType.FunctionRef,
-                                            value = program.function_table.First(f => f.globalFunctionName == name)
-                                        });
+                                        stack.Push(program.function_table.First(f => f.global_function_name == name));
                                     }
                                     else
                                     {
-                                        stack.Push(new SmolValue() { type = SmolValueType.Undefined });
+                                        stack.Push(new SmolUndefined());
                                     }
                                 }
 
@@ -706,7 +685,7 @@ namespace SmolScript
 
                         case OpCode.TRY:
 
-                            SmolValue? exception = null;
+                            SmolRuntimeException? exception = null;
 
                             if (instr.operand2 != null && (bool)instr.operand2)
                             {
@@ -714,24 +693,20 @@ namespace SmolScript
                                 // take the exception that's already on the stack and leave it at the
                                 // top after creating the try checkpoint.
 
-                                exception = stack.Pop();
+                                exception = (SmolRuntimeException)stack.Pop();
                             }
 
-                            stack.Push(new SmolValue()
-                            {
-                                type = SmolValueType.TryCheckPoint,
-                                value = new SmolTrySaveState()
-                                {
-                                    code_section = this.code_section,
-                                    PC = this.PC,
-                                    this_env = this.environment,
-                                    jump_exception = jmplocs[(int)instr.operand1!]
-                                }
-                            });
+                            stack.Push(new SmolTryRegionSaveState(
+                                    code_section: this.code_section,
+                                    PC: this.PC,
+                                    this_env: this.environment,
+                                    jump_exception: jmplocs[(int)instr.operand1!]
+                                )
+                            );
 
                             if (exception != null)
                             {
-                                stack.Push((SmolValue)exception!);
+                                stack.Push(exception!);
                             }
 
                             break;
@@ -739,29 +714,20 @@ namespace SmolScript
                         case OpCode.THROW:
                             if ((bool)instr.operand1!) // This flag means the user provided an object to throw, and it's already on the stack
                             {
-                                throw new SmolRuntimeException();
+                                throw new Exception(); // SmolRuntimeException("");
                             }
                             else
                             {
-                                stack.Push(new SmolValue()
-                                {
-                                    type = SmolValueType.String,
-                                    value = "Error"
-                                });
+                                //stack.Push(new SmolValue()
 
-                                throw new SmolRuntimeException();
+                                throw new Exception();  // throw new SmolRuntimeException();
                             }
 
                         case OpCode.LOOP_START:
 
-                            stack.Push(new SmolValue()
-                            {
-                                type = SmolValueType.LoopMarker,
-                                value = new SmolLoopMarker()
-                                {
-                                    current_env = this.environment
-                                }
-                            });
+                            stack.Push(new SmolLoopMarker(
+                                current_env: this.environment
+                            ));
 
                             break;
 
@@ -776,9 +742,9 @@ namespace SmolScript
                             {
                                 var next = stack.Pop();
 
-                                if (next.type == SmolValueType.LoopMarker)
+                                if (next.GetType() == typeof(SmolLoopMarker))
                                 {
-                                    this.environment = ((SmolLoopMarker)next.value!).current_env;
+                                    this.environment = ((SmolLoopMarker)next).current_env;
 
                                     stack.Push(next); // Needs to still be on the stack
 
@@ -805,28 +771,23 @@ namespace SmolScript
 
                             var obj_environment = new SmolScript.Internals.Environment(this.globalEnv);
 
-                            foreach (var classFunc in program.function_table.Where(f => f.globalFunctionName!.StartsWith($"@{class_name}.")))
+                            foreach (var classFunc in program.function_table.Where(f => f.global_function_name!.StartsWith($"@{class_name}.")))
                             {
-                                var funcName = classFunc.globalFunctionName!.Substring(class_name.Length + 2);
+                                var funcName = classFunc.global_function_name!.Substring(class_name.Length + 2);
 
-                                obj_environment.Define(funcName, new SmolFunctionDefn()
-                                {
-                                    arity = classFunc.arity,
-                                    code_section = classFunc.code_section,
-                                    globalFunctionName = classFunc.globalFunctionName,
-                                    param_variable_names = classFunc.param_variable_names
-                                });
+                                obj_environment.Define(funcName, new SmolFunction(
+                                    arity: classFunc.arity,
+                                    code_section: classFunc.code_section,
+                                    global_function_name: classFunc.global_function_name,
+                                    param_variable_names: classFunc.param_variable_names
+                                ));
                             }
 
-                            stack.Push(new SmolValue()
-                            {
-                                type = SmolValueType.ObjectRef,
-                                value = new SmolObjectRef()
-                                {
-                                    object_env = obj_environment,
-                                    class_name = class_name
-                                }
-                            });
+                            stack.Push(new SmolObject(
+                                    object_env: obj_environment,
+                                    class_name: class_name
+                                )
+                            );
 
                             obj_environment.Define("this", stack.Peek());
 
@@ -850,7 +811,7 @@ namespace SmolScript
                             throw new Exception($"You forgot to handle an opcode: {instr.opcode}");
                     }
                 }
-                catch (SmolRuntimeException e)
+                catch (Exception e) // (SmolRuntimeException e)
                 {
                     bool handled = false;
 
@@ -858,21 +819,17 @@ namespace SmolScript
                     {
                         var next = stack.Pop();
 
-                        if (next.type == SmolValueType.TryCheckPoint)
+                        if (next.GetType() == typeof(SmolTryRegionSaveState))
                         {
                             // We found the start of a try section, restore our state and jump to the exception handler location
 
-                            var state = (SmolTrySaveState)next.value!;
+                            var state = (SmolTryRegionSaveState)next;
 
                             this.code_section = state.code_section;
                             this.PC = state.jump_exception;
                             this.environment = state.this_env;
 
-                            stack.Push(new SmolValue()
-                            {
-                                type = SmolValueType.Exception,
-                                value = e.Message
-                            });
+                            stack.Push(new SmolRuntimeException(e.Message));
 
                             handled = true;
                             break;

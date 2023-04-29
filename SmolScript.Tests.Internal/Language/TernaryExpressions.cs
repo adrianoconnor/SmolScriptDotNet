@@ -24,8 +24,8 @@ var c = !a ? 1 : 2;
 
             vm.Run();
      
-            Assert.AreEqual(1.0, ((SmolValue)vm.globalEnv.Get("b")!).value);
-            Assert.AreEqual(2.0, ((SmolValue)vm.globalEnv.Get("c")!).value);
+            Assert.AreEqual(1.0, vm.GetGlobalVar<double>("b"));
+            Assert.AreEqual(2.0, vm.GetGlobalVar<double>("c"));
         }
 
         [TestMethod]
@@ -44,7 +44,7 @@ a == 0 ? a1() : a2();
 
             vm.Run();
 
-            Assert.AreEqual(1.0, ((SmolValue)vm.globalEnv.Get("a")!).value);
+            Assert.AreEqual(1.0, vm.GetGlobalVar<double>("a"));
         }
 
         [TestMethod]
@@ -62,7 +62,7 @@ c = a == 0 ? 1 : a == 1 ? 2 : 3; "; // TODO: this should also work...
 
             vm.Run();
 
-            Assert.AreEqual(3.0, ((SmolValue)vm.globalEnv.Get("b")!).value);
+            Assert.AreEqual(3.0, vm.GetGlobalVar<double>("b"));
             //Assert.AreEqual(3.0, ((SmolValue)vm.globalEnv.Get("c")!).value);
         }
     }

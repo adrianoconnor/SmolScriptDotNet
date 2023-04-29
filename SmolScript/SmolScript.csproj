@@ -10,10 +10,14 @@
     <Folder Include="Internals\" />
     <Folder Include="Internals\Ast\" />
     <Folder Include="Internals\Ast\Interpreter\" />
+    <Folder Include="Internals\SmolStackTypes\" />
   </ItemGroup>
   <ItemGroup>
     <Compile Remove="Internals\Ast\Interpreter\AstInterpreter.cs" />
     <Compile Remove="Internals\Ast\Interpreter\ICallableSmolFunction.cs" />
     <Compile Remove="Internals\Ast\Interpreter\SmolFunctionWrapper.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Remove="Internals\SmolStackTypes\" />
   </ItemGroup>
 </Project>
