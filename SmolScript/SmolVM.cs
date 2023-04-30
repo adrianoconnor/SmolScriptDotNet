@@ -273,7 +273,16 @@ namespace SmolScript
 
                         case OpCode.CALL:
                             {
-                                var callData = (SmolFunction)stack.Pop();
+                                var untypedCallData = stack.Pop();
+
+                                if (untypedCallData.GetType() == typeof(SmolNativeFunctionResult))
+                                {
+                                    // Everything was handled by the previous Fetch instruction, which made a native
+                                    // call and left the result on the stack.
+                                    break;
+                                }
+
+                                var callData = (SmolFunction)untypedCallData;
 
                                 // First create the env for our function
 
@@ -572,36 +581,41 @@ namespace SmolScript
                                     }
                                     else 
                                     {
-                                        /*
-                                        Previously had this but not sure I'd thougt it through... 
-                                         
-                                        if (peek_instr.opcode == OpCode.CALL && (bool)peek_instr.operand2!)
-                                        {
-                                            stack.Push(objRef);
+                                        var c = objRef as ISmolNativeCallable;
 
-                                            // This needs to leave stack so next instruction (CALL)
-                                            // can also lookup the right thing and also call the
-                                            // native func.
-                                        }
-                                        else
+                                        if (c != null)
                                         {
-                                        */
-                                            var c = objRef as ISmolNativeCallable;
+                                            var isFuncCall = (peek_instr.opcode == OpCode.CALL && (bool)peek_instr.operand2!);
 
-                                            if (c != null)
+                                            if (isFuncCall)
                                             {
-                                                stack.Push(c.GetProp(name)!);
-                                                break;
+                                                // We need to get some arguments
+
+                                                List<SmolStackValue> paramValues = new List<SmolStackValue>();
+
+                                                for (int i = 0; i < (int)peek_instr.operand1!; i++)
+                                                {
+                                                    paramValues.Add(this.stack.Pop());
+                                                }
+
+                                                stack.Push(c.NativeCall(name, paramValues)!);
+                                                stack.Push(new SmolNativeFunctionResult()); // Call will use this to see that the call is already done.
+
                                             }
                                             else
                                             {
-                                                throw new Exception($"{objRef.GetType()} is not a valid target for this call");
-                                            }
-                                        /*
-                                        }
-                                        */
-                                    }
+                                                // For now won't work with Setter
 
+                                                stack.Push(c.GetProp(name)!);
+                                            }
+
+                                            break;
+                                        }
+                                        else
+                                        {
+                                            throw new Exception($"{objRef.GetType()} is not a valid target for this call");
+                                        }
+                                    }
                                 }
 
                                 var fetchedValue = env_in_context.TryGet(name);

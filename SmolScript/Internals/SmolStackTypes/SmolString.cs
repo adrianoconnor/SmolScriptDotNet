@@ -31,5 +31,20 @@ namespace SmolScript.Internals.SmolStackTypes
                     throw new Exception($"{this.GetType()} cannot handle native property {propName}");
             }
         }
+
+        public SmolStackValue NativeCall(string funcName, List<SmolStackValue> parameters)
+        {
+            switch (funcName)
+            {
+                case "indexOf":
+
+                    var p1 = ((SmolString)parameters[0]).value; 
+
+                    return new SmolNumber(this.value.IndexOf(p1));
+
+                default:
+                    throw new Exception($"{this.GetType()} cannot handle native function {funcName}");
+            }
+        }
     }
 }
