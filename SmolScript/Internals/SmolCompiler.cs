@@ -38,9 +38,9 @@ namespace SmolScript.Internals
             {
                 chunk.AppendChunk(stmt.Accept(this));
 
-                var lastInstr = chunk[chunk.Count() - 1];
-                lastInstr.StepCheckpoint = true;
-                chunk[chunk.Count() - 1] = lastInstr;
+                var c = chunk.Last();
+                c.StepCheckpoint = true;
+                chunk[chunk.Count() - 1] = c;
             }
 
             return chunk;
