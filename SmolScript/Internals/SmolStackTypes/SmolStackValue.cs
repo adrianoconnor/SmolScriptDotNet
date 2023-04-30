@@ -238,29 +238,39 @@ namespace SmolScript.Internals.SmolStackTypes
 
             throw new Exception($"Unable to calculate power for");// {this.type} and {power.type}");
         }
-        
-        /*
+                
         public override bool Equals([NotNullWhen(true)] object? obj)
         {
-            return base.Equals(obj);
+            if (this.GetType() == typeof(SmolNumber) && obj?.GetType() == typeof(SmolNumber))
+            {
+                return ((SmolNumber)this).value.Equals(((SmolNumber)obj!).value);
+            }
+            if (this.GetType() == typeof(SmolString))
+            {
+                return ((SmolString)this).value == ((SmolString)obj!).value;
+            }
+            else
+            {
+                return base.Equals(obj);
+            }            
         }
-
+        
         public override int GetHashCode()
         {
-         /*   if (this.type == SmolValueType.Number)
+            if (this.GetType() == typeof(SmolNumber))
             {
-                return ((double)this.value!).GetHashCode();
+                return ((SmolNumber)this).value.GetHashCode();
             }
-            if (this.type == SmolValueType.String)
+            if (this.GetType() == typeof(SmolString))
             {
-                return ((string)this.value!).GetHashCode();
+                return ((SmolString)this).value.GetHashCode();
             }
             else 
             {
                 return base.GetHashCode();
             }
         }
-*/
+
         public bool IsTruthy()
         {
             return (bool)this.GetValue()! == true;
