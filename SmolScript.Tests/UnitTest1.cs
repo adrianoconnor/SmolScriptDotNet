@@ -23,6 +23,23 @@ public class UnitTest1
     }
 
     [TestMethod]
+    public void StringIndexOf()
+    {
+        var src = @"
+            var a = 'Test String';
+            var b = a.indexOf('Str');
+        ";
+
+        var vm = SmolVM.Compile(src);
+
+        vm.RunInDebug();
+
+        var a = vm.GetGlobalVar<int>("b");
+
+        Assert.AreEqual(5, a);
+    }
+
+    [TestMethod]
     public void TestMethod1()
     {
         var code = @"var a = 1; a++; a*=2; a = a % 3;";
