@@ -19,6 +19,8 @@ namespace SmolScript.Internals.SmolStackTypes
         {
             return $"(SmolString) {value}";
         }
+
+    
     }
 }
 

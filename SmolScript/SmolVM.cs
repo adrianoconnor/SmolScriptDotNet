@@ -82,8 +82,11 @@ namespace SmolScript
                 throw new Exception("Init() should be used before calling a function, to ensure the vm state is prepared");
             }
 
+            // Let the VM know that it's ok to proceed from wherever the PC was pointing next
             this.runMode = RunMode.Paused;
 
+            // Store the current state. This doesn't matter too much, because it shouldn't really
+            // be runnable after we're done, but it doesn't hurt to do this.
             var state = new SmolCallSiteSaveState(
                 code_section: this.code_section,
                 PC: this.PC,
@@ -91,6 +94,7 @@ namespace SmolScript
                 call_is_extern: true
             );
 
+            // Create an environment for the function
             var env = new SmolScript.Internals.Environment(this.globalEnv);
             this.environment = env;
 
