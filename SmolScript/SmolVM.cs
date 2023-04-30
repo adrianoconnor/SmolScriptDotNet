@@ -570,13 +570,11 @@ namespace SmolScript
                                             stack.Push(objRef);
                                         }
                                     }
-                                    else if (objRef.GetType() == typeof(SmolString))
+                                    else 
                                     {
-                                        // This section (hardcoded to String) is just a POC
-                                        // to show how it works on one specific type.
-                                        // Now we need to abstract it so it can
-                                        // be done for any type, even user types from .net
-
+                                        /*
+                                        Previously had this but not sure I'd thougt it through... 
+                                         
                                         if (peek_instr.opcode == OpCode.CALL && (bool)peek_instr.operand2!)
                                         {
                                             stack.Push(objRef);
@@ -587,19 +585,23 @@ namespace SmolScript
                                         }
                                         else
                                         {
-                                            // This is a property getter on the native object
+                                        */
+                                            var c = objRef as ISmolNativeCallable;
 
-                                            if (name == "length")
+                                            if (c != null)
                                             {
-                                                stack.Push(SmolStackValue.Create(((string)objRef.GetValue()!).Length));
+                                                stack.Push(c.GetProp(name)!);
                                                 break;
                                             }
+                                            else
+                                            {
+                                                throw new Exception($"{objRef.GetType()} is not a valid target for this call");
+                                            }
+                                        /*
                                         }
+                                        */
                                     }
-                                    else
-                                    {
-                                        throw new Exception($"{objRef.GetType()} is not a valid target for this call");
-                                    }
+
                                 }
 
                                 var fetchedValue = env_in_context.TryGet(name);
