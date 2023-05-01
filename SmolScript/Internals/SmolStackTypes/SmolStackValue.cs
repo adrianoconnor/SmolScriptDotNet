@@ -12,6 +12,13 @@ namespace SmolScript.Internals.SmolStackTypes
     {
         abstract internal object? GetValue();
 
+        internal string GetTypeName()
+        {
+            var type = this.GetType().ToString();
+
+            return type.Substring(type.LastIndexOf(".") + 1).Replace("Smol", "");
+        }
+
         internal static SmolStackValue Create(object? value)
         {
             if (value == null)
@@ -111,7 +118,7 @@ namespace SmolScript.Internals.SmolStackTypes
                 return SmolStackValue.Create(left * right);
             }
 
-            throw new Exception($"Unable to multiply {a.GetType()} and {b.GetType()}");
+            throw new Exception($"Unable to multiply {a.GetTypeName()} and {b.GetTypeName()}");
         }
 
         public static SmolStackValue operator /(SmolStackValue a, SmolStackValue b)

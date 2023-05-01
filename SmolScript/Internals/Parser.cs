@@ -953,9 +953,17 @@ namespace SmolScript.Internals
                 var className = consume(TokenType.IDENTIFIER, "Expected identifier after new");
 
                 consume(TokenType.LEFT_BRACKET, "Expect ')' after expression.");
-                consume(TokenType.RIGHT_BRACKET, "Expect ')' after expression.");
 
-                return new NewInstanceExpression(className);
+                var args = new List<object?>();
+
+                if (!check(TokenType.RIGHT_BRACKET))
+                {
+                    do { args.Add(expression()); } while (match(TokenType.COMMA));
+                }
+
+                var closingParen = consume(TokenType.RIGHT_BRACKET, "Expected )");
+
+                return new NewInstanceExpression(className, args);
             }
 
             if (match(TokenType.LEFT_BRACKET))
