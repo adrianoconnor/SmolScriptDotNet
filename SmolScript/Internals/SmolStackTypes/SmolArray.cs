@@ -3,23 +3,22 @@ using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace SmolScript.Internals.SmolStackTypes
 {
-	internal class SmolString: SmolStackValue, ISmolNativeCallable
+	internal class SmolArray: SmolStackValue, ISmolNativeCallable
 	{
-		internal readonly string value;
+        internal readonly List<SmolStackValue> elements = new List<SmolStackValue>();
 
-		internal SmolString(string value)
+		internal SmolArray()
 		{
-			this.value = value;
 		}
 
         internal override object? GetValue()
         {
-            return this.value;
+            return null;
         }
 
         public override string ToString()
         {
-            return $"(SmolString) {value}";
+            return $"(SmolArray) length={this.elements.Count}";
         }
 
         public SmolStackValue GetProp(string propName)
@@ -27,10 +26,10 @@ namespace SmolScript.Internals.SmolStackTypes
             switch (propName)
             {
                 case "length":
-                    return new SmolNumber(this.value.Length);
+                    return new SmolNumber(this.elements.Count);
 
                 default:
-                    throw new Exception($"{this.GetType()} cannot handle native property {propName}");
+                    throw new Exception($"{this.GetTypeName()} does not contain property {propName}");
             }
         }
 
@@ -38,14 +37,17 @@ namespace SmolScript.Internals.SmolStackTypes
         {
             switch (funcName)
             {
-                case "indexOf":
+                case "pop":
+                    var el = this.elements.Last();
+                    this.elements.RemoveAt(this.elements.Count() - 1);
+                    return el;
 
-                    var p1 = ((SmolString)parameters[0]).value; 
-
-                    return new SmolNumber(this.value.IndexOf(p1));
+                case "push":
+                    this.elements.Add(parameters[0]);
+                    return parameters[0];
 
                 default:
-                    throw new Exception($"{this.GetType()} cannot handle native function {funcName}");
+                    throw new Exception($"{this.GetTypeName()} cannot handle native function {funcName}");
             }
         }
 
@@ -55,15 +57,15 @@ namespace SmolScript.Internals.SmolStackTypes
             {
                 case "constructor":
 
-                    if (parameters.Any())
+                    var array = new SmolArray();
+
+                    foreach(var p in parameters)
                     {
-                        return new SmolString(parameters.First().GetValue()!.ToString()!);
+                        array.elements.Add(p);
                     }
-                    else
-                    {
-                        return new SmolString("");
-                    }
-                    
+
+                    return array;
+
                 default:
                     throw new Exception($"String class cannot handle static function {funcName}");
             }
