@@ -521,7 +521,7 @@ namespace SmolScript.Internals
 
             // Evalulate the arguments from left to right and pop them on the stack.
 
-            foreach (var arg in expr.args)
+            foreach (var arg in expr.args.Reverse())
             {
                 chunk.AppendChunk(((Expression)arg!).Accept(this));
             }
@@ -1013,34 +1013,14 @@ namespace SmolScript.Internals
                 operand1 = (string)(expr.className.lexeme)                
             });
 
-            chunk.AppendInstruction(OpCode.DUPLICATE_VALUE); // We need two copies of that ref
+            foreach (Expression arg in expr.ctorArgs.Reverse())
+            {
+                chunk.AppendChunk(arg.Accept(this));
+            }
+
+            chunk.AppendInstruction(OpCode.DUPLICATE_VALUE, operand1: expr.ctorArgs.Count); // We need two copies of that ref
 
             // Stack now has class instance value
-
-            // Evalulate the arguments for the ctor from left to right and pop them on the stack.
-            /*
-            foreach (var arg in expr.ctor.args)
-            {
-                chunk.AppendChunk(((Expression)arg!).Accept(this));
-            }
-            */
-
-            //var value = new SmolValue($"@{expr.className.lexeme}.constructor");
-            /*
-            var cIndex = constants.IndexOf(value);
-
-            if (cIndex == -1)
-            {
-                constants.Add(value);
-                cIndex = constants.Count - 1;
-            }
-
-            chunk.AppendChunk(new ByteCodeInstruction()
-            {
-                opcode = OpCode.CONST,
-                operand1 = cIndex
-            }); // Load the function name onto the stack
-            */
 
             chunk.AppendChunk(new ByteCodeInstruction()
             {
@@ -1048,13 +1028,14 @@ namespace SmolScript.Internals
                 operand1 = new SmolVariableDefinition()
                 {
                     name = $"@{expr.className.lexeme}.constructor"
-                }
+                },
+                operand2 = true
             });
 
             chunk.AppendChunk(new ByteCodeInstruction()
             {
                 opcode = OpCode.CALL,
-                operand1 = 0, //expr.ctor.args.Count
+                operand1 = expr.ctorArgs.Count,
                 operand2 = true // means use instance that's on stack -- might not use this in the end because I think we should be able to tell from class name it's an instance call...
             });
 

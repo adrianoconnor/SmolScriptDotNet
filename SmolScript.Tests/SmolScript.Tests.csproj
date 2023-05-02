@@ -26,10 +26,12 @@
     <None Remove="DotNetInterop\" />
     <None Remove="Array\" />
     <None Remove="ErrorHandling\" />
+    <None Remove="String\" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="DotNetInterop\" />
     <Folder Include="Array\" />
     <Folder Include="ErrorHandling\" />
+    <Folder Include="String\" />
   </ItemGroup>
 </Project>

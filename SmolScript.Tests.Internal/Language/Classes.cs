@@ -219,10 +219,35 @@ var c = new testClass1();
 
             var vm = new SmolVM(program);
 
+            Console.WriteLine(((SmolVM)vm).Decompile());
+
             vm.RunInDebug();
 
             Assert.IsNotNull(vm.globalEnv.Get("c"));
             Assert.AreEqual(0, vm.stack.Count);
+        }
+
+        [TestMethod]
+        public void ClassWithCtorArgs()
+        {
+            var source = @"
+
+class testClass {
+    constructor(y) {
+        this.x = y + 2;
+    }
+}
+
+var t = new testClass(1);
+var a = t.x;
+";
+            var vm = SmolVM.Compile(source);
+
+            vm.OnDebugLog = Console.WriteLine;
+
+            vm.RunInDebug();
+
+            Assert.AreEqual(3.0, vm.GetGlobalVar<double>("a"));
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Runtime.CompilerServices;
+using System.Text.RegularExpressions;
 using SmolScript.Internals;
 using SmolScript.Internals.Ast;
 using SmolScript.Internals.SmolStackTypes;
@@ -161,6 +162,7 @@ namespace SmolScript
 
             this.program = SmolCompiler.Compile(source);
 
+            CreateStdLib();
             BuildJumpTable();
         }
 
@@ -170,8 +172,17 @@ namespace SmolScript
 
             this.program = program;
 
+            CreateStdLib();
             BuildJumpTable();
         }
+
+        private void CreateStdLib()
+        {
+            staticTypes.Add("String", typeof(SmolString));
+            staticTypes.Add("Array", typeof(SmolArray));
+        }
+
+        internal Dictionary<string, Type> staticTypes = new Dictionary<string, Type>();
 
         private void BuildJumpTable()
         {
@@ -490,6 +501,7 @@ namespace SmolScript
 
                         case OpCode.EOF:
 
+                            debug($"Done, stack size = {stack.Count}");
                             this.runMode = RunMode.Done;
                             
                             return;
@@ -573,7 +585,7 @@ namespace SmolScript
                                     if (objRef.GetType() == typeof(SmolObject))
                                     {
                                         env_in_context = ((SmolObject)objRef).object_env;
-
+                                     
                                         if (peek_instr.opcode == OpCode.CALL && (bool)peek_instr.operand2!)
                                         {
                                             stack.Push(objRef);
@@ -581,9 +593,7 @@ namespace SmolScript
                                     }
                                     else 
                                     {
-                                        var c = objRef as ISmolNativeCallable;
-
-                                        if (c != null)
+                                        if (objRef is ISmolNativeCallable)
                                         {
                                             var isFuncCall = (peek_instr.opcode == OpCode.CALL && (bool)peek_instr.operand2!);
 
@@ -598,18 +608,58 @@ namespace SmolScript
                                                     paramValues.Add(this.stack.Pop());
                                                 }
 
-                                                stack.Push(c.NativeCall(name, paramValues)!);
+                                                stack.Push(((ISmolNativeCallable)objRef).NativeCall(name, paramValues)!);
                                                 stack.Push(new SmolNativeFunctionResult()); // Call will use this to see that the call is already done.
-
                                             }
                                             else
                                             {
                                                 // For now won't work with Setter
 
-                                                stack.Push(c.GetProp(name)!);
+                                                stack.Push(((ISmolNativeCallable)objRef).GetProp(name)!);
                                             }
 
                                             break;
+                                        }
+                                        else if (objRef is SmolNativeFunctionResult)
+                                        {
+                                            var classMethodRegEx = new Regex(@"\@([A-Za-z]+)[\.]([A-Za-z]+)");
+                                            var rex = classMethodRegEx.Match(name);
+                                            if (rex.Success)
+                                            {
+                                                List<object> parameters = new List<object>();
+
+                                                parameters.Add(rex.Groups[2].Value);
+
+                                                var functionArgs = new List<SmolStackValue>();
+
+                                                for (int i = 0; i < (int)peek_instr.operand1!; i++)
+                                                {
+                                                    functionArgs.Add(this.stack.Pop());
+                                                }
+
+                                                parameters.Add(functionArgs);
+
+                                                // Now we've got rid of the params we can get rid
+                                                // of the dummy object that create_object left
+                                                // on the stack
+
+                                                _ = stack.Pop();
+
+                                                // Put our actual new object on after calling the ctor:
+
+                                                //var r = staticNativeClassMethods["@String.constructor"](paramValues);
+
+                                                var r = (SmolStackValue)staticTypes[rex.Groups[1].Value].GetMethod("StaticCall")!.Invoke(null, parameters.ToArray());
+
+                                                stack.Push(r);
+
+                                                // And now fill in some fake object refs again:
+                                                stack.Push(new SmolNativeFunctionResult()); // Call will use this to see that the call is already done.
+                                                stack.Push(new SmolNativeFunctionResult()); // Pop and Discard following Call will discard this
+
+                                                break;
+                                            }
+
                                         }
                                         else
                                         {
@@ -789,6 +839,12 @@ namespace SmolScript
 
                             var class_name = (string)instr.operand1!;
 
+                            if (staticTypes.ContainsKey(class_name))
+                            {
+                                stack.Push(new SmolNativeFunctionResult());
+                                break;
+                            }
+
                             var obj_environment = new SmolScript.Internals.Environment(this.globalEnv);
 
                             foreach (var classFunc in program.function_table.Where(f => f.global_function_name!.StartsWith($"@{class_name}.")))
@@ -815,7 +871,15 @@ namespace SmolScript
 
                         case OpCode.DUPLICATE_VALUE:
 
-                            stack.Push(stack.Peek());
+                            int skip = instr.operand1 != null ? (int)instr.operand1 : 0;
+
+                            var itemToDuplicate = stack.ElementAt(skip);
+
+                            if (itemToDuplicate.GetType() != typeof(SmolNativeFunctionResult))
+                            {
+                            }
+
+                            stack.Push(itemToDuplicate);
 
                             break;
 

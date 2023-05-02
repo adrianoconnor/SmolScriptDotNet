@@ -106,6 +106,7 @@ function concat(strA, strB) {
 
         Assert.AreEqual(@"NOP          
 EOF          
+Done, stack size = 0
 ENTER_SCOPE  
 FETCH         [op1: (var) strA]
               [Loaded $SmolScript.Internals.SmolStackTypes.SmolString hello]
