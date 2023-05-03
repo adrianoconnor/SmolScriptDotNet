@@ -601,6 +601,11 @@ namespace SmolScript.Internals
                     var getExpr = (GetExpression)expr;
                     return new SetExpression(getExpr.obj, getExpr.name, value);
                 }
+                else if (expr.GetType() == typeof(IndexerGetExpression))
+                {
+                    var getExpr = (IndexerGetExpression)expr;
+                    return new IndexerSetExpression(getExpr.obj, getExpr.indexerExpr, value);
+                }
 
                 throw error(equals, "Invalid assignment target.");
             }

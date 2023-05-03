@@ -3,14 +3,14 @@ using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace SmolScript.Internals.SmolStackTypes
 {
-	internal class SmolString: SmolStackValue, ISmolNativeCallable
-	{
-		internal readonly string value;
+    internal class SmolString : SmolStackValue, ISmolNativeCallable
+    {
+        internal readonly string value;
 
-		internal SmolString(string value)
-		{
-			this.value = value;
-		}
+        internal SmolString(string value)
+        {
+            this.value = value;
+        }
 
         internal override object? GetValue()
         {
@@ -32,6 +32,11 @@ namespace SmolScript.Internals.SmolStackTypes
                 default:
                     throw new Exception($"{this.GetType()} cannot handle native property {propName}");
             }
+        }
+
+        public void SetProp(string propName, SmolStackValue value)
+        {
+            throw new Exception($"Not a valid target");
         }
 
         public SmolStackValue NativeCall(string funcName, List<SmolStackValue> parameters)

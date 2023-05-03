@@ -35,8 +35,8 @@ var e = a.length;
 		{
             var code = @"
 var a = new Array(1, 2, 3);
-//a[1] = 4;
-var b = a[0] + a[1] + a[2];
+a[1] = 4;
+var b = a[0] + a[a[0]] + a[2];
 ";
 
             var vm = SmolVM.Compile(code);
@@ -47,7 +47,7 @@ var b = a[0] + a[1] + a[2];
 
             vm.RunInDebug();
 
-            Assert.AreEqual(6, vm.GetGlobalVar<int>("b"));
+            Assert.AreEqual(8, vm.GetGlobalVar<int>("b"));
         }
 	}
 }

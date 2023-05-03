@@ -1119,6 +1119,42 @@ namespace SmolScript.Internals
             return chunk;
         }
 
+        public object? Visit(IndexerSetExpression expr)
+        {
+            var chunk = new List<ByteCodeInstruction>();
+
+            chunk.AppendChunk(expr.obj.Accept(this));
+
+            chunk.AppendChunk(expr.value.Accept(this));
+
+            chunk.AppendChunk(expr.indexerExpr.Accept(this));
+
+            chunk.AppendChunk(new ByteCodeInstruction()
+            {
+                opcode = OpCode.STORE,
+                operand1 = new SmolVariableDefinition()
+                {
+                    name = "@IndexerSet"
+                },
+                operand2 = true // Means object reference on stack
+            });
+
+            // This is so inefficient, but we need to read the saved value back onto the stack
+
+            chunk.AppendChunk(expr.obj.Accept(this));
+
+            // TODO: This won't even work for indexer++ etc.
+            chunk.AppendChunk(expr.indexerExpr.Accept(this));
+
+            chunk.AppendInstruction(OpCode.FETCH,
+                new SmolVariableDefinition()
+                {
+                    name = "@IndexerGet"
+                }, true);
+
+            return chunk;
+        }
+
         public object? Visit(FunctionExpression expr)
         {
             var function_index = function_bodies.Count() + 1;
