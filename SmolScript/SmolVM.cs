@@ -179,6 +179,9 @@ namespace SmolScript
 
         private void CreateStdLib()
         {
+            // These are the class types that are supported by native
+            // code. We can cast these to a certain interface and call
+            // a static method to 
             staticTypes.Add("String", typeof(SmolString));
             staticTypes.Add("Array", typeof(SmolArray));
         }

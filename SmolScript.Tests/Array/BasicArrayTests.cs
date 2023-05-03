@@ -69,12 +69,48 @@ var c = a[1];
 
             //Console.WriteLine(((SmolVM)vm).Decompile());
 
-            //vm.OnDebugLog = Console.WriteLine;
+            vm.OnDebugLog = Console.WriteLine;
 
             vm.RunInDebug();
 
             Assert.AreEqual(3, vm.GetGlobalVar<int>("b"));
             //Assert.IsNull(vm.GetGlobalVar<int>("c")); // It's undefined, but no way to tell .net this yet
+        }
+
+        [TestMethod]
+        public void CreateArrayWithShorthandNoParams()
+        {
+            var code = @"
+var a = [];
+a[0] = 1;
+a[2] = 3;
+var b = a.length;
+var c = a[2];
+";
+
+            var vm = SmolVM.Compile(code);
+
+            vm.Run();
+
+            Assert.AreEqual(3, vm.GetGlobalVar<int>("b"));
+            Assert.AreEqual(3, vm.GetGlobalVar<int>("c"));
+        }
+
+        [TestMethod]
+        public void CreateArrayWithShorthandAndElements()
+        {
+            var code = @"
+var a = [1, 2, 3, []];
+var b = a.length;
+var c = a[2];
+";
+
+            var vm = SmolVM.Compile(code);
+
+            vm.Run();
+
+            Assert.AreEqual(4, vm.GetGlobalVar<int>("b"));
+            Assert.AreEqual(3, vm.GetGlobalVar<int>("c"));
         }
     }
 }

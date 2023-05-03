@@ -1004,6 +1004,23 @@ namespace SmolScript.Internals
                 return new NewInstanceExpression(className, args);
             }
 
+            if (match(TokenType.LEFT_SQUARE_BRACKET))
+            {
+                var className = new Token(TokenType.IDENTIFIER, "Array", null, peek().line);
+
+                var args = new List<object?>();
+
+                if (!check(TokenType.RIGHT_SQUARE_BRACKET))
+                {
+                    do { args.Add(expression()); } while (match(TokenType.COMMA));
+                }
+
+                var closingParen = consume(TokenType.RIGHT_SQUARE_BRACKET, "Expected ]");
+
+                return new NewInstanceExpression(className, args);
+            }
+
+
             if (match(TokenType.LEFT_BRACKET))
             {
                 Expression expr = expression();
