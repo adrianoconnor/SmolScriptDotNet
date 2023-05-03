@@ -302,6 +302,15 @@ namespace SmolScript.Internals.Ast
             return s.ToString();
         }
 
+        public object? Visit(IndexerGetExpression expr)
+        {
+            var s = new StringBuilder();
+
+            s.AppendLine($"[indexGetter obj={expr.obj.Accept(this)}, indexer Expr={expr.indexerExpr.Accept(this)}]");
+
+            return s.ToString();
+        }
+
         public object? Visit(FunctionExpression expr)
         {
             return null;

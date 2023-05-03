@@ -29,6 +29,12 @@ namespace SmolScript.Internals.SmolStackTypes
                     return new SmolNumber(this.elements.Count);
 
                 default:
+
+                    if (int.TryParse(propName, out int index))
+                    {
+                        return this.elements[index];
+                    }
+
                     throw new Exception($"{this.GetTypeName()} does not contain property {propName}");
             }
         }

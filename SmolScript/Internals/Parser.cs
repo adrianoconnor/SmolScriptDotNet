@@ -877,6 +877,14 @@ namespace SmolScript.Internals
                 {
                     expr = finishCall(expr, expr.GetType() == typeof(GetExpression));
                 }
+                else if (match(TokenType.LEFT_SQUARE_BRACKET))
+                {
+                    var indexerExpression = expression();
+
+                    var closingParen = consume(TokenType.RIGHT_SQUARE_BRACKET, "Expected ]");
+
+                    expr = new IndexerGetExpression(expr, indexerExpression);
+                }
                 else if (match(TokenType.DOT))
                 {
                     Token name = consume(TokenType.IDENTIFIER, "Expect property name after '.'.");
@@ -972,8 +980,6 @@ namespace SmolScript.Internals
                 consume(TokenType.RIGHT_BRACKET, "Expect ')' after expression.");
                 return new GroupingExpression(expr);
             }
-
-            //while(match(TokenType.SEMICOLON));
 
             throw error(peek(), $"Parser did not expect to see '{peek().lexeme}' on line {peek().line}, sorry :(");
         }
