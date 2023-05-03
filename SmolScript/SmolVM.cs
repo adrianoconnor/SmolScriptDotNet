@@ -577,6 +577,13 @@ namespace SmolScript
 
                                 var env_in_context = environment;
 
+                                if (name == "@IndexerGet")
+                                {
+                                    // Special case for square brackets!
+
+                                    name = stack.Pop().GetValue()!.ToString();
+                                }
+
                                 if (instr.operand2 != null && (bool)instr.operand2)
                                 {
                                     var objRef = stack.Pop();

@@ -1062,6 +1062,31 @@ namespace SmolScript.Internals
             return chunk;
         }
 
+        public object? Visit(IndexerGetExpression expr)
+        {
+            var chunk = new List<ByteCodeInstruction>();
+
+            chunk.AppendChunk(expr.obj.Accept(this));
+
+            chunk.AppendChunk(expr.indexerExpr.Accept(this));
+
+            // Now on the stack we have an expression result which is
+            // the index value we want to get, so we have a special
+            // way to call fetch that knows to get that value and use
+            // it as a property
+
+            chunk.AppendInstruction(OpCode.FETCH,
+                operand1: new SmolVariableDefinition()
+                {
+                    name = "@IndexerGet"
+                },
+                operand2: true);
+
+            // Who knows if this will work... :)
+
+            return chunk;
+        }
+
         public object? Visit(SetExpression expr)
         {
             var chunk = new List<ByteCodeInstruction>();
