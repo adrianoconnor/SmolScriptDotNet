@@ -39,6 +39,18 @@ namespace SmolScript.Internals.SmolStackTypes
             }
         }
 
+        public void SetProp(string propName, SmolStackValue value)
+        {
+            if (int.TryParse(propName, out int index))
+            {
+                this.elements[index] = value;
+            }
+            else
+            {
+                throw new Exception($"Not a valid index");
+            }
+        }
+
         public SmolStackValue NativeCall(string funcName, List<SmolStackValue> parameters)
         {
             switch (funcName)

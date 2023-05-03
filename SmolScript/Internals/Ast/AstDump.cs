@@ -297,7 +297,7 @@ namespace SmolScript.Internals.Ast
         {
             var s = new StringBuilder();
 
-            s.AppendLine($"[getter obj={expr.obj.Accept(this)}, property name={expr.name} value ={expr.value.Accept(this)}]");
+            s.AppendLine($"[getter obj={expr.obj.Accept(this)}, property name={expr.name} value={expr.value.Accept(this)}]");
             
             return s.ToString();
         }
@@ -307,6 +307,15 @@ namespace SmolScript.Internals.Ast
             var s = new StringBuilder();
 
             s.AppendLine($"[indexGetter obj={expr.obj.Accept(this)}, indexer Expr={expr.indexerExpr.Accept(this)}]");
+
+            return s.ToString();
+        }
+
+        public object? Visit(IndexerSetExpression expr)
+        {
+            var s = new StringBuilder();
+
+            s.AppendLine($"[indexSetter obj={expr.obj.Accept(this)}, indexer Expr={expr.indexerExpr.Accept(this)} value={expr.value.Accept(this)}]");
 
             return s.ToString();
         }

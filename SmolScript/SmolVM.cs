@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
+using System.Xml.Linq;
 using SmolScript.Internals;
 using SmolScript.Internals.Ast;
 using SmolScript.Internals.SmolStackTypes;
@@ -549,6 +550,15 @@ namespace SmolScript
 
                         case OpCode.STORE:
                             {
+                                var name = ((SmolVariableDefinition)instr.operand1!).name;
+
+                                if (name == "@IndexerSet")
+                                {
+                                    // Special case for square brackets!
+
+                                    name = stack.Pop().GetValue()!.ToString();
+                                }
+
                                 var value = stack.Pop();
 
                                 var env_in_context = environment;
@@ -559,10 +569,23 @@ namespace SmolScript
                                     var objRef = stack.Pop();
 
                                     isPropertySetter = true;
-                                    env_in_context = ((SmolObject)objRef).object_env;
+
+                                    if (objRef.GetType() == typeof(SmolObject))
+                                    {
+                                        env_in_context = ((SmolObject)objRef).object_env;
+                                    }
+                                    else if (objRef is ISmolNativeCallable)
+                                    {
+                                        ((ISmolNativeCallable)objRef).SetProp(name, value);
+                                        break;
+                                    }
+                                    else
+                                    {
+                                        throw new Exception($"{objRef.GetType()} is not a valid target for this call");
+                                    }
                                 }
 
-                                env_in_context.Assign(((SmolVariableDefinition)instr.operand1!).name, value, isPropertySetter);
+                                env_in_context.Assign(name, value, isPropertySetter);
 
 
                                 debug($"              [Saved ${value}]");

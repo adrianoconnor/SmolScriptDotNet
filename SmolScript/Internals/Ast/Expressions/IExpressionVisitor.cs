@@ -16,5 +16,6 @@
         object? Visit(SetExpression expr);
         object? Visit(FunctionExpression expr);
         object? Visit(IndexerGetExpression expr);
+        object? Visit(IndexerSetExpression expr);
     }
 }
