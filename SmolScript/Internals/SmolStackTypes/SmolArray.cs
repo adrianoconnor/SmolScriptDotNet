@@ -43,6 +43,11 @@ namespace SmolScript.Internals.SmolStackTypes
         {
             if (int.TryParse(propName, out int index))
             {
+                while (index > this.elements.Count() - 1)
+                {
+                    elements.Add(new SmolUndefined());
+                }
+
                 this.elements[index] = value;
             }
             else
