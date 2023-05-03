@@ -35,13 +35,17 @@ var e = a.length;
 		{
             var code = @"
 var a = new Array(1, 2, 3);
-a[1] = 4;
+a[1] *= 2;
+a[1] /= 2;
+a[1] += 2;
+a[1] -= 2;
+a[1] **= 2;
 var b = a[0] + a[a[0]] + a[2];
 ";
 
             var vm = SmolVM.Compile(code);
 
-            Console.WriteLine(((SmolVM)vm).Decompile());
+            //Console.WriteLine(((SmolVM)vm).Decompile());
 
             //vm.OnDebugLog = Console.WriteLine;
 
