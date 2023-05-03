@@ -626,6 +626,11 @@ namespace SmolScript.Internals
 
                     return new SetExpression(getExpr.obj, getExpr.name, additionExpr);
                 }
+                else if (expr.GetType() == typeof(IndexerGetExpression))
+                {
+                    var getExpr = (IndexerGetExpression)expr;
+                    return new IndexerSetExpression(getExpr.obj, getExpr.indexerExpr, additionExpr);
+                }
 
                 throw error(equals, "Invalid assignment target.");
             }
@@ -646,6 +651,11 @@ namespace SmolScript.Internals
 
                     return new SetExpression(getExpr.obj, getExpr.name, subtractExpr);
                 }
+                else if (expr.GetType() == typeof(IndexerGetExpression))
+                {
+                    var getExpr = (IndexerGetExpression)expr;
+                    return new IndexerSetExpression(getExpr.obj, getExpr.indexerExpr, subtractExpr);
+                }
 
                 throw error(equals, "Invalid assignment target.");
             }
@@ -664,6 +674,11 @@ namespace SmolScript.Internals
                 {
                     var getExpr = (GetExpression)expr;
                     return new SetExpression(getExpr.obj, getExpr.name, powExpr);
+                }
+                else if (expr.GetType() == typeof(IndexerGetExpression))
+                {
+                    var getExpr = (IndexerGetExpression)expr;
+                    return new IndexerSetExpression(getExpr.obj, getExpr.indexerExpr, powExpr);
                 }
 
                 throw error(equals, "Invalid assignment target.");
@@ -685,6 +700,11 @@ namespace SmolScript.Internals
 
                     return new SetExpression(getExpr.obj, getExpr.name, divExpr);
                 }
+                else if (expr.GetType() == typeof(IndexerGetExpression))
+                {
+                    var getExpr = (IndexerGetExpression)expr;
+                    return new IndexerSetExpression(getExpr.obj, getExpr.indexerExpr, divExpr);
+                }
 
                 throw error(equals, "Invalid assignment target.");
             }
@@ -704,6 +724,11 @@ namespace SmolScript.Internals
                     var getExpr = (GetExpression)expr;
 
                     return new SetExpression(getExpr.obj, getExpr.name, mulExpr);
+                }
+                else if (expr.GetType() == typeof(IndexerGetExpression))
+                {
+                    var getExpr = (IndexerGetExpression)expr;
+                    return new IndexerSetExpression(getExpr.obj, getExpr.indexerExpr, mulExpr);
                 }
 
                 throw error(equals, "Invalid assignment target.");
