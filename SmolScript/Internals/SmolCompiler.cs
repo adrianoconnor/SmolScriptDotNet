@@ -76,7 +76,7 @@ namespace SmolScript.Internals
             {
                 code_sections.Add(fb);
             }
-
+                       
             return new SmolProgram()
             {
                 constants = this.constants,
