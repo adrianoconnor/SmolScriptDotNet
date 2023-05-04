@@ -184,6 +184,7 @@ namespace SmolScript
             // a static method to 
             staticTypes.Add("String", typeof(SmolString));
             staticTypes.Add("Array", typeof(SmolArray));
+            staticTypes.Add("Object", typeof(SmolObject));
         }
 
         internal Dictionary<string, Type> staticTypes = new Dictionary<string, Type>();
@@ -683,6 +684,12 @@ namespace SmolScript
                                                 //var r = staticNativeClassMethods["@String.constructor"](paramValues);
 
                                                 var r = (SmolStackValue)staticTypes[rex.Groups[1].Value].GetMethod("StaticCall")!.Invoke(null, parameters.ToArray());
+
+                                                if (name == "@Object.constructor")
+                                                {
+                                                    // Hack alert!!!
+                                                    ((SmolObject)r).object_env = new Internals.Environment(this.globalEnv);
+                                                }
 
                                                 stack.Push(r);
 
