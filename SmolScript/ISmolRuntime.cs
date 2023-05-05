@@ -10,7 +10,7 @@ namespace SmolScript
 		/// </summary>
 		/// <param name="sourceCode"></param>
 		/// <returns>A SmolVM instance</returns>
-		public abstract static ISmolRuntime Compile(string sourceCode);
+		public static ISmolRuntime Compile(string sourceCode) => throw new NotImplementedException();
 
         /// <summary>
         /// Static method that takes a smol source string,
@@ -20,13 +20,14 @@ namespace SmolScript
         /// </summary>
         /// <param name="sourceCode"></param>
         /// <returns>A SmolVM instance</returns>
-        public abstract static ISmolRuntime Init(string sourceCode);
+        public static ISmolRuntime Init(string sourceCode) => throw new NotImplementedException();
 
-		/// <summary>
-		/// Set a limit on the maximum stack size for the smol vm,
-		/// constraining the amount of resouces a smol program can
-		/// consume
-		/// </summary>
+
+        /// <summary>
+        /// Set a limit on the maximum stack size for the smol vm,
+        /// constraining the amount of resouces a smol program can
+        /// consume
+        /// </summary>
         int MaxStackSize { get; set; }
 
 		T GetGlobalVar<T>(string variableName);

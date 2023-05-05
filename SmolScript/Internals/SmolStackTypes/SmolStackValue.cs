@@ -240,7 +240,7 @@ namespace SmolScript.Internals.SmolStackTypes
                 var left = (double)((SmolNumber)this).GetValue()!;
                 var right = (double)((SmolNumber)power).GetValue()!;
 
-                return SmolStackValue.Create(double.Pow(left, right));
+                return SmolStackValue.Create(Math.Pow(left, right));
             }
 
             throw new Exception($"Unable to calculate power for");// {this.type} and {power.type}");

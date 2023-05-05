@@ -6,7 +6,8 @@ namespace SmolScript.Internals.SmolStackTypes
         SmolStackValue GetProp(string propName);
         void SetProp(string propName, SmolStackValue value);
         SmolStackValue NativeCall(string funcName, List<SmolStackValue> parameters);
-        abstract static SmolStackValue StaticCall(string funcName, List<SmolStackValue> parameters);
+
+        static SmolStackValue StaticCall(string funcName, List<SmolStackValue> parameters) => throw new NotImplementedException();
     }
 }
 
