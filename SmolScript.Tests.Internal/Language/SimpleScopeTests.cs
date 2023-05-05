@@ -4,16 +4,16 @@ using SmolScript.Internals;
 
 namespace SmolTests.SmolVmTests
 {
-	[TestClass]
-	public class SimpleScopeTests
-	{
-		public SimpleScopeTests()
-		{
-		}
+    [TestClass]
+    public class SimpleScopeTests
+    {
+        public SimpleScopeTests()
+        {
+        }
 
-		[TestMethod]
-		public void NewScopeForIf()
-		{
+        [TestMethod]
+        public void NewScopeForIf()
+        {
             var program = SmolCompiler.Compile(@"
 var a = 1;
 var b = 0;

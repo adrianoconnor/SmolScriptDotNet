@@ -6,9 +6,9 @@ namespace SmolScript.Internals.SmolStackTypes
         internal readonly bool value;
 
         internal SmolBool(bool value)
-		{
-			this.value = value;
-		}
+        {
+            this.value = value;
+        }
 
         internal override object? GetValue()
         {

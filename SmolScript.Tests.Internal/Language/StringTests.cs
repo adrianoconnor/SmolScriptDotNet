@@ -6,12 +6,12 @@ namespace SmolTests
 {
     [TestClass]
     public class StringTests
-	{
+    {
         public StringTests()
-		{
+        {
 
 
-		}
+        }
 
         [TestMethod]
         public void CreateAndAssignStringUsingDoubleQuotes()

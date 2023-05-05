@@ -24,7 +24,7 @@ namespace SmolScript.Internals.Ast
         }
 
         public string? Print(IList<Statement> stmts)
-        { 
+        {
             StringBuilder sb = new StringBuilder();
 
             foreach (var stmt in stmts)
@@ -44,7 +44,7 @@ namespace SmolScript.Internals.Ast
 
         public object? Visit(LogicalExpression expr)
         {
-            var s =  $"({expr.op.lexeme} {expr.left.Accept(this)} {expr.right.Accept(this)})";
+            var s = $"({expr.op.lexeme} {expr.left.Accept(this)} {expr.right.Accept(this)})";
 
             return s;
         }
@@ -185,22 +185,22 @@ namespace SmolScript.Internals.Ast
         public object? Visit(TryStatement stmt)
         {
             var s = new StringBuilder();
-/*
-            s.AppendLine($"[if {stmt.testExpression.Accept(this)}]");
+            /*
+                        s.AppendLine($"[if {stmt.testExpression.Accept(this)}]");
 
-            s.AppendLine($"[then]");
-            s.Append($"{stmt.thenStatement.Accept(this)}");
-            s.AppendLine($"[/then]");
+                        s.AppendLine($"[then]");
+                        s.Append($"{stmt.thenStatement.Accept(this)}");
+                        s.AppendLine($"[/then]");
 
-            if (stmt.elseStatement != null)
-            {
-                s.AppendLine($"[else]");
-                s.Append($"{stmt.elseStatement!.Accept(this)}");
-                s.AppendLine($"[/else]");
-            }
+                        if (stmt.elseStatement != null)
+                        {
+                            s.AppendLine($"[else]");
+                            s.Append($"{stmt.elseStatement!.Accept(this)}");
+                            s.AppendLine($"[/else]");
+                        }
 
-            s.AppendLine("[end if]");
-                */
+                        s.AppendLine("[end if]");
+                            */
             return s.ToString();
         }
 
@@ -298,7 +298,7 @@ namespace SmolScript.Internals.Ast
             var s = new StringBuilder();
 
             s.AppendLine($"[setter obj={expr.obj.Accept(this)}, property name={expr.name} value={expr.value.Accept(this)}]");
-            
+
             return s.ToString();
         }
 
@@ -311,7 +311,7 @@ namespace SmolScript.Internals.Ast
             return s.ToString();
         }
 
-       
+
         public object? Visit(IndexerGetExpression expr)
         {
             var s = new StringBuilder();

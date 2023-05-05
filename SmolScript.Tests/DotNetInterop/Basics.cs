@@ -21,7 +21,7 @@ aPlusPlus(); // Call it once during initialization just to show this also is fin
         ISmolRuntime vm = SmolVM.Compile(code);
 
         vm.MaxStackSize = 4;
-       
+
         vm.RunInDebug(); // this executes the code above -- declares a, sets to 1, declares a functiona and calls it
 
         var a = vm.GetGlobalVar<int>("a"); // verify that the var has the value we expect
@@ -32,7 +32,7 @@ aPlusPlus(); // Call it once during initialization just to show this also is fin
 
         var a2 = vm.GetGlobalVar<string>("a"); // And get the new value in variable a
 
-        Assert.AreEqual("3", a2);       
+        Assert.AreEqual("3", a2);
     }
 
     [TestMethod]
@@ -58,7 +58,7 @@ function aPlusNum(numToAdd) {
         Assert.AreEqual(1, a1);
 
         var returnedValue = vm.Call<int>("aPlusNum", 10); // Call the function with one param, returning an int
-        
+
         var a2 = vm.GetGlobalVar<int>("a"); // Get the new value in variable a
 
         Assert.AreEqual(11, a2);
@@ -76,8 +76,8 @@ function concat(strA, strB) {
 
         var vm = SmolVM.Init(code);
 
-//        vm.Run();
-        
+        //        vm.Run();
+
         var result = vm.Call<string>("concat", "hello", "world");
 
         Assert.AreEqual("helloworld", result);

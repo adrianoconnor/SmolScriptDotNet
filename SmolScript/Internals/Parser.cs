@@ -463,7 +463,7 @@ namespace SmolScript.Internals
             Token? exceptionVarName = null;
 
             if (match(TokenType.CATCH))
-            {             
+            {
                 if (match(TokenType.LEFT_BRACKET))
                 {
                     exceptionVarName = consume(TokenType.IDENTIFIER, "Expected a single variable name for exception variable");
@@ -474,14 +474,15 @@ namespace SmolScript.Internals
                 consume(TokenType.LEFT_BRACE, "Expected {");
                 catchBody = block();
             }
-            
+
             if (match(TokenType.FINALLY))
             {
                 consume(TokenType.LEFT_BRACE, "Expected {");
                 finallyBody = block();
             }
 
-            if (catchBody == null && finallyBody == null) {
+            if (catchBody == null && finallyBody == null)
+            {
                 consume(TokenType.CATCH, "Expected catch or finally");
             }
 
@@ -595,7 +596,7 @@ namespace SmolScript.Internals
                 {
                     var name = ((VariableExpression)expr).name;
                     return new AssignExpression(name, value);
-                } 
+                }
                 else if (expr.GetType() == typeof(GetExpression))
                 {
                     var getExpr = (GetExpression)expr;
@@ -617,7 +618,7 @@ namespace SmolScript.Internals
                 var additionExpr = new BinaryExpression(expr, new Token(TokenType.PLUS, "+=", null, 0), value);
 
                 if (expr.GetType() == typeof(VariableExpression))
-                {                   
+                {
                     return new AssignExpression(((VariableExpression)expr).name, additionExpr);
                 }
                 else if (expr.GetType() == typeof(GetExpression))
@@ -642,7 +643,7 @@ namespace SmolScript.Internals
                 var subtractExpr = new BinaryExpression(expr, new Token(TokenType.MINUS, "-=", null, 0), value);
 
                 if (expr.GetType() == typeof(VariableExpression))
-                {                    
+                {
                     return new AssignExpression(((VariableExpression)expr).name, subtractExpr);
                 }
                 else if (expr.GetType() == typeof(GetExpression))
@@ -1028,7 +1029,8 @@ namespace SmolScript.Internals
 
                 if (!check(TokenType.RIGHT_BRACE))
                 {
-                    do {
+                    do
+                    {
 
                         var name = consume(TokenType.IDENTIFIER, "Expected idetifier");
                         _ = consume(TokenType.COLON, "Exepcted :");

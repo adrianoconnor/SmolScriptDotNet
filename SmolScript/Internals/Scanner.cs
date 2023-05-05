@@ -16,10 +16,10 @@ namespace SmolScript.Internals
 
     internal class Scanner
     {
-        private string _source; 
+        private string _source;
         private char[] _sourceRaw;
 
-        private int _start =  0;
+        private int _start = 0;
         private int _current = 0;
         private int _line = 1;
 
@@ -66,7 +66,7 @@ namespace SmolScript.Internals
 
         public (IList<Token> tokens, IList<ScannerError> errors) ScanTokens()
         {
-            while(!ReachedEnd())
+            while (!ReachedEnd())
             {
                 _start = _current;
                 ScanToken();
@@ -81,7 +81,7 @@ namespace SmolScript.Internals
         {
             char c = NextChar();
 
-            switch(c)
+            switch (c)
             {
                 case '(': AddToken(TokenType.LEFT_BRACKET); break;
                 case ')': AddToken(TokenType.RIGHT_BRACKET); break;
@@ -98,11 +98,11 @@ namespace SmolScript.Internals
                     {
                         if (_tokens.LastOrDefault()?.type == TokenType.IDENTIFIER)
                         {
-                           AddToken(TokenType.POSTFIX_DECREMENT);
+                            AddToken(TokenType.POSTFIX_DECREMENT);
                         }
                         else
                         {
-                           AddToken(TokenType.PREFIX_DECREMENT);
+                            AddToken(TokenType.PREFIX_DECREMENT);
                         }
                     }
                     else if (MatchNext('='))
@@ -114,16 +114,16 @@ namespace SmolScript.Internals
                         AddToken(TokenType.MINUS);
                     }
                     break;
-                case '+': 
+                case '+':
                     if (MatchNext('+'))
                     {
                         if (_tokens.LastOrDefault()?.type == TokenType.IDENTIFIER)
                         {
-                           AddToken(TokenType.POSTFIX_INCREMENT);
+                            AddToken(TokenType.POSTFIX_INCREMENT);
                         }
                         else
                         {
-                           AddToken(TokenType.PREFIX_INCREMENT);
+                            AddToken(TokenType.PREFIX_INCREMENT);
                         }
                     }
                     else if (MatchNext('='))
@@ -132,11 +132,11 @@ namespace SmolScript.Internals
                     }
                     else
                     {
-                        AddToken(TokenType.PLUS); 
+                        AddToken(TokenType.PLUS);
                     }
                     break;
                 case ';': AddToken(TokenType.SEMICOLON); break;
-                case '*': 
+                case '*':
                     if (MatchNext('*'))
                     {
                         if (MatchNext('='))
@@ -150,7 +150,7 @@ namespace SmolScript.Internals
                     }
                     else if (MatchNext('='))
                     {
-                       AddToken(TokenType.MULTIPLY_EQUALS);
+                        AddToken(TokenType.MULTIPLY_EQUALS);
                     }
                     else
                     {
@@ -200,7 +200,7 @@ namespace SmolScript.Internals
                 case '/':
                     if (MatchNext('/'))
                     {
-                        while(Peek() != '\n' && !ReachedEnd()) _ = NextChar();
+                        while (Peek() != '\n' && !ReachedEnd()) _ = NextChar();
                     }
                     else if (MatchNext('='))
                     {
@@ -208,7 +208,7 @@ namespace SmolScript.Internals
                     }
                     else if (MatchNext('*'))
                     {
-                        while(Peek() != '*' && Peek(1) != '/')
+                        while (Peek() != '*' && Peek(1) != '/')
                         {
                             if (ReachedEnd())
                             {
@@ -216,7 +216,7 @@ namespace SmolScript.Internals
                             }
                             else
                             {
-                                _current = NextChar();        
+                                _current = NextChar();
                             }
                         }
                     }
@@ -297,7 +297,7 @@ namespace SmolScript.Internals
         private void AddToken(TokenType tokenType, object? literal)
         {
             //Console.WriteLine($"**ADD TOKEN**");
-            
+
             //Console.WriteLine($"Token Type: {tokenType}");
             //Console.WriteLine($"Start: {_start}");
             //Console.WriteLine($"Current: {_current}");
@@ -385,7 +385,8 @@ namespace SmolScript.Internals
                 }
             }
 
-            if (ReachedEnd()) {
+            if (ReachedEnd())
+            {
                 _errors.Add(new ScannerError(_line, "Unterminated string"));
                 return;
             }
@@ -494,7 +495,7 @@ namespace SmolScript.Internals
 
                                 AddToken(TokenType.PLUS);
                             }
-                            
+
                             Scanner embeddedScanner = new Scanner(embeddedExpr.ToString());
 
                             var embeddedTokens = embeddedScanner.ScanTokens();
@@ -504,7 +505,7 @@ namespace SmolScript.Internals
                             AddToken(TokenType.LEFT_BRACKET);
 
                             foreach (var t in embeddedTokens.tokens)
-                            { 
+                            {
                                 if (t.type == TokenType.EOF)
                                 {
                                     break;
@@ -563,14 +564,14 @@ namespace SmolScript.Internals
 
         private void ProcessNumber()
         {
-            while(CharIsDigit(Peek())) _ = NextChar();
+            while (CharIsDigit(Peek())) _ = NextChar();
 
             if (Peek() == '.' && CharIsDigit(Peek(1)))
             {
                 // Consume the .
                 _ = NextChar();
-            
-                while(CharIsDigit(Peek())) _ = NextChar();
+
+                while (CharIsDigit(Peek())) _ = NextChar();
             }
 
             var stringValue = _source.Substring(_start, _current - _start);
@@ -579,7 +580,7 @@ namespace SmolScript.Internals
 
         private void ProcessIdentifier()
         {
-            while(CharIsAlphaNumeric(Peek())) _ = NextChar();
+            while (CharIsAlphaNumeric(Peek())) _ = NextChar();
 
             var stringValue = _source.Substring(_start, _current - _start);
 

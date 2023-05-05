@@ -72,7 +72,7 @@ namespace SmolScript
             return (T)Convert.ChangeType(v.GetValue()!, typeof(T));
         }
 
-        public void Call(string functionName, params object[] args)        
+        public void Call(string functionName, params object[] args)
         {
             Call<object>(functionName, args);
         }
@@ -102,7 +102,7 @@ namespace SmolScript
 
             var fn = program.function_table.First(f => f.global_function_name == functionName);
 
-        
+
             // Prime the new environment with variables for
             // the parameters in the function declaration (actual number
             // passed might be different)
@@ -269,7 +269,7 @@ namespace SmolScript
                 debug($"{instr}");//: {System.Environment.TickCount - t}");
 
                 t = System.Environment.TickCount;
-                
+
                 try
                 {
                     switch (instr.opcode)
@@ -284,7 +284,7 @@ namespace SmolScript
                             stack.Push(program.constants[(int)instr.operand1!]);
 
                             debug($"              [Pushed ${program.constants[(int)instr.operand1!]}]");
-                            
+
                             break;
 
                         case OpCode.CALL:
@@ -345,7 +345,7 @@ namespace SmolScript
                                 var state = new SmolCallSiteSaveState(
                                     code_section: this.code_section,
                                     PC: this.PC,
-                                    previous_env:  this.environment,
+                                    previous_env: this.environment,
                                     call_is_extern: false
                                 );
 
@@ -508,7 +508,7 @@ namespace SmolScript
 
                             debug($"Done, stack size = {stack.Count}");
                             this.runMode = RunMode.Done;
-                            
+
                             return;
 
                         case OpCode.RETURN:
@@ -593,7 +593,7 @@ namespace SmolScript
 
 
                                 debug($"              [Saved ${value}]");
-                                    
+
                                 break;
                             }
 
@@ -619,13 +619,13 @@ namespace SmolScript
                                     if (objRef.GetType() == typeof(SmolObject))
                                     {
                                         env_in_context = ((SmolObject)objRef).object_env;
-                                     
+
                                         if (peek_instr.opcode == OpCode.CALL && (bool)peek_instr.operand2!)
                                         {
                                             stack.Push(objRef);
                                         }
                                     }
-                                    else 
+                                    else
                                     {
                                         if (objRef is ISmolNativeCallable)
                                         {
@@ -722,7 +722,7 @@ namespace SmolScript
                                 {
                                     stack.Push((SmolStackValue)fetchedValue!);
 
-                                    debug($"              [Loaded ${fetchedValue.GetType()} {((SmolStackValue)fetchedValue!).GetValue()}]");                                    
+                                    debug($"              [Loaded ${fetchedValue.GetType()} {((SmolStackValue)fetchedValue!).GetValue()}]");
                                 }
                                 else
                                 {

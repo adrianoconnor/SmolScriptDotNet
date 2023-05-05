@@ -7,7 +7,7 @@ namespace SmolScript.Internals.SmolStackTypes
         internal string class_name;
 
         internal SmolObject(Environment object_env, string class_name)
-		{
+        {
             this.object_env = object_env;
             this.class_name = class_name;
         }
@@ -47,7 +47,7 @@ namespace SmolScript.Internals.SmolStackTypes
                 case "constructor":
 
                     return new SmolObject(new Environment(), "Object");
-                    
+
 
                 default:
                     throw new Exception($"Object class cannot handle static function {funcName}");

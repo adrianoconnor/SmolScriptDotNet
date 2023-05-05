@@ -3,8 +3,8 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace SmolScript.Internals.SmolStackTypes
 {
-    internal class SmolNumber: SmolStackValue
-	{
+    internal class SmolNumber : SmolStackValue
+    {
         internal readonly double value;
 
         internal SmolNumber(double value)

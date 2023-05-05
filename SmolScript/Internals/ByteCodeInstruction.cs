@@ -41,7 +41,8 @@ namespace SmolScript.Internals
     {
         public static void AppendChunk(this List<ByteCodeInstruction> chunk, object? byteCodeChunkToAdd)
         {
-            if (byteCodeChunkToAdd != null) {
+            if (byteCodeChunkToAdd != null)
+            {
                 if (byteCodeChunkToAdd?.GetType() == typeof(ByteCodeInstruction))
                 {
                     chunk.Add((ByteCodeInstruction)byteCodeChunkToAdd!);
@@ -52,7 +53,7 @@ namespace SmolScript.Internals
                 }
             }
         }
-        
+
         public static void AppendInstruction(this List<ByteCodeInstruction> chunk, OpCode opcode, object? operand1 = null, object? operand2 = null)
         {
             chunk.Add(new ByteCodeInstruction()

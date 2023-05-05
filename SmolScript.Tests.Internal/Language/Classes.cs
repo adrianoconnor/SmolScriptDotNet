@@ -7,12 +7,12 @@ namespace SmolTests
 {
     [TestClass]
     public class Classes
-	{
+    {
         public Classes()
-		{
+        {
 
 
-		}
+        }
 
         [TestMethod]
         public void Getters()
@@ -31,7 +31,7 @@ namespace SmolTests
         }
 
 
-            [TestMethod]
+        [TestMethod]
         public void DefineSimpleClassWithFunc()
         {
             var source = @"

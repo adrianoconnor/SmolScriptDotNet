@@ -44,7 +44,7 @@ namespace SmolScript.Internals.SmolStackTypes
             {
                 case "indexOf":
 
-                    var p1 = ((SmolString)parameters[0]).value; 
+                    var p1 = ((SmolString)parameters[0]).value;
 
                     return new SmolNumber(this.value.IndexOf(p1));
 
@@ -54,7 +54,7 @@ namespace SmolScript.Internals.SmolStackTypes
         }
 
         public static SmolStackValue StaticCall(string funcName, List<SmolStackValue> parameters)
-        { 
+        {
             switch (funcName)
             {
                 case "constructor":
@@ -67,7 +67,7 @@ namespace SmolScript.Internals.SmolStackTypes
                     {
                         return new SmolString("");
                     }
-                    
+
                 default:
                     throw new Exception($"String class cannot handle static function {funcName}");
             }

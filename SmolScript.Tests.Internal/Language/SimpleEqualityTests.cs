@@ -6,10 +6,10 @@ namespace SmolTests
 {
     [TestClass]
     public class SimpleEqualityTests
-	{
+    {
         public SimpleEqualityTests()
-		{
-		}
+        {
+        }
 
         [TestMethod]
         public void EqualsEquals()

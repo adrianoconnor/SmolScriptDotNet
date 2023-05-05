@@ -2,9 +2,9 @@ namespace SmolScript.Internals
 {
     internal enum TokenType
     {
-        LEFT_BRACKET, 
-        RIGHT_BRACKET, 
-        LEFT_BRACE, 
+        LEFT_BRACKET,
+        RIGHT_BRACKET,
+        LEFT_BRACE,
         RIGHT_BRACE,
         LEFT_SQUARE_BRACKET,
         RIGHT_SQUARE_BRACKET,
@@ -13,7 +13,7 @@ namespace SmolScript.Internals
         MINUS,
         PLUS,
         POW,
-        SEMICOLON, 
+        SEMICOLON,
         DIVIDE,
         REMAINDER,
 
@@ -49,7 +49,7 @@ namespace SmolScript.Internals
         POSTFIX_INCREMENT,
         PREFIX_INCREMENT,
         POSTFIX_DECREMENT,
-        PREFIX_DECREMENT,        
+        PREFIX_DECREMENT,
 
         // Literals
 
@@ -59,25 +59,25 @@ namespace SmolScript.Internals
 
         // Keywords
 
-        BREAK, 
+        BREAK,
         CASE,
-        CLASS, 
+        CLASS,
         CONST,
         CONTINUE,
         DEBUGGER,
         DO,
-        ELSE, 
+        ELSE,
         FALSE,
-        FUNC, 
-        FOR, 
-        IF, 
+        FUNC,
+        FOR,
+        IF,
         NEW,
-        NULL, 
+        NULL,
         PRINT,
         RETURN,
         SUPER,
         SWITCH,
-       // THIS,
+        // THIS,
         TRUE,
         VAR,
         WHILE,

@@ -1,11 +1,11 @@
 ﻿using System;
 namespace SmolScript.Internals.SmolStackTypes
 {
-	internal class SmolNull: SmolStackValue
-	{
-		internal SmolNull()
-		{
-		}
+    internal class SmolNull : SmolStackValue
+    {
+        internal SmolNull()
+        {
+        }
 
         internal override object? GetValue()
         {

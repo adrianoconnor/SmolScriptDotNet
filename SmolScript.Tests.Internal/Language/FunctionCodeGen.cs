@@ -6,12 +6,12 @@ namespace SmolTests
 {
     [TestClass]
     public class FunctionCodeGen
-	{
+    {
         public FunctionCodeGen()
-		{
+        {
 
 
-		}
+        }
 
         [TestMethod]
         public void TryCreatingByteCodeForAGlobalFunction()

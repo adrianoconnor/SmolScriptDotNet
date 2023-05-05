@@ -74,7 +74,7 @@ namespace SmolScript.Internals.SmolStackTypes
 
                 return new SmolNumber(left + right);
             }
-            else if(a.GetType() == typeof(SmolString) || b.GetType() == typeof(SmolString))
+            else if (a.GetType() == typeof(SmolString) || b.GetType() == typeof(SmolString))
             {
                 // TODO: Need a Stringify helper method.
 
@@ -82,11 +82,11 @@ namespace SmolScript.Internals.SmolStackTypes
                 string bString = b.GetValue()!.ToString();
 
                 return new SmolString(aString + bString);
-            }           
+            }
 
             throw new Exception($"Unable to add {a.GetType()} and {b.GetType()}");
         }
-        
+
         public static SmolStackValue operator -(SmolStackValue a, SmolStackValue b)
         {
             // Currently only handles really simple case of both values
@@ -234,7 +234,7 @@ namespace SmolScript.Internals.SmolStackTypes
         }
 
         public SmolStackValue Power(SmolStackValue power)
-        {                
+        {
             if (this.GetType() == typeof(SmolNumber) && power.GetType() == typeof(SmolNumber))
             {
                 var left = (double)((SmolNumber)this).GetValue()!;
@@ -245,7 +245,7 @@ namespace SmolScript.Internals.SmolStackTypes
 
             throw new Exception($"Unable to calculate power for");// {this.type} and {power.type}");
         }
-                
+
         public override bool Equals([NotNullWhen(true)] object? obj)
         {
             if (this.GetType() == typeof(SmolNumber) && obj?.GetType() == typeof(SmolNumber))
@@ -259,9 +259,9 @@ namespace SmolScript.Internals.SmolStackTypes
             else
             {
                 return base.Equals(obj);
-            }            
+            }
         }
-        
+
         public override int GetHashCode()
         {
             if (this.GetType() == typeof(SmolNumber))
@@ -272,7 +272,7 @@ namespace SmolScript.Internals.SmolStackTypes
             {
                 return ((SmolString)this).value.GetHashCode();
             }
-            else 
+            else
             {
                 return base.GetHashCode();
             }

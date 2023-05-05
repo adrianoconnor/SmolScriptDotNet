@@ -9,7 +9,7 @@ namespace SmolScript.Internals.SmolStackTypes
         internal List<string> param_variable_names = new List<string>();
 
         internal SmolFunction(string? global_function_name, int code_section, int arity, List<string> param_variable_names)
-		{
+        {
             this.global_function_name = global_function_name;
             this.code_section = code_section;
             this.arity = arity;

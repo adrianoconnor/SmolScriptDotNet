@@ -23,7 +23,7 @@ var c = !a ? 1 : 2;
             var vm = new SmolVM(program);
 
             vm.Run();
-     
+
             Assert.AreEqual(1.0, vm.GetGlobalVar<double>("b"));
             Assert.AreEqual(2.0, vm.GetGlobalVar<double>("c"));
         }

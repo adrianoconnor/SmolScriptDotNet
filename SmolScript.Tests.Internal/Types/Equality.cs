@@ -9,7 +9,7 @@ public class Equality
     public void SmolNumberEquality()
     {
         var vm = SmolVM.Init("var a = 1; var b = 2; var c = 1;");
-     
+
         Assert.AreEqual(1, vm.GetGlobalVar<int>("a"));
         Assert.AreEqual(2, vm.GetGlobalVar<int>("b"));
         Assert.AreEqual(1, vm.GetGlobalVar<int>("c"));

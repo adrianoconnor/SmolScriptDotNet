@@ -2,13 +2,13 @@
 
 namespace SmolScript.Internals.SmolStackTypes
 {
-	internal class SmolArray: SmolStackValue, ISmolNativeCallable
-	{
+    internal class SmolArray : SmolStackValue, ISmolNativeCallable
+    {
         internal readonly List<SmolStackValue> elements = new List<SmolStackValue>();
 
-		internal SmolArray()
-		{
-		}
+        internal SmolArray()
+        {
+        }
 
         internal override object? GetValue()
         {
@@ -74,14 +74,14 @@ namespace SmolScript.Internals.SmolStackTypes
         }
 
         public static SmolStackValue StaticCall(string funcName, List<SmolStackValue> parameters)
-        { 
+        {
             switch (funcName)
             {
                 case "constructor":
 
                     var array = new SmolArray();
 
-                    foreach(var p in parameters)
+                    foreach (var p in parameters)
                     {
                         array.elements.Add(p);
                     }

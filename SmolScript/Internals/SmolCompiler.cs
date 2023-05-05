@@ -76,7 +76,7 @@ namespace SmolScript.Internals
             {
                 code_sections.Add(fb);
             }
-                       
+
             return new SmolProgram()
             {
                 constants = this.constants,
@@ -525,7 +525,7 @@ namespace SmolScript.Internals
             {
                 chunk.AppendChunk(((Expression)arg!).Accept(this));
             }
-                       
+
             chunk.AppendChunk(expr.callee.Accept(this)); // Load the function name onto the stack
 
             chunk.AppendChunk(new ByteCodeInstruction()
@@ -921,7 +921,7 @@ namespace SmolScript.Internals
             var function_index = function_bodies.Count() + 1;
             var function_name = stmt.name?.lexeme! ?? $"$_anon_{function_index}";
 
-            function_table.Add(new SmolFunction(            
+            function_table.Add(new SmolFunction(
                 global_function_name: function_name,
                 code_section: function_index,
                 arity: stmt.parameters.Count(),
@@ -1224,7 +1224,7 @@ namespace SmolScript.Internals
 
             // We are declaring a function expression, so the reference to the function needs
             // to go on the stack so some other code can grab and use it
-            return(new ByteCodeInstruction()
+            return (new ByteCodeInstruction()
             {
                 opcode = OpCode.FETCH,
                 operand1 = new SmolVariableDefinition()

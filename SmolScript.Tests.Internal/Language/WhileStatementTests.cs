@@ -80,7 +80,7 @@ while(a <= 10) {
             Assert.AreEqual(5.0, vm.GetGlobalVar<double>("a"));
             Assert.AreEqual(6.0, vm.GetGlobalVar<double>("b"));
         }
-    
+
 
         [TestMethod]
         public void ContinueInWhileTest()

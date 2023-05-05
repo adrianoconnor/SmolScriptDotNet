@@ -4,29 +4,29 @@ using System.Text;
 namespace SmolScript.Internals
 {
     internal static class ByteCodeDisassembler
-	{
-		public static string Disassemble(SmolProgram program)
-		{
-			StringBuilder sb = new StringBuilder();
+    {
+        public static string Disassemble(SmolProgram program)
+        {
+            StringBuilder sb = new StringBuilder();
 
-			sb.AppendLine(".constants");
+            sb.AppendLine(".constants");
 
-			for(int i = 0; i < program.constants.Count; i++)
-			{
+            for (int i = 0; i < program.constants.Count; i++)
+            {
                 sb.AppendLine($"[{i}]: {program.constants[i]}");
             }
 
             sb.AppendLine("");
             sb.AppendLine(".function_table");
 
-			foreach (var fn in program.function_table)
-			{
+            foreach (var fn in program.function_table)
+            {
                 sb.AppendLine($"Name: {fn.global_function_name} (code_section = {fn.code_section}, arity = {fn.arity})");
             }
 
             for (int i = 0; i < program.code_sections.Count; i++)
             {
-				sb.AppendLine($"");
+                sb.AppendLine($"");
 
                 sb.AppendLine($".code_section {i}");
 
@@ -35,15 +35,15 @@ namespace SmolScript.Internals
 
 
             return sb.ToString();
-		}
+        }
 
-		private static void WriteInstructions(List<ByteCodeInstruction> instrs, StringBuilder to)
-		{
-			foreach(var instr in instrs)
-			{
-				to.AppendLine(instr.ToString());
+        private static void WriteInstructions(List<ByteCodeInstruction> instrs, StringBuilder to)
+        {
+            foreach (var instr in instrs)
+            {
+                to.AppendLine(instr.ToString());
             }
         }
-	}
+    }
 }
 

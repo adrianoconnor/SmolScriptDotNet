@@ -6,12 +6,12 @@ namespace SmolTests
 {
     [TestClass]
     public class ComplexTryCatchTests
-	{
+    {
         public ComplexTryCatchTests()
-		{
+        {
 
 
-		}
+        }
 
         [TestMethod]
         public void SimpleTryCatchSyntaxTest()
@@ -22,7 +22,7 @@ namespace SmolTests
             var program = SmolCompiler.Compile(source);
 
             var vm = new SmolVM(program);
-            
+
             vm.Run();
 
             //Assert.AreEqual(3.0, ((SmolValue)vm.globalEnv.Get("a")!).value);

@@ -69,7 +69,7 @@ aPlusPlus(); // Call it once during initialization just to show this also is fin
         ISmolRuntime vm = SmolVM.Compile(code);
 
         vm.MaxStackSize = 4;
-       
+
         vm.RunInDebug(); // this executes the code above -- declares a, sets to 1, declares a functiona and calls it
 
         var a = vm.GetGlobalVar<int>("a"); // verify that the var has the value we expect
@@ -80,9 +80,9 @@ aPlusPlus(); // Call it once during initialization just to show this also is fin
 
         var a2 = vm.GetGlobalVar<string>("a"); // And get the new value in variable a
 
-        Assert.AreEqual("3", a2);       
+        Assert.AreEqual("3", a2);
     }
-    
+
     [TestMethod]
     public void TestMethod3()
     {

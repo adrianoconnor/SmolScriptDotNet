@@ -1,12 +1,12 @@
 ﻿using System;
 namespace SmolScript.Tests.Array
 {
-	[TestClass]
-	public class BasicArrayTests
-	{
-		[TestMethod]
-		public void CreateArrayWithNew()
-		{
+    [TestClass]
+    public class BasicArrayTests
+    {
+        [TestMethod]
+        public void CreateArrayWithNew()
+        {
             var code = @"
 var a = new Array(1, 2, 3);
 var b = a.length;
@@ -18,21 +18,21 @@ var e = a.length;
 
             var vm = SmolVM.Compile(code);
 
-			Console.WriteLine(((SmolVM)vm).Decompile());
+            Console.WriteLine(((SmolVM)vm).Decompile());
 
-			vm.OnDebugLog = Console.WriteLine;
+            vm.OnDebugLog = Console.WriteLine;
 
-			vm.RunInDebug();
+            vm.RunInDebug();
 
             Assert.AreEqual(3, vm.GetGlobalVar<int>("b"));
             Assert.AreEqual(3, vm.GetGlobalVar<int>("c"));
-			Assert.AreEqual(2, vm.GetGlobalVar<int>("d"));
-			Assert.AreEqual(3, vm.GetGlobalVar<int>("e"));
+            Assert.AreEqual(2, vm.GetGlobalVar<int>("d"));
+            Assert.AreEqual(3, vm.GetGlobalVar<int>("e"));
         }
 
-		[TestMethod]
-		public void ArraySquareBrackets()
-		{
+        [TestMethod]
+        public void ArraySquareBrackets()
+        {
             var code = @"
 var a = new Array(1, 2, 3);
 a[1] *= 2;

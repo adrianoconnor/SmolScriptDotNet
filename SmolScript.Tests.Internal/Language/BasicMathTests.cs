@@ -6,10 +6,10 @@ namespace SmolTests
 {
     [TestClass]
     public class BasicMathTests
-	{
+    {
         public BasicMathTests()
-		{
-		}
+        {
+        }
 
         [TestMethod]
         public void AddThreeNumbers()
