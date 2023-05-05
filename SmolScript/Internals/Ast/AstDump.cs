@@ -297,11 +297,21 @@ namespace SmolScript.Internals.Ast
         {
             var s = new StringBuilder();
 
-            s.AppendLine($"[getter obj={expr.obj.Accept(this)}, property name={expr.name} value={expr.value.Accept(this)}]");
+            s.AppendLine($"[setter obj={expr.obj.Accept(this)}, property name={expr.name} value={expr.value.Accept(this)}]");
             
             return s.ToString();
         }
 
+        public object? Visit(ObjectInitializerExpression expr)
+        {
+            var s = new StringBuilder();
+
+            s.AppendLine($"[initializer property name={expr.name} value={expr.value.Accept(this)}]");
+
+            return s.ToString();
+        }
+
+       
         public object? Visit(IndexerGetExpression expr)
         {
             var s = new StringBuilder();
