@@ -1003,6 +1003,8 @@ namespace SmolScript.Internals
         {
             var chunk = new List<ByteCodeInstruction>();
 
+            var className = (string)(expr.className.lexeme);
+
             // We need to tell the VM that we want to create an instance of a class.
             // It will need its own environment, and the instance info needs to be on the stack
             // so we can call the ctor, which needs to leave it on the stack afterwards
@@ -1010,15 +1012,23 @@ namespace SmolScript.Internals
             chunk.AppendChunk(new ByteCodeInstruction()
             {
                 opcode = OpCode.CREATE_OBJECT,
-                operand1 = (string)(expr.className.lexeme)                
+                operand1 = className
             });
 
-            foreach (Expression arg in expr.ctorArgs.Reverse())
+            if (className != "Object")
             {
-                chunk.AppendChunk(arg.Accept(this));
+                foreach (Expression arg in expr.ctorArgs.Reverse())
+                {
+                    chunk.AppendChunk(arg.Accept(this));
+                }
+
+                chunk.AppendInstruction(OpCode.DUPLICATE_VALUE, operand1: expr.ctorArgs.Count); // We need two copies of that ref
+            }
+            else
+            {
+                chunk.AppendInstruction(OpCode.DUPLICATE_VALUE, operand1: 0); // We need two copies of that ref
             }
 
-            chunk.AppendInstruction(OpCode.DUPLICATE_VALUE, operand1: expr.ctorArgs.Count); // We need two copies of that ref
 
             // Stack now has class instance value
 
@@ -1031,6 +1041,14 @@ namespace SmolScript.Internals
                 },
                 operand2 = true
             });
+
+            if (className == "Object")
+            {
+                foreach (Expression arg in expr.ctorArgs.Reverse())
+                {
+                    chunk.AppendChunk(arg.Accept(this));
+                }
+            }
 
             chunk.AppendChunk(new ByteCodeInstruction()
             {
@@ -1115,6 +1133,29 @@ namespace SmolScript.Internals
                     name = expr.name.lexeme
                 }, true);
 
+
+            return chunk;
+        }
+
+        public object? Visit(ObjectInitializerExpression expr)
+        {
+            var chunk = new List<ByteCodeInstruction>();
+
+            chunk.AppendInstruction(OpCode.DUPLICATE_VALUE, operand1: 2);
+
+            chunk.AppendChunk(expr.value.Accept(this));
+
+            chunk.AppendChunk(new ByteCodeInstruction()
+            {
+                opcode = OpCode.STORE,
+                operand1 = new SmolVariableDefinition()
+                {
+                    name = (string)(expr.name.lexeme)
+                },
+                operand2 = true // Means object reference on stack
+            });
+
+            // We don't reload the value onto the stack for these...
 
             return chunk;
         }

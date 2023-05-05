@@ -1020,6 +1020,29 @@ namespace SmolScript.Internals
                 return new NewInstanceExpression(className, args);
             }
 
+            if (match(TokenType.LEFT_BRACE))
+            {
+                var className = new Token(TokenType.IDENTIFIER, "Object", null, peek().line);
+
+                var args = new List<object?>();
+
+                if (!check(TokenType.RIGHT_BRACE))
+                {
+                    do {
+
+                        var name = consume(TokenType.IDENTIFIER, "Expected idetifier");
+                        _ = consume(TokenType.COLON, "Exepcted :");
+                        var value = expression();
+
+                        args.Add(new ObjectInitializerExpression(name, value));
+
+                    } while (match(TokenType.COMMA));
+                }
+
+                var closingParen = consume(TokenType.RIGHT_BRACE, "Expected }");
+
+                return new NewInstanceExpression(className, args);
+            }
 
             if (match(TokenType.LEFT_BRACKET))
             {

@@ -666,9 +666,12 @@ namespace SmolScript
 
                                                 var functionArgs = new List<SmolStackValue>();
 
-                                                for (int i = 0; i < (int)peek_instr.operand1!; i++)
+                                                if (name != "@Object.constructor")
                                                 {
-                                                    functionArgs.Add(this.stack.Pop());
+                                                    for (int i = 0; i < (int)peek_instr.operand1!; i++)
+                                                    {
+                                                        functionArgs.Add(this.stack.Pop());
+                                                    }
                                                 }
 
                                                 parameters.Add(functionArgs);
