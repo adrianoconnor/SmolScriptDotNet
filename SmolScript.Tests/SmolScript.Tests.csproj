@@ -28,6 +28,7 @@
     <None Remove="ErrorHandling\" />
     <None Remove="String\" />
     <None Remove="Object\" />
+    <None Remove="Comments\" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="DotNetInterop\" />
@@ -35,5 +36,6 @@
     <Folder Include="ErrorHandling\" />
     <Folder Include="String\" />
     <Folder Include="Object\" />
+    <Folder Include="Comments\" />
   </ItemGroup>
 </Project>

@@ -208,7 +208,7 @@ namespace SmolScript.Internals
                     }
                     else if (MatchNext('*'))
                     {
-                        while (Peek() != '*' && Peek(1) != '/')
+                        while (Peek() != '*' || Peek(1) != '/')
                         {
                             if (ReachedEnd())
                             {
@@ -216,9 +216,13 @@ namespace SmolScript.Internals
                             }
                             else
                             {
-                                _current = NextChar();
+                                c = NextChar();
+                                //_current = NextChar();
                             }
                         }
+
+                        MatchNext('*');
+                        MatchNext('/');
                     }
                     else
                     {
