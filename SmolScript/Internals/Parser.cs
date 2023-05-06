@@ -3,12 +3,12 @@ using SmolScript.Internals.Ast.Statements;
 
 namespace SmolScript.Internals
 {
-    internal class ParseError : Exception
+    public class ParseError : Exception
     {
         public int LineNumber { get; set; }
         public IList<ParseError>? Errors = null;
 
-        public ParseError(Token token, string message) :
+        internal ParseError(Token token, string message) :
            base(message)
         {
             this.LineNumber = token.line;

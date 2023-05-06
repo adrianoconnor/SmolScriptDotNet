@@ -1,4 +1,6 @@
 ﻿using System;
+using SmolScript.Internals;
+
 namespace SmolScript.Tests.String
 {
     [TestClass]
@@ -43,6 +45,38 @@ var b = a1 + a2 + a3;
 
             Assert.AreEqual("123456789", vm.GetGlobalVar<string>("b"));
             Assert.AreEqual(123456789, vm.GetGlobalVar<int>("b"));
+        }
+
+        [TestMethod]
+        public void LineBreakInStringLiteralDobuleQuote()
+        {
+            var code = @"
+var a = ""123
+456"";
+";
+            Assert.ThrowsException<ParseError>(() => SmolVM.Init(code));
+        }
+
+        [TestMethod]
+        public void LineBreakInStringLiteralSingleQuote()
+        {
+            var code = @"
+var a = '123
+456';
+";
+            Assert.ThrowsException<ParseError>(() => SmolVM.Init(code));
+        }
+
+        [TestMethod]
+        public void LineBreakInStringLiteralBackTick()
+        {
+            var code = @"
+var a = `123
+456`;
+";
+            var vm = SmolVM.Init(code);
+
+            Assert.AreEqual($"123{Environment.NewLine}456", vm.GetGlobalVar<string>("a"));
         }
     }
 }

@@ -349,7 +349,12 @@ namespace SmolScript.Internals
             while (Peek() != quoteChar && !ReachedEnd())
             {
 
-                if (Peek() == '\n') _line++;
+                if (MatchNext('\n')) // Peek() == '\n')
+                {
+                    _line++;
+                    _errors.Add(new ScannerError(_line, "Unexpected Line break in string"));
+                    return;
+                }
 
                 if (Peek() == '\\')
                 {
