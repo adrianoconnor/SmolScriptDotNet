@@ -793,16 +793,9 @@ namespace SmolScript.Internals
         {
             var chunk = new List<ByteCodeInstruction>();
 
-            if (stmt.expression != null)
-            {
-                chunk.AppendChunk(stmt.expression!.Accept(this));
-                chunk.AppendInstruction(OpCode.THROW, true);
-            }
-            else
-            {
-                chunk.AppendInstruction(OpCode.THROW, false);
-            }
-
+            chunk.AppendChunk(stmt.expression.Accept(this));
+            chunk.AppendInstruction(OpCode.THROW);
+            
             return chunk;
         }
 

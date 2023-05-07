@@ -4,9 +4,9 @@ namespace SmolScript.Internals.Ast.Statements
 {
     internal class ThrowStatement : Statement
     {
-        public readonly Expression? expression;
+        public readonly Expression expression;
 
-        public ThrowStatement(Expression? expression = null)
+        public ThrowStatement(Expression expression = null)
         {
             this.expression = expression;
         }

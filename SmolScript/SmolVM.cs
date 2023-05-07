@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Reflection.Metadata;
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
@@ -12,6 +13,11 @@ namespace SmolScript
 {
     public class SmolVM : ISmolRuntime
     {
+        private class SmolThrown: Exception
+        {
+
+        }
+
         enum RunMode
         {
             Run,
@@ -185,6 +191,7 @@ namespace SmolScript
             staticTypes.Add("String", typeof(SmolString));
             staticTypes.Add("Array", typeof(SmolArray));
             staticTypes.Add("Object", typeof(SmolObject));
+            staticTypes.Add("Error", typeof(SmolError));
         }
 
         internal Dictionary<string, Type> staticTypes = new Dictionary<string, Type>();
@@ -800,7 +807,7 @@ namespace SmolScript
 
                         case OpCode.TRY:
 
-                            SmolRuntimeException? exception = null;
+                            SmolVariableType? exception = null;
 
                             if (instr.operand2 != null && (bool)instr.operand2)
                             {
@@ -808,7 +815,7 @@ namespace SmolScript
                                 // take the exception that's already on the stack and leave it at the
                                 // top after creating the try checkpoint.
 
-                                exception = (SmolRuntimeException)stack.Pop();
+                                exception = (SmolVariableType)stack.Pop();
                             }
 
                             stack.Push(new SmolTryRegionSaveState(
@@ -829,13 +836,13 @@ namespace SmolScript
                         case OpCode.THROW:
                             if (instr.operand1 as bool? ?? false) // This flag means the user provided an object to throw, and it's already on the stack
                             {
-                                throw new Exception(); // SmolRuntimeException("");
+                                throw new SmolThrown(); // SmolRuntimeException("");
                             }
                             else
                             {
                                 //stack.Push(new SmolValue()
 
-                                throw new Exception();  // throw new SmolRuntimeException();
+                                throw new SmolThrown();  // throw new SmolRuntimeException();
                             }
 
                         case OpCode.LOOP_START:
@@ -940,9 +947,10 @@ namespace SmolScript
                             throw new Exception($"You forgot to handle an opcode: {instr.opcode}");
                     }
                 }
-                catch (Exception e) // (SmolRuntimeException e)
+                catch (SmolThrown e)
                 {
                     bool handled = false;
+                    var thrownObject = (SmolVariableType)stack.Pop();
 
                     while (stack.Any())
                     {
@@ -958,7 +966,39 @@ namespace SmolScript
                             this.PC = state.jump_exception;
                             this.environment = state.this_env;
 
-                            stack.Push(new SmolRuntimeException(e.Message));
+                            stack.Push(thrownObject);
+
+                            handled = true;
+                            break;
+                        }
+                    }
+
+                    if (!handled)
+                    {
+                        throw new Exception(e.Message);
+                    }
+
+
+                }
+                catch (Exception e) // (SmolRuntimeException e)
+                {
+                    bool handled = false;
+                  
+                    while (stack.Any())
+                    {
+                        var next = stack.Pop();
+
+                        if (next.GetType() == typeof(SmolTryRegionSaveState))
+                        {
+                            // We found the start of a try section, restore our state and jump to the exception handler location
+
+                            var state = (SmolTryRegionSaveState)next;
+
+                            this.code_section = state.code_section;
+                            this.PC = state.jump_exception;
+                            this.environment = state.this_env;
+
+                            stack.Push(new SmolError(e.Message));
 
                             handled = true;
                             break;

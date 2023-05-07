@@ -343,17 +343,10 @@ namespace SmolScript.Internals
         }
 
         private Statement throwStatement()
-        {
-            if (match(TokenType.SEMICOLON))
-            {
-                return new ThrowStatement();
-            }
-            else
-            {
-                var expr = expression();
-                consume(TokenType.SEMICOLON, "Expected ;");
-                return new ThrowStatement(expr);
-            }
+        {             
+            var expr = expression();
+            consume(TokenType.SEMICOLON, "Expected ;");
+            return new ThrowStatement(expr);
         }
 
         private Statement returnStatement()
