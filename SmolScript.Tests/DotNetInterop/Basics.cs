@@ -22,7 +22,7 @@ aPlusPlus(); // Call it once during initialization just to show this also is fin
 
         //vm.MaxStackSize = 4;
 
-        vm.RunInDebug(); // this executes the code above -- declares a, sets to 1, declares a functiona and calls it
+        vm.Run(); // this executes the code above -- declares a, sets to 1, declares a functiona and calls it
 
         var a = vm.GetGlobalVar<int>("a"); // verify that the var has the value we expect
 
@@ -98,7 +98,7 @@ function concat(strA, strB) {
 
         vm.OnDebugLog = (string logMessage) => debugOutput.AppendLine(logMessage);
 
-        vm.RunInDebug();
+        vm.Run();
 
         var result = vm.Call<string>("concat", "hello", "world");
 
@@ -131,7 +131,7 @@ function getA() { return a; }
         vm.Run();
 
         Assert.ThrowsException<Exception>(vm.Run);
-        Assert.ThrowsException<Exception>(vm.RunInDebug);
+        Assert.ThrowsException<Exception>(vm.Run);
         Assert.ThrowsException<Exception>(vm.Step);
     }
 

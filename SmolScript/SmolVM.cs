@@ -30,7 +30,12 @@ namespace SmolScript
         internal SmolProgram program;
 
         private Action<string>? _DebugLogDelegate;
-        public Action<string> OnDebugLog { set { _DebugLogDelegate = value; } }
+        public Action<string> OnDebugLog {
+            set {
+                _DebugLogDelegate = value;
+                _debug = value != null;
+            }
+        }
 
         private int _MaxStackSize = int.MaxValue;
 
@@ -245,17 +250,6 @@ namespace SmolScript
                 throw new Exception("Program execution is complete, either call Reset() before Run(), or invoke a specific function");
             }
 
-            _Run(RunMode.Run);
-        }
-
-        public void RunInDebug()
-        {
-            if (this.runMode == RunMode.Done)
-            {
-                throw new Exception("Program execution is complete, either Reset() or call a specific function");
-            }
-
-            _debug = true;
             _Run(RunMode.Run);
         }
 

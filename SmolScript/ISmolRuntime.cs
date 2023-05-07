@@ -36,7 +36,6 @@ namespace SmolScript
         T Call<T>(string functionName, params object[] args);
 
         void Run();
-        void RunInDebug();
         void Reset();
         void Step();
 

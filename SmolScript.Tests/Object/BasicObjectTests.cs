@@ -20,7 +20,7 @@ var a = o.x()[0];
 
             vm.OnDebugLog = Console.WriteLine;
 
-            vm.RunInDebug();
+            vm.Run();
 
             Assert.AreEqual(123, vm.GetGlobalVar<int>("a"));
 
@@ -40,7 +40,7 @@ var b = o.z;
 
             vm.OnDebugLog = Console.WriteLine;
 
-            vm.RunInDebug();
+            vm.Run();
 
             Assert.AreEqual(1, vm.GetGlobalVar<int>("b"));
         }
@@ -76,7 +76,7 @@ var b = o1.o2[3].o4.x;
 
             vm.OnDebugLog = Console.WriteLine;
 
-            vm.RunInDebug();
+            vm.Run();
 
             Assert.AreEqual(99, vm.GetGlobalVar<int>("a"));
             Assert.AreEqual(100, vm.GetGlobalVar<int>("b"));

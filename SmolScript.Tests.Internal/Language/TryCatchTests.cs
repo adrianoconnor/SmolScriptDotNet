@@ -89,7 +89,7 @@ namespace SmolTests
 
             vm.OnDebugLog = Console.WriteLine;
 
-            vm.RunInDebug();
+            vm.Run();
 
             Assert.AreEqual(3.0, vm.GetGlobalVar<double>("a"));
 

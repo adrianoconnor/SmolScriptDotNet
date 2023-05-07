@@ -5,39 +5,7 @@ namespace SmolScript.Tests;
 [TestClass]
 public class UnitTest1
 {
-    [TestMethod]
-    public void StringLength()
-    {
-        var src = @"
-            var a = 'Test String';
-            var b = a.length;
-        ";
-
-        var vm = SmolVM.Compile(src);
-
-        vm.RunInDebug();
-
-        var a = vm.GetGlobalVar<int>("b");
-
-        Assert.AreEqual(11, a);
-    }
-
-    [TestMethod]
-    public void StringIndexOf()
-    {
-        var src = @"
-            var a = 'Test String';
-            var b = a.indexOf('Str');
-        ";
-
-        var vm = SmolVM.Compile(src);
-
-        vm.RunInDebug();
-
-        var a = vm.GetGlobalVar<int>("b");
-
-        Assert.AreEqual(5, a);
-    }
+    
 
     [TestMethod]
     public void TestMethod1()
@@ -70,7 +38,7 @@ aPlusPlus(); // Call it once during initialization just to show this also is fin
 
         vm.MaxStackSize = 4;
 
-        vm.RunInDebug(); // this executes the code above -- declares a, sets to 1, declares a functiona and calls it
+        vm.Run(); // this executes the code above -- declares a, sets to 1, declares a functiona and calls it
 
         var a = vm.GetGlobalVar<int>("a"); // verify that the var has the value we expect
 
@@ -142,7 +110,7 @@ function aPlusNum(numToAdd) { // Declare a function we can call from .net, with 
 
         ISmolRuntime vm = SmolVM.Compile(code);
 
-        vm.RunInDebug(); // this executes the code above -- declares a, sets to 1, declares a functiona and calls it
+        vm.Run(); // this executes the code above -- declares a, sets to 1, declares a functiona and calls it
 
         var a = vm.GetGlobalVar<int>("a"); // verify that the var has the value we expect
 

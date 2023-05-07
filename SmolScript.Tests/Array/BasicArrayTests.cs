@@ -22,7 +22,7 @@ var e = a.length;
 
             vm.OnDebugLog = Console.WriteLine;
 
-            vm.RunInDebug();
+            vm.Run();
 
             Assert.AreEqual(3, vm.GetGlobalVar<int>("b"));
             Assert.AreEqual(3, vm.GetGlobalVar<int>("c"));

@@ -66,9 +66,7 @@ var a = t.addOne(1);
             var program = SmolCompiler.Compile(source);
             var vm = new SmolVM(program);
 
-            //Console.WriteLine(vm.Decompile());
-            //Console.WriteLine(vm.DumpAst());
-            vm.RunInDebug();
+            vm.Run();
 
             var t = vm.globalEnv.Get("t")!;
 
@@ -185,12 +183,12 @@ var g = c.testClass.getTestValue();
 
             var vm = new SmolVM(program);
 
-            vm.RunInDebug();
+            vm.Run();
 
             Assert.AreEqual(2.0, vm.GetGlobalVar<double>("b"));
             Assert.AreEqual(0, vm.stack.Count);
 
-            vm.RunInDebug();
+            vm.Run();
 
             Assert.AreEqual(2.0, vm.GetGlobalVar<double>("d"));
             Assert.AreEqual(2.0, vm.GetGlobalVar<double>("e"));
@@ -222,7 +220,7 @@ var c = new testClass1();
 
             Console.WriteLine(((SmolVM)vm).Decompile());
 
-            vm.RunInDebug();
+            vm.Run();
 
             Assert.IsNotNull(vm.globalEnv.Get("c"));
             Assert.AreEqual(0, vm.stack.Count);
@@ -246,7 +244,7 @@ var a = t.x;
 
             vm.OnDebugLog = Console.WriteLine;
 
-            vm.RunInDebug();
+            vm.Run();
 
             Assert.AreEqual(3.0, vm.GetGlobalVar<double>("a"));
         }

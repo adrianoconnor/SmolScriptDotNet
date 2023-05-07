@@ -21,7 +21,7 @@ catch {
 
             vm.OnDebugLog = Console.WriteLine;
 
-            vm.RunInDebug();
+            vm.Run();
 
             Assert.AreEqual(2.0, vm.GetGlobalVar<int>("a"));
         }
@@ -67,7 +67,7 @@ finally {
 
             vm.OnDebugLog = Console.WriteLine;
 
-            vm.RunInDebug();
+            vm.Run();
 
             Assert.AreEqual(2.0, vm.GetGlobalVar<int>("a"));
             Assert.AreEqual(2.0, vm.GetGlobalVar<int>("b"));
@@ -124,7 +124,7 @@ finally {
 
             vm.OnDebugLog = Console.WriteLine;
 
-            vm.RunInDebug();
+            vm.Run();
 
             Assert.AreEqual(2.0, vm.GetGlobalVar<int>("a"));
             Assert.AreEqual(2.0, vm.GetGlobalVar<int>("b"));
