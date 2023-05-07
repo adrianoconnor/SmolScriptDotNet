@@ -27,7 +27,7 @@ namespace SmolTests
             Console.WriteLine(dump);
 
             var vm = SmolVM.Compile(source);
-            Assert.ThrowsException<Exception>(vm.RunInDebug);
+            Assert.ThrowsException<SmolRuntimeException>(vm.Run);
         }
 
 

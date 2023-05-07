@@ -97,9 +97,7 @@ catch(e) {
 ";
             var vm = SmolVM.Compile(code);
 
-            vm.OnDebugLog = Console.WriteLine;
-
-            vm.RunInDebug();
+            Assert.ThrowsException<SmolRuntimeException>(() => vm.Run());
 
             Assert.AreEqual(1.0, vm.GetGlobalVar<int>("a"));
             Assert.AreEqual(2.0, vm.GetGlobalVar<int>("b"));
