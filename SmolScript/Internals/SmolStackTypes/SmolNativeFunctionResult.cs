@@ -1,15 +1,10 @@
 ﻿using System;
 namespace SmolScript.Internals.SmolStackTypes
 {
-    internal class SmolNativeFunctionResult : SmolStackValue
+    internal class SmolNativeFunctionResult : SmolStackType
     {
         internal SmolNativeFunctionResult()
         {
-        }
-
-        internal override object? GetValue()
-        {
-            return null;
         }
     }
 }

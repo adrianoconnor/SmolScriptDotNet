@@ -20,15 +20,15 @@ public class Equality
         // comparison when using base types is ok
         var a = ((SmolVM)vm).globalEnv.Get("a") as SmolNumber;
         var b = ((SmolVM)vm).globalEnv.Get("b") as SmolNumber;
-        var c = ((SmolVM)vm).globalEnv.Get("c") as SmolStackValue;
+        var c = ((SmolVM)vm).globalEnv.Get("c") as SmolVariableType;
 
         Assert.IsInstanceOfType<SmolNumber>(a);
         Assert.IsInstanceOfType<SmolNumber>(b);
         Assert.IsInstanceOfType<SmolNumber>(c);
 
-        Assert.IsInstanceOfType<SmolStackValue>(a);
-        Assert.IsInstanceOfType<SmolStackValue>(b);
-        Assert.IsInstanceOfType<SmolStackValue>(c);
+        Assert.IsInstanceOfType<SmolVariableType>(a);
+        Assert.IsInstanceOfType<SmolVariableType>(b);
+        Assert.IsInstanceOfType<SmolVariableType>(c);
 
         Assert.AreEqual(a, c);
         Assert.AreEqual(a.GetValue(), c.GetValue());
@@ -62,18 +62,18 @@ public class Equality
         // comparison when using base types is ok
         var a = ((SmolVM)vm).globalEnv.Get("a") as SmolBool;
         var b = ((SmolVM)vm).globalEnv.Get("b") as SmolBool;
-        var c = ((SmolVM)vm).globalEnv.Get("c") as SmolStackValue;
-        var d = ((SmolVM)vm).globalEnv.Get("d") as SmolStackValue;
+        var c = ((SmolVM)vm).globalEnv.Get("c") as SmolVariableType;
+        var d = ((SmolVM)vm).globalEnv.Get("d") as SmolVariableType;
 
         Assert.IsInstanceOfType<SmolBool>(a);
         Assert.IsInstanceOfType<SmolBool>(b);
         Assert.IsInstanceOfType<SmolBool>(c);
         Assert.IsInstanceOfType<SmolBool>(d);
 
-        Assert.IsInstanceOfType<SmolStackValue>(a);
-        Assert.IsInstanceOfType<SmolStackValue>(b);
-        Assert.IsInstanceOfType<SmolStackValue>(c);
-        Assert.IsInstanceOfType<SmolStackValue>(d);
+        Assert.IsInstanceOfType<SmolVariableType>(a);
+        Assert.IsInstanceOfType<SmolVariableType>(b);
+        Assert.IsInstanceOfType<SmolVariableType>(c);
+        Assert.IsInstanceOfType<SmolVariableType>(d);
 
         Assert.AreEqual(a, d);
         Assert.AreEqual(a.GetValue(), d.GetValue());

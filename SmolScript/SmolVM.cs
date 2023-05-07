@@ -58,7 +58,7 @@ namespace SmolScript
         // This is a stack based VM, so this is for our working data.
         // We store everything here as SmolValue, which is a wrapper
         // for all of our types
-        internal Stack<SmolStackValue> stack = new Stack<SmolStackValue>();
+        internal Stack<SmolStackType> stack = new Stack<SmolStackType>();
 
         Dictionary<int, int> jmplocs = new Dictionary<int, int>();
 
@@ -67,7 +67,7 @@ namespace SmolScript
 
         public T GetGlobalVar<T>(string variableName)
         {
-            var v = (SmolStackValue)globalEnv.Get(variableName)!;
+            var v = (SmolVariableType)globalEnv.Get(variableName)!;
 
             return (T)Convert.ChangeType(v.GetValue()!, typeof(T));
         }
@@ -111,7 +111,7 @@ namespace SmolScript
             {
                 if (args.Count() > i)
                 {
-                    env.Define(fn.param_variable_names[i], SmolStackValue.Create(args[i]));
+                    env.Define(fn.param_variable_names[i], SmolVariableType.Create(args[i]));
                 }
                 else
                 {
@@ -127,7 +127,7 @@ namespace SmolScript
 
             Run();
 
-            return (T)Convert.ChangeType(stack.Pop().GetValue()!, typeof(T));
+            return (T)Convert.ChangeType(((SmolVariableType)stack.Pop()).GetValue()!, typeof(T));
         }
 
 
@@ -316,11 +316,11 @@ namespace SmolScript
 
                                 // Next pop args off the stack. Op1 is number of args.                    
 
-                                List<SmolStackValue> paramValues = new List<SmolStackValue>();
+                                List<SmolVariableType> paramValues = new List<SmolVariableType>();
 
                                 for (int i = 0; i < (int)instr.operand1!; i++)
                                 {
-                                    paramValues.Add(this.stack.Pop());
+                                    paramValues.Add((SmolVariableType)this.stack.Pop());
                                 }
 
                                 // Now prime the new environment with variables for
@@ -365,8 +365,8 @@ namespace SmolScript
 
                         case OpCode.ADD:
                             {
-                                var right = stack.Pop();
-                                var left = stack.Pop();
+                                var right = (SmolVariableType)stack.Pop();
+                                var left = (SmolVariableType)stack.Pop();
 
                                 stack.Push(left + right);
 
@@ -375,8 +375,8 @@ namespace SmolScript
 
                         case OpCode.SUB:
                             {
-                                var right = stack.Pop();
-                                var left = stack.Pop();
+                                var right = (SmolVariableType)stack.Pop();
+                                var left = (SmolVariableType)stack.Pop();
 
                                 stack.Push(left - right);
 
@@ -385,8 +385,8 @@ namespace SmolScript
 
                         case OpCode.MUL:
                             {
-                                var right = stack.Pop();
-                                var left = stack.Pop();
+                                var right = (SmolVariableType)stack.Pop();
+                                var left = (SmolVariableType)stack.Pop();
 
                                 stack.Push(left * right);
 
@@ -395,8 +395,8 @@ namespace SmolScript
 
                         case OpCode.DIV:
                             {
-                                var right = stack.Pop();
-                                var left = stack.Pop();
+                                var right = (SmolVariableType)stack.Pop();
+                                var left = (SmolVariableType)stack.Pop();
 
                                 stack.Push(left / right);
 
@@ -405,8 +405,8 @@ namespace SmolScript
 
                         case OpCode.REM:
                             {
-                                var right = stack.Pop();
-                                var left = stack.Pop();
+                                var right = (SmolVariableType)stack.Pop();
+                                var left = (SmolVariableType)stack.Pop();
 
                                 stack.Push(left % right);
 
@@ -415,8 +415,8 @@ namespace SmolScript
 
                         case OpCode.POW:
                             {
-                                var right = stack.Pop();
-                                var left = stack.Pop();
+                                var right = (SmolVariableType)stack.Pop();
+                                var left = (SmolVariableType)stack.Pop();
 
                                 stack.Push(left.Power(right));
 
@@ -426,28 +426,28 @@ namespace SmolScript
 
                         case OpCode.EQL:
                             {
-                                var right = stack.Pop();
-                                var left = stack.Pop();
+                                var right = (SmolVariableType)stack.Pop();
+                                var left = (SmolVariableType)stack.Pop();
 
-                                stack.Push(SmolStackValue.Create(left.GetValue().Equals(right.GetValue())));
+                                stack.Push(SmolVariableType.Create(left.GetValue().Equals(right.GetValue())));
 
                                 break;
                             }
 
                         case OpCode.NEQ:
                             {
-                                var right = stack.Pop();
-                                var left = stack.Pop();
+                                var right = (SmolVariableType)stack.Pop();
+                                var left = (SmolVariableType)stack.Pop();
 
-                                stack.Push(SmolStackValue.Create(!left.GetValue().Equals(right.GetValue())));
+                                stack.Push(SmolVariableType.Create(!left.GetValue().Equals(right.GetValue())));
 
                                 break;
                             }
 
                         case OpCode.GT:
                             {
-                                var right = stack.Pop();
-                                var left = stack.Pop();
+                                var right = (SmolVariableType)stack.Pop();
+                                var left = (SmolVariableType)stack.Pop();
 
                                 stack.Push(left > right);
 
@@ -456,8 +456,8 @@ namespace SmolScript
 
                         case OpCode.LT:
                             {
-                                var right = stack.Pop();
-                                var left = stack.Pop();
+                                var right = (SmolVariableType)stack.Pop();
+                                var left = (SmolVariableType)stack.Pop();
 
                                 stack.Push(left < right);
 
@@ -466,8 +466,8 @@ namespace SmolScript
 
                         case OpCode.GTE:
                             {
-                                var right = stack.Pop();
-                                var left = stack.Pop();
+                                var right = (SmolVariableType)stack.Pop();
+                                var left = (SmolVariableType)stack.Pop();
 
                                 stack.Push(left >= right);
 
@@ -476,8 +476,8 @@ namespace SmolScript
 
                         case OpCode.LTE:
                             {
-                                var right = stack.Pop();
-                                var left = stack.Pop();
+                                var right = (SmolVariableType)stack.Pop();
+                                var left = (SmolVariableType)stack.Pop();
 
                                 stack.Push(left <= right);
 
@@ -486,8 +486,8 @@ namespace SmolScript
 
                         case OpCode.BITWISE_OR:
                             {
-                                var right = stack.Pop();
-                                var left = stack.Pop();
+                                var right = (SmolVariableType)stack.Pop();
+                                var left = (SmolVariableType)stack.Pop();
 
                                 stack.Push(left | right);
 
@@ -496,8 +496,8 @@ namespace SmolScript
 
                         case OpCode.BITWISE_AND:
                             {
-                                var right = stack.Pop();
-                                var left = stack.Pop();
+                                var right = (SmolVariableType)stack.Pop();
+                                var left = (SmolVariableType)stack.Pop();
 
                                 stack.Push(left & right);
 
@@ -560,11 +560,13 @@ namespace SmolScript
                                 {
                                     // Special case for square brackets!
 
-                                    name = stack.Pop().GetValue()!.ToString();
+                                    // Not sure abotu this cast, might need to add an extra check for type
+
+                                    name = ((SmolVariableType)stack.Pop()).GetValue()!.ToString();
                                 }
 
-                                var value = stack.Pop();
-
+                                var value = (SmolVariableType)stack.Pop(); // Hopefully always true...
+                                
                                 var env_in_context = environment;
                                 bool isPropertySetter = false;
 
@@ -580,7 +582,7 @@ namespace SmolScript
                                     }
                                     else if (objRef is ISmolNativeCallable)
                                     {
-                                        ((ISmolNativeCallable)objRef).SetProp(name, value);
+                                        ((ISmolNativeCallable)objRef).SetProp(name!, value);
                                         break;
                                     }
                                     else
@@ -589,7 +591,7 @@ namespace SmolScript
                                     }
                                 }
 
-                                env_in_context.Assign(name, value, isPropertySetter);
+                                env_in_context.Assign(name!, value, isPropertySetter);
 
 
                                 debug($"              [Saved ${value}]");
@@ -608,7 +610,7 @@ namespace SmolScript
                                 {
                                     // Special case for square brackets!
 
-                                    name = stack.Pop().GetValue()!.ToString();
+                                    name = ((SmolVariableType)stack.Pop()).GetValue()!.ToString();
                                 }
 
                                 if (instr.operand2 != null && (bool)instr.operand2)
@@ -635,11 +637,11 @@ namespace SmolScript
                                             {
                                                 // We need to get some arguments
 
-                                                List<SmolStackValue> paramValues = new List<SmolStackValue>();
+                                                List<SmolVariableType> paramValues = new List<SmolVariableType>();
 
                                                 for (int i = 0; i < (int)peek_instr.operand1!; i++)
                                                 {
-                                                    paramValues.Add(this.stack.Pop());
+                                                    paramValues.Add((SmolVariableType)this.stack.Pop());
                                                 }
 
                                                 stack.Push(((ISmolNativeCallable)objRef).NativeCall(name, paramValues)!);
@@ -664,13 +666,13 @@ namespace SmolScript
 
                                                 parameters.Add(rex.Groups[2].Value);
 
-                                                var functionArgs = new List<SmolStackValue>();
+                                                var functionArgs = new List<SmolVariableType>();
 
                                                 if (name != "@Object.constructor")
                                                 {
                                                     for (int i = 0; i < (int)peek_instr.operand1!; i++)
                                                     {
-                                                        functionArgs.Add(this.stack.Pop());
+                                                        functionArgs.Add((SmolVariableType)this.stack.Pop());
                                                     }
                                                 }
 
@@ -686,7 +688,7 @@ namespace SmolScript
 
                                                 //var r = staticNativeClassMethods["@String.constructor"](paramValues);
 
-                                                var r = (SmolStackValue)staticTypes[rex.Groups[1].Value].GetMethod("StaticCall")!.Invoke(null, parameters.ToArray());
+                                                var r = (SmolVariableType)staticTypes[rex.Groups[1].Value].GetMethod("StaticCall")!.Invoke(null, parameters.ToArray());
 
                                                 if (name == "@Object.constructor")
                                                 {
@@ -720,9 +722,9 @@ namespace SmolScript
 
                                 if (fetchedValue != null)
                                 {
-                                    stack.Push((SmolStackValue)fetchedValue!);
+                                    stack.Push((SmolStackType)fetchedValue!);
 
-                                    debug($"              [Loaded ${fetchedValue.GetType()} {((SmolStackValue)fetchedValue!).GetValue()}]");
+                                    debug($"              [Loaded ${fetchedValue.GetType()} {((SmolVariableType)fetchedValue!).GetValue()}]");
                                 }
                                 else
                                 {
@@ -741,7 +743,7 @@ namespace SmolScript
 
                         case OpCode.JMPFALSE:
                             {
-                                var value = stack.Pop();
+                                var value = (SmolVariableType)stack.Pop();
 
                                 if (value.IsFalsey())
                                 {
@@ -753,7 +755,7 @@ namespace SmolScript
 
                         case OpCode.JMPTRUE:
 
-                            if (stack.Pop().IsTruthy())
+                            if (((SmolVariableType)stack.Pop()).IsTruthy())
                             {
                                 PC = jmplocs[(int)instr.operand1!];
                             }
@@ -825,7 +827,7 @@ namespace SmolScript
                             break;
 
                         case OpCode.THROW:
-                            if ((bool)instr.operand1!) // This flag means the user provided an object to throw, and it's already on the stack
+                            if (instr.operand1 as bool? ?? false) // This flag means the user provided an object to throw, and it's already on the stack
                             {
                                 throw new Exception(); // SmolRuntimeException("");
                             }
@@ -908,7 +910,7 @@ namespace SmolScript
                                 )
                             );
 
-                            obj_environment.Define("this", stack.Peek());
+                            obj_environment.Define("this", (SmolVariableType)stack.Peek());
 
                             break;
 

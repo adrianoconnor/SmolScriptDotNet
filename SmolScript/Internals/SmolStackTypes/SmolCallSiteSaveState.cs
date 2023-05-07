@@ -1,7 +1,7 @@
 ﻿using System;
 namespace SmolScript.Internals.SmolStackTypes
 {
-    internal class SmolCallSiteSaveState : SmolStackValue
+    internal class SmolCallSiteSaveState : SmolStackType
     {
         internal int code_section;
         internal int PC;
@@ -14,11 +14,6 @@ namespace SmolScript.Internals.SmolStackTypes
             this.PC = PC;
             this.previous_env = previous_env;
             this.call_is_extern = call_is_extern;
-        }
-
-        internal override object? GetValue()
-        {
-            return null;
         }
     }
 }

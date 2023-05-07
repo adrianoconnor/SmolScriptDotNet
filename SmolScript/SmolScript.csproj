@@ -9,7 +9,6 @@
   <ItemGroup>
     <Folder Include="Internals\" />
     <Folder Include="Internals\Ast\" />
-    <Folder Include="Internals\Ast\Interpreter\" />
     <Folder Include="Internals\SmolStackTypes\" />
   </ItemGroup>
   <ItemGroup>

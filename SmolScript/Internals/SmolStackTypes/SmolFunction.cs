@@ -1,7 +1,7 @@
 ﻿using System;
 namespace SmolScript.Internals.SmolStackTypes
 {
-    internal class SmolFunction : SmolStackValue
+    internal class SmolFunction : SmolVariableType
     {
         internal string? global_function_name;
         internal int code_section;

@@ -1,9 +1,11 @@
+using SmolScript.Internals.SmolStackTypes;
+
 namespace SmolScript.Internals
 {
     internal class Environment
     {
         public readonly Environment? enclosing = null;
-        private IDictionary<string, object?> variables = new Dictionary<string, object?>();
+        private IDictionary<string, SmolVariableType> variables = new Dictionary<string, SmolVariableType>();
 
         public Environment()
         {
@@ -14,12 +16,12 @@ namespace SmolScript.Internals
             this.enclosing = enclosing;
         }
 
-        public void Define(string variable, object? value)
+        public void Define(string variable, SmolVariableType value)
         {
             variables[variable] = value;
         }
 
-        public void Assign(string variable, object? value, bool isThis = false)
+        public void Assign(string variable, SmolVariableType value, bool isThis = false)
         {
             if (variables.ContainsKey(variable))
             {

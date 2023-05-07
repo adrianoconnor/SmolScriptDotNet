@@ -1,7 +1,7 @@
 ﻿using System;
 namespace SmolScript.Internals.SmolStackTypes
 {
-    internal class SmolUndefined : SmolStackValue
+    internal class SmolUndefined : SmolVariableType
     {
         internal SmolUndefined()
         {

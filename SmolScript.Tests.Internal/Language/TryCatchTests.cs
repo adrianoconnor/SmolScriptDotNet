@@ -1,4 +1,5 @@
 ﻿using System;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SmolScript;
 using SmolScript.Internals;
 
@@ -9,8 +10,6 @@ namespace SmolTests
     {
         public ComplexTryCatchTests()
         {
-
-
         }
 
         [TestMethod]
@@ -22,10 +21,9 @@ namespace SmolTests
             var program = SmolCompiler.Compile(source);
 
             var vm = new SmolVM(program);
-
             vm.Run();
 
-            //Assert.AreEqual(3.0, ((SmolValue)vm.globalEnv.Get("a")!).value);
+            Assert.AreEqual(1.0, vm.GetGlobalVar<double>("a"));
         }
 
         [TestMethod]
@@ -71,7 +69,7 @@ namespace SmolTests
 
             vm.Run();
 
-            //Assert.AreEqual(3.0, ((SmolValue)vm.globalEnv.Get("a")!).value);
+            Assert.AreEqual(3.0, vm.GetGlobalVar<double>("a"));
         }
 
         [TestMethod]
@@ -83,11 +81,13 @@ namespace SmolTests
 
             var program = SmolCompiler.Compile(source);
 
-            Console.WriteLine(ByteCodeDisassembler.Disassemble(program));
+            //Console.WriteLine(ByteCodeDisassembler.Disassemble(program));
 
             var vm = new SmolVM(program);
 
-            vm.Run();
+            vm.OnDebugLog = Console.WriteLine;
+
+            vm.RunInDebug();
 
             Assert.AreEqual(3.0, vm.GetGlobalVar<double>("a"));
 

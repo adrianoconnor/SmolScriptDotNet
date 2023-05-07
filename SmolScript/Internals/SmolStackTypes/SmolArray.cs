@@ -2,9 +2,9 @@
 
 namespace SmolScript.Internals.SmolStackTypes
 {
-    internal class SmolArray : SmolStackValue, ISmolNativeCallable
+    internal class SmolArray : SmolVariableType, ISmolNativeCallable
     {
-        internal readonly List<SmolStackValue> elements = new List<SmolStackValue>();
+        internal readonly List<SmolVariableType> elements = new List<SmolVariableType>();
 
         internal SmolArray()
         {
@@ -20,7 +20,7 @@ namespace SmolScript.Internals.SmolStackTypes
             return $"(SmolArray) length={this.elements.Count}";
         }
 
-        public SmolStackValue GetProp(string propName)
+        public SmolVariableType GetProp(string propName)
         {
             switch (propName)
             {
@@ -38,7 +38,7 @@ namespace SmolScript.Internals.SmolStackTypes
             }
         }
 
-        public void SetProp(string propName, SmolStackValue value)
+        public void SetProp(string propName, SmolVariableType value)
         {
             if (int.TryParse(propName, out int index))
             {
@@ -55,7 +55,7 @@ namespace SmolScript.Internals.SmolStackTypes
             }
         }
 
-        public SmolStackValue NativeCall(string funcName, List<SmolStackValue> parameters)
+        public SmolVariableType NativeCall(string funcName, List<SmolVariableType> parameters)
         {
             switch (funcName)
             {
@@ -73,7 +73,7 @@ namespace SmolScript.Internals.SmolStackTypes
             }
         }
 
-        public static SmolStackValue StaticCall(string funcName, List<SmolStackValue> parameters)
+        public static SmolVariableType StaticCall(string funcName, List<SmolVariableType> parameters)
         {
             switch (funcName)
             {

@@ -1,7 +1,7 @@
 ﻿using System;
 namespace SmolScript.Internals.SmolStackTypes
 {
-    internal class SmolTryRegionSaveState : SmolStackValue
+    internal class SmolTryRegionSaveState : SmolStackType
     {
         internal int code_section;
         internal int PC;
@@ -14,11 +14,6 @@ namespace SmolScript.Internals.SmolStackTypes
             this.PC = PC;
             this.this_env = this_env;
             this.jump_exception = jump_exception;
-        }
-
-        internal override object? GetValue()
-        {
-            return null;
         }
     }
 }

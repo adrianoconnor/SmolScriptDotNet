@@ -1,7 +1,7 @@
 ﻿using System;
 namespace SmolScript.Internals.SmolStackTypes
 {
-    internal class SmolBool : SmolStackValue
+    internal class SmolBool : SmolVariableType
     {
         internal readonly bool value;
 

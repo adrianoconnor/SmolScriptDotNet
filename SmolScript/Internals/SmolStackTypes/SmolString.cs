@@ -2,7 +2,7 @@
 
 namespace SmolScript.Internals.SmolStackTypes
 {
-    internal class SmolString : SmolStackValue, ISmolNativeCallable
+    internal class SmolString : SmolVariableType, ISmolNativeCallable
     {
         internal readonly string value;
 
@@ -21,7 +21,7 @@ namespace SmolScript.Internals.SmolStackTypes
             return $"(SmolString) {value}";
         }
 
-        public SmolStackValue GetProp(string propName)
+        public SmolVariableType GetProp(string propName)
         {
             switch (propName)
             {
@@ -33,12 +33,12 @@ namespace SmolScript.Internals.SmolStackTypes
             }
         }
 
-        public void SetProp(string propName, SmolStackValue value)
+        public void SetProp(string propName, SmolVariableType value)
         {
             throw new Exception($"Not a valid target");
         }
 
-        public SmolStackValue NativeCall(string funcName, List<SmolStackValue> parameters)
+        public SmolVariableType NativeCall(string funcName, List<SmolVariableType> parameters)
         {
             switch (funcName)
             {
@@ -53,7 +53,7 @@ namespace SmolScript.Internals.SmolStackTypes
             }
         }
 
-        public static SmolStackValue StaticCall(string funcName, List<SmolStackValue> parameters)
+        public static SmolVariableType StaticCall(string funcName, List<SmolVariableType> parameters)
         {
             switch (funcName)
             {

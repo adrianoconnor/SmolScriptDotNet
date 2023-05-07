@@ -5,7 +5,7 @@ namespace SmolScript.Internals
 {
     internal struct SmolProgram
     {
-        internal List<SmolStackValue> constants { get; set; }
+        internal List<SmolStackType> constants { get; set; }
         internal List<List<ByteCodeInstruction>> code_sections { get; set; }
         internal List<SmolFunction> function_table { get; set; }
         internal Dictionary<string, string?> class_table { get; set; }

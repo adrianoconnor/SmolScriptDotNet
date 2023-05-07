@@ -3,11 +3,11 @@ namespace SmolScript.Internals.SmolStackTypes
 {
     internal interface ISmolNativeCallable
     {
-        SmolStackValue GetProp(string propName);
-        void SetProp(string propName, SmolStackValue value);
-        SmolStackValue NativeCall(string funcName, List<SmolStackValue> parameters);
+        SmolVariableType GetProp(string propName);
+        void SetProp(string propName, SmolVariableType value);
+        SmolVariableType NativeCall(string funcName, List<SmolVariableType> parameters);
 
-        static SmolStackValue StaticCall(string funcName, List<SmolStackValue> parameters) => throw new NotImplementedException();
+        static SmolVariableType StaticCall(string funcName, List<SmolVariableType> parameters) => throw new NotImplementedException();
     }
 }
 

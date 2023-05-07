@@ -19,7 +19,7 @@ namespace SmolScript.Internals
         private List<List<ByteCodeInstruction>> function_bodies = new List<List<ByteCodeInstruction>>();
         private Dictionary<string, string?> class_table = new Dictionary<string, string?>();
 
-        private List<SmolStackValue> constants = new List<SmolStackValue>()
+        private List<SmolStackType> constants = new List<SmolStackType>()
         {
             new SmolBool(true),
             new SmolBool(false),
@@ -200,7 +200,7 @@ namespace SmolScript.Internals
                     chunk.AppendChunk(new ByteCodeInstruction()
                     {
                         opcode = OpCode.CONST,
-                        operand1 = constants.FindIndex(e => e.GetType() == typeof(SmolBool) && (bool)e.GetValue()! == false)
+                        operand1 = constants.FindIndex(e => e.GetType() == typeof(SmolBool) && (bool)((SmolVariableType)e).GetValue()! == false)
                     });
 
                     chunk.AppendChunk(new ByteCodeInstruction()
@@ -235,7 +235,7 @@ namespace SmolScript.Internals
                     chunk.AppendChunk(new ByteCodeInstruction()
                     {
                         opcode = OpCode.CONST,
-                        operand1 = constants.FindIndex(e => e.GetType() == typeof(SmolBool) && (bool)e.GetValue()! == true)
+                        operand1 = constants.FindIndex(e => e.GetType() == typeof(SmolBool) && (bool)((SmolVariableType)e).GetValue()! == true)
                     });
 
                     chunk.AppendChunk(new ByteCodeInstruction()
@@ -260,10 +260,10 @@ namespace SmolScript.Internals
             // Literal is always a constant, so see if we've got this
             // literal in our list of constants and add it if we need to
 
-            var value = SmolStackValue.Create(expr.value);
+            var value = SmolVariableType.Create(expr.value);
 
             // Todo: Got some real weirdness with comparison of SmolStackTypes, not sure what I've done here..
-            var cIndex = constants.FindIndex(c => c.GetType() == value.GetType() && (c.GetValue()?.Equals(value.GetValue()) ?? false)!);
+            var cIndex = constants.FindIndex(c => c.GetType() == value.GetType() && (((SmolVariableType)c).GetValue()?.Equals(value.GetValue()) ?? false)!);
 
             if (cIndex == -1)
             {
@@ -301,7 +301,7 @@ namespace SmolScript.Internals
                         chunk.AppendChunk(new ByteCodeInstruction()
                         {
                             opcode = OpCode.CONST,
-                            operand1 = constants.FindIndex(e => e.GetType() == typeof(SmolBool) && (bool)e.GetValue()! == true)
+                            operand1 = constants.FindIndex(e => e.GetType() == typeof(SmolBool) && (bool)((SmolVariableType)e).GetValue()! == true)
                         });
 
                         chunk.AppendChunk(new ByteCodeInstruction()
@@ -320,7 +320,7 @@ namespace SmolScript.Internals
                         chunk.AppendChunk(new ByteCodeInstruction()
                         {
                             opcode = OpCode.CONST,
-                            operand1 = constants.FindIndex(e => e.GetType() == typeof(SmolBool) && (bool)e.GetValue()! == false)
+                            operand1 = constants.FindIndex(e => e.GetType() == typeof(SmolBool) && (bool)((SmolVariableType)e).GetValue()! == false)
                         });
 
                         chunk.AppendChunk(new ByteCodeInstruction()
@@ -337,7 +337,7 @@ namespace SmolScript.Internals
                     chunk.AppendChunk(new ByteCodeInstruction()
                     {
                         opcode = OpCode.CONST,
-                        operand1 = constants.FindIndex(e => e.GetType() == typeof(SmolNumber) && (double)e.GetValue()! == 0.0)
+                        operand1 = constants.FindIndex(e => e.GetType() == typeof(SmolNumber) && (double)((SmolVariableType)e).GetValue()! == 0.0)
                     });
 
                     chunk.AppendChunk(expr.right.Accept(this));
@@ -380,7 +380,7 @@ namespace SmolScript.Internals
                     chunk.AppendChunk(new ByteCodeInstruction()
                     {
                         opcode = OpCode.CONST,
-                        operand1 = constants.FindIndex(e => e.GetType() == typeof(SmolNumber) && (double)e.GetValue()! == 1.0)
+                        operand1 = constants.FindIndex(e => e.GetType() == typeof(SmolNumber) && (double)((SmolVariableType)e).GetValue()! == 1.0)
                     });
 
                     chunk.AppendInstruction(OpCode.ADD);
@@ -409,7 +409,7 @@ namespace SmolScript.Internals
                     chunk.AppendChunk(new ByteCodeInstruction()
                     {
                         opcode = OpCode.CONST,
-                        operand1 = constants.FindIndex(e => e.GetType() == typeof(SmolNumber) && (double)e.GetValue()! == 1.0)
+                        operand1 = constants.FindIndex(e => e.GetType() == typeof(SmolNumber) && (double)((SmolVariableType)e).GetValue()! == 1.0)
                     });
 
                     chunk.AppendInstruction(OpCode.SUB);
@@ -429,7 +429,7 @@ namespace SmolScript.Internals
                     chunk.AppendChunk(new ByteCodeInstruction()
                     {
                         opcode = OpCode.CONST,
-                        operand1 = constants.FindIndex(e => e.GetType() == typeof(SmolNumber) && (double)e.GetValue()! == 1.0)
+                        operand1 = constants.FindIndex(e => e.GetType() == typeof(SmolNumber) && (double)((SmolVariableType)e).GetValue()! == 1.0)
                     });
 
                     chunk.AppendInstruction(OpCode.ADD);
@@ -458,7 +458,7 @@ namespace SmolScript.Internals
                     chunk.AppendChunk(new ByteCodeInstruction()
                     {
                         opcode = OpCode.CONST,
-                        operand1 = constants.FindIndex(e => e.GetType() == typeof(SmolNumber) && (double)e.GetValue()! == 1.0)
+                        operand1 = constants.FindIndex(e => e.GetType() == typeof(SmolNumber) && (double)((SmolVariableType)e).GetValue()! == 1.0)
                     });
 
                     chunk.AppendInstruction(OpCode.SUB);

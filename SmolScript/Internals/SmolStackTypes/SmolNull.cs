@@ -1,7 +1,6 @@
-﻿using System;
-namespace SmolScript.Internals.SmolStackTypes
+﻿namespace SmolScript.Internals.SmolStackTypes
 {
-    internal class SmolNull : SmolStackValue
+    internal class SmolNull : SmolVariableType
     {
         internal SmolNull()
         {
