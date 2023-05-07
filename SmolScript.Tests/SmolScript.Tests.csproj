@@ -30,6 +30,7 @@
     <None Remove="Object\" />
     <None Remove="Comments\" />
     <None Remove="Functions\" />
+    <None Remove="Math\" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="DotNetInterop\" />
@@ -39,5 +40,6 @@
     <Folder Include="Object\" />
     <Folder Include="Comments\" />
     <Folder Include="Functions\" />
+    <Folder Include="Math\" />
   </ItemGroup>
 </Project>
