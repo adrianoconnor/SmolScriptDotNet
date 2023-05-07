@@ -2,6 +2,7 @@
 using SmolScript;
 using SmolScript.Internals;
 using SmolScript.Internals.SmolStackTypes;
+using SmolScript.Internals.SmolVariableTypes;
 
 namespace SmolTests
 {

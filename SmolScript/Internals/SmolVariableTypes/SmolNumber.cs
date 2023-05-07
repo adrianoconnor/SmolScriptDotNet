@@ -1,7 +1,4 @@
-﻿using System;
-using System.Diagnostics.CodeAnalysis;
-
-namespace SmolScript.Internals.SmolStackTypes
+﻿namespace SmolScript.Internals.SmolVariableTypes
 {
     internal class SmolNumber : SmolVariableType
     {
@@ -27,7 +24,7 @@ namespace SmolScript.Internals.SmolStackTypes
             return this.value.GetHashCode();
         }
 
-        public override bool Equals([NotNullWhen(true)] object? obj)
+        public override bool Equals(object? obj)
         {
             if (this.GetType() == typeof(SmolNumber) && obj?.GetType() == typeof(SmolNumber))
             {

@@ -18,9 +18,9 @@ function aPlusPlus() { // Declare a function we can call from .net
 aPlusPlus(); // Call it once during initialization just to show this also is fine
 ";
 
-        ISmolRuntime vm = SmolVM.Compile(code);
+        var vm = SmolVM.Compile(code);
 
-        vm.MaxStackSize = 4;
+        //vm.MaxStackSize = 4;
 
         vm.RunInDebug(); // this executes the code above -- declares a, sets to 1, declares a functiona and calls it
 
@@ -109,9 +109,9 @@ EOF
 Done, stack size = 0
 ENTER_SCOPE  
 FETCH         [op1: (var) strA]
-              [Loaded $SmolScript.Internals.SmolStackTypes.SmolString hello]
+              [Loaded $SmolScript.Internals.SmolVariableTypes.SmolString hello]
 FETCH         [op1: (var) strB]
-              [Loaded $SmolScript.Internals.SmolStackTypes.SmolString world]
+              [Loaded $SmolScript.Internals.SmolVariableTypes.SmolString world]
 ADD          
 RETURN       
 ", debugOutput.ToString());

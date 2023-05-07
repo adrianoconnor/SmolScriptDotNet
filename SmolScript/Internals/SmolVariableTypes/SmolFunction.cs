@@ -1,5 +1,5 @@
 ﻿using System;
-namespace SmolScript.Internals.SmolStackTypes
+namespace SmolScript.Internals.SmolVariableTypes
 {
     internal class SmolFunction : SmolVariableType
     {

@@ -1,6 +1,6 @@
-﻿using System;
+﻿using SmolScript.Internals.SmolStackTypes;
 
-namespace SmolScript.Internals.SmolStackTypes
+namespace SmolScript.Internals.SmolVariableTypes
 {
     internal class SmolArray : SmolVariableType, ISmolNativeCallable
     {
@@ -31,7 +31,9 @@ namespace SmolScript.Internals.SmolStackTypes
 
                     if (int.TryParse(propName, out int index))
                     {
-                        return this.elements[index];
+                        var result = this.elements[index];
+
+                        return result ?? new SmolUndefined();
                     }
 
                     throw new Exception($"{this.GetTypeName()} does not contain property {propName}");

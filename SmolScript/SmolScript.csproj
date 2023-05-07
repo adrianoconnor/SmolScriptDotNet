@@ -10,6 +10,7 @@
     <Folder Include="Internals\" />
     <Folder Include="Internals\Ast\" />
     <Folder Include="Internals\SmolStackTypes\" />
+    <Folder Include="Internals\SmolVariableTypes\" />
   </ItemGroup>
   <ItemGroup>
     <Compile Remove="Internals\Ast\Interpreter\AstInterpreter.cs" />
@@ -18,5 +19,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Remove="Internals\SmolStackTypes\" />
+    <None Remove="Internals\SmolVariableTypes\" />
   </ItemGroup>
 </Project>

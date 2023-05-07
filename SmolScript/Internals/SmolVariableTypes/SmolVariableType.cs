@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
+using SmolScript.Internals.SmolStackTypes;
 
-namespace SmolScript.Internals.SmolStackTypes
+namespace SmolScript.Internals.SmolVariableTypes
 {
 	internal abstract class SmolVariableType : SmolStackType
     {
@@ -43,6 +44,10 @@ namespace SmolScript.Internals.SmolStackTypes
                 else if (t == typeof(bool))
                 {
                     return new SmolBool((bool)value);
+                }
+                else if (t == typeof(SmolUndefined))
+                {
+                    return (SmolVariableType)value;
                 }
                 else
                 {
@@ -247,9 +252,13 @@ namespace SmolScript.Internals.SmolStackTypes
             {
                 return ((SmolNumber)this).value.Equals(((SmolNumber)obj!).value);
             }
-            if (this.GetType() == typeof(SmolString))
+            else if (this.GetType() == typeof(SmolString))
             {
                 return ((SmolString)this).value == ((SmolString)obj!).value;
+            }
+            else if (this.GetType() == typeof(SmolUndefined))
+            {
+                return obj?.GetType() == typeof(SmolUndefined);
             }
             else
             {

@@ -1,9 +1,8 @@
-﻿using System;
-namespace SmolScript.Internals.SmolStackTypes
+﻿namespace SmolScript.Internals.SmolVariableTypes
 {
-    internal class SmolUndefined : SmolVariableType
+    internal class SmolNull : SmolVariableType
     {
-        internal SmolUndefined()
+        internal SmolNull()
         {
         }
 
@@ -14,7 +13,7 @@ namespace SmolScript.Internals.SmolStackTypes
 
         public override string ToString()
         {
-            return $"(SmolUndefined)";
+            return "(SmolNull)";
         }
     }
 }

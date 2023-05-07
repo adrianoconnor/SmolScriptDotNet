@@ -942,6 +942,7 @@ namespace SmolScript.Internals
             if (match(TokenType.FALSE)) return new LiteralExpression(false);
             if (match(TokenType.TRUE)) return new LiteralExpression(true);
             if (match(TokenType.NULL)) return new LiteralExpression(null);
+            if (match(TokenType.UNDEFINED)) return new LiteralExpression(new SmolVariableTypes.SmolUndefined());
 
             if (match(TokenType.NUMBER, TokenType.STRING))
             {

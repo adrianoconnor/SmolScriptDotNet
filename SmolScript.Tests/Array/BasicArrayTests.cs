@@ -45,11 +45,7 @@ var b = a[0] + a[a[0]] + a[2];
 
             var vm = SmolVM.Compile(code);
 
-            //Console.WriteLine(((SmolVM)vm).Decompile());
-
-            //vm.OnDebugLog = Console.WriteLine;
-
-            vm.RunInDebug();
+            vm.Run();
 
             Assert.AreEqual(8, vm.GetGlobalVar<int>("b"));
         }
@@ -63,17 +59,15 @@ a[0] = 1;
 a[2] = 3;
 var b = a.length;
 var c = a[1];
+var d = (c == undefined);
 ";
 
             var vm = SmolVM.Compile(code);
 
-            //Console.WriteLine(((SmolVM)vm).Decompile());
-
-            vm.OnDebugLog = Console.WriteLine;
-
-            vm.RunInDebug();
+            vm.Run();
 
             Assert.AreEqual(3, vm.GetGlobalVar<int>("b"));
+            Assert.AreEqual(true, vm.GetGlobalVar<bool>("d"));
             //Assert.IsNull(vm.GetGlobalVar<int>("c")); // It's undefined, but no way to tell .net this yet
         }
 

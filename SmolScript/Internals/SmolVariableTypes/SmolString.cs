@@ -1,6 +1,6 @@
-﻿using System;
+﻿using SmolScript.Internals.SmolStackTypes;
 
-namespace SmolScript.Internals.SmolStackTypes
+namespace SmolScript.Internals.SmolVariableTypes
 {
     internal class SmolString : SmolVariableType, ISmolNativeCallable
     {

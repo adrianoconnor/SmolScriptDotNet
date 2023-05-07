@@ -1,4 +1,5 @@
 ﻿using SmolScript.Internals.SmolStackTypes;
+using SmolScript.Internals.SmolVariableTypes;
 
 namespace SmolScript.Tests.Internal.Types;
 

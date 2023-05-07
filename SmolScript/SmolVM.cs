@@ -6,6 +6,7 @@ using System.Xml.Linq;
 using SmolScript.Internals;
 using SmolScript.Internals.Ast;
 using SmolScript.Internals.SmolStackTypes;
+using SmolScript.Internals.SmolVariableTypes;
 
 [assembly: InternalsVisibleTo("SmolScript.Tests.Internal")]
 
@@ -80,7 +81,7 @@ namespace SmolScript
 
         public void Call(string functionName, params object[] args)
         {
-            Call<object>(functionName, args);
+            Call<object?>(functionName, args);
         }
 
         public T Call<T>(string functionName, params object[] args)
@@ -133,7 +134,16 @@ namespace SmolScript
 
             Run();
 
-            return (T)Convert.ChangeType(((SmolVariableType)stack.Pop()).GetValue()!, typeof(T));
+            var returnValue = stack.Pop();
+
+            if (returnValue.GetType() == typeof(SmolUndefined))
+            {
+                return default(T);
+            }
+            else
+            {
+                return (T)Convert.ChangeType(((SmolVariableType)returnValue).GetValue()!, typeof(T));
+            }
         }
 
 
