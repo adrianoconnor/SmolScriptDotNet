@@ -975,7 +975,7 @@ namespace SmolScript
 
                     if (!handled)
                     {
-                        throw new Exception(e.Message);
+                        throw new SmolRuntimeException(e.Message);
                     }
 
 
@@ -1007,7 +1007,7 @@ namespace SmolScript
 
                     if (!handled)
                     {
-                        throw;
+                        throw new SmolRuntimeException(e.Message, e);
                     }
                 }
 
