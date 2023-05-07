@@ -166,13 +166,7 @@ namespace SmolScript
         {
             return ByteCodeDisassembler.Disassemble(this.program);
         }
-
-        public string DumpAst()
-        {
-            return new AstDump().Print(program.astStatements)!;
-        }
-
-
+        
         public SmolVM(string source)
         {
             environment = globalEnv;
@@ -566,12 +560,12 @@ namespace SmolScript
                             break;
 
                         case OpCode.DECLARE:
-                            environment.Define(((SmolVariableDefinition)instr.operand1!).name, null);
+                            environment.Define((string)instr.operand1!, null);
                             break;
 
                         case OpCode.STORE:
                             {
-                                var name = ((SmolVariableDefinition)instr.operand1!).name;
+                                var name = (string)instr.operand1!;
 
                                 if (name == "@IndexerSet")
                                 {
@@ -619,7 +613,7 @@ namespace SmolScript
                         case OpCode.FETCH:
                             {
                                 // Could be a variable or a function
-                                var name = ((SmolVariableDefinition)instr.operand1!).name;
+                                var name = (string)instr.operand1!;
 
                                 var env_in_context = environment;
 

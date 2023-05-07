@@ -29,6 +29,7 @@
     <None Remove="String\" />
     <None Remove="Object\" />
     <None Remove="Comments\" />
+    <None Remove="Functions\" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="DotNetInterop\" />
@@ -37,5 +38,6 @@
     <Folder Include="String\" />
     <Folder Include="Object\" />
     <Folder Include="Comments\" />
+    <Folder Include="Functions\" />
   </ItemGroup>
 </Project>

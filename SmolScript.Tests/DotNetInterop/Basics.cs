@@ -108,9 +108,9 @@ function concat(strA, strB) {
 EOF          
 Done, stack size = 0
 ENTER_SCOPE  
-FETCH         [op1: (var) strA]
+FETCH         [op1: strA]
               [Loaded $SmolScript.Internals.SmolVariableTypes.SmolString hello]
-FETCH         [op1: (var) strB]
+FETCH         [op1: strB]
               [Loaded $SmolScript.Internals.SmolVariableTypes.SmolString world]
 ADD          
 RETURN       

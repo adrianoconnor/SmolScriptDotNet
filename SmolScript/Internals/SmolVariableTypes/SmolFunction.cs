@@ -18,7 +18,12 @@ namespace SmolScript.Internals.SmolVariableTypes
 
         internal override object? GetValue()
         {
-            return null;
+            return this;
+        }
+
+        public override string ToString()
+        {
+            return "[SmolFunction]";
         }
     }
 }

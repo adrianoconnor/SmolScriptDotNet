@@ -20,7 +20,7 @@ namespace SmolScript.Internals
         private List<List<ByteCodeInstruction>> function_bodies = new List<List<ByteCodeInstruction>>();
         private Dictionary<string, string?> class_table = new Dictionary<string, string?>();
 
-        private List<SmolStackType> constants = new List<SmolStackType>()
+        private List<SmolVariableType> constants = new List<SmolVariableType>()
         {
             new SmolBool(true),
             new SmolBool(false),
@@ -82,9 +82,7 @@ namespace SmolScript.Internals
             {
                 constants = this.constants,
                 code_sections = code_sections,
-                function_table = function_table,
-                class_table = class_table,
-                astStatements = statements
+                function_table = function_table
             };
         }
 
@@ -359,10 +357,7 @@ namespace SmolScript.Internals
             chunk.AppendChunk(new ByteCodeInstruction()
             {
                 opcode = OpCode.FETCH,
-                operand1 = new SmolVariableDefinition()
-                {
-                    name = (string)(expr.name.lexeme)
-                }
+                operand1 = (string)expr.name.lexeme                
             });
 
             if (expr.prepostfixop != null)
@@ -372,10 +367,7 @@ namespace SmolScript.Internals
                     chunk.AppendChunk(new ByteCodeInstruction()
                     {
                         opcode = OpCode.FETCH,
-                        operand1 = new SmolVariableDefinition()
-                        {
-                            name = (string)(expr.name.lexeme)
-                        }
+                        operand1 = (string)expr.name.lexeme
                     });
 
                     chunk.AppendChunk(new ByteCodeInstruction()
@@ -389,10 +381,7 @@ namespace SmolScript.Internals
                     chunk.AppendChunk(new ByteCodeInstruction()
                     {
                         opcode = OpCode.STORE,
-                        operand1 = new SmolVariableDefinition()
-                        {
-                            name = (string)(expr.name.lexeme)
-                        }
+                        operand1 = (string)expr.name.lexeme
                     });
                 }
 
@@ -401,10 +390,7 @@ namespace SmolScript.Internals
                     chunk.AppendChunk(new ByteCodeInstruction()
                     {
                         opcode = OpCode.FETCH,
-                        operand1 = new SmolVariableDefinition()
-                        {
-                            name = (string)(expr.name.lexeme)
-                        }
+                        operand1 = (string)expr.name.lexeme
                     });
 
                     chunk.AppendChunk(new ByteCodeInstruction()
@@ -418,10 +404,7 @@ namespace SmolScript.Internals
                     chunk.AppendChunk(new ByteCodeInstruction()
                     {
                         opcode = OpCode.STORE,
-                        operand1 = new SmolVariableDefinition()
-                        {
-                            name = (string)(expr.name.lexeme)
-                        }
+                        operand1 = (string)expr.name.lexeme
                     });
                 }
 
@@ -438,19 +421,13 @@ namespace SmolScript.Internals
                     chunk.AppendChunk(new ByteCodeInstruction()
                     {
                         opcode = OpCode.STORE,
-                        operand1 = new SmolVariableDefinition()
-                        {
-                            name = (string)(expr.name.lexeme)
-                        }
+                        operand1 = (string)expr.name.lexeme
                     });
 
                     chunk.AppendChunk(new ByteCodeInstruction()
                     {
                         opcode = OpCode.FETCH,
-                        operand1 = new SmolVariableDefinition()
-                        {
-                            name = (string)(expr.name.lexeme)
-                        }
+                        operand1 = (string)expr.name.lexeme
                     });
                 }
 
@@ -467,19 +444,13 @@ namespace SmolScript.Internals
                     chunk.AppendChunk(new ByteCodeInstruction()
                     {
                         opcode = OpCode.STORE,
-                        operand1 = new SmolVariableDefinition()
-                        {
-                            name = (string)(expr.name.lexeme)
-                        }
+                        operand1 = (string)expr.name.lexeme
                     });
 
                     chunk.AppendChunk(new ByteCodeInstruction()
                     {
                         opcode = OpCode.FETCH,
-                        operand1 = new SmolVariableDefinition()
-                        {
-                            name = (string)(expr.name.lexeme)
-                        }
+                        operand1 = (string)expr.name.lexeme
                     });
                 }
             }
@@ -496,10 +467,7 @@ namespace SmolScript.Internals
             chunk.AppendChunk(new ByteCodeInstruction()
             {
                 opcode = OpCode.STORE,
-                operand1 = new SmolVariableDefinition()
-                {
-                    name = (string)(expr.name.lexeme)
-                }
+                operand1 = (string)expr.name.lexeme
             });
 
             // This is so inefficient
@@ -507,10 +475,7 @@ namespace SmolScript.Internals
             chunk.AppendChunk(new ByteCodeInstruction()
             {
                 opcode = OpCode.FETCH,
-                operand1 = new SmolVariableDefinition()
-                {
-                    name = (string)(expr.name.lexeme)
-                }
+                operand1 = (string)expr.name.lexeme
             });
 
             return chunk;
@@ -548,10 +513,7 @@ namespace SmolScript.Internals
                 chunk.AppendChunk(new ByteCodeInstruction()
                 {
                     opcode = OpCode.DECLARE,
-                    operand1 = new SmolVariableDefinition()
-                    {
-                        name = (string)(stmt.name.lexeme)
-                    }
+                    operand1 = (string)stmt.name.lexeme
                 });
 
                 chunk.AppendChunk(stmt.initializerExpression.Accept(this));
@@ -559,10 +521,7 @@ namespace SmolScript.Internals
                 chunk.AppendChunk(new ByteCodeInstruction()
                 {
                     opcode = OpCode.STORE,
-                    operand1 = new SmolVariableDefinition()
-                    {
-                        name = (string)(stmt.name.lexeme)
-                    }
+                    operand1 = (string)stmt.name.lexeme
                 });
 
                 return chunk;
@@ -572,10 +531,7 @@ namespace SmolScript.Internals
                 return new ByteCodeInstruction()
                 {
                     opcode = OpCode.DECLARE,
-                    operand1 = new SmolVariableDefinition()
-                    {
-                        name = (string)(stmt.name.lexeme)
-                    }
+                    operand1 = (string)stmt.name.lexeme
                 };
             }
         }
@@ -842,15 +798,9 @@ namespace SmolScript.Internals
 
                     // Top of stack will be exception so store it in variable name
 
-                    chunk.AppendInstruction(OpCode.DECLARE, new SmolVariableDefinition()
-                    {
-                        name = (string)(stmt.exceptionVariableName.lexeme)
-                    });
+                    chunk.AppendInstruction(OpCode.DECLARE, (string)stmt.exceptionVariableName.lexeme);
 
-                    chunk.AppendInstruction(OpCode.STORE, new SmolVariableDefinition()
-                    {
-                        name = (string)(stmt.exceptionVariableName.lexeme)
-                    });
+                    chunk.AppendInstruction(OpCode.STORE, (string)stmt.exceptionVariableName.lexeme);
                 }
                 else
                 {
@@ -1029,10 +979,7 @@ namespace SmolScript.Internals
             chunk.AppendChunk(new ByteCodeInstruction()
             {
                 opcode = OpCode.FETCH,
-                operand1 = new SmolVariableDefinition()
-                {
-                    name = $"@{expr.className.lexeme}.constructor"
-                },
+                operand1 = $"@{expr.className.lexeme}.constructor",
                 operand2 = true
             });
 
@@ -1063,10 +1010,7 @@ namespace SmolScript.Internals
             chunk.AppendChunk(expr.obj.Accept(this));
 
             chunk.AppendInstruction(OpCode.FETCH,
-                operand1: new SmolVariableDefinition()
-                {
-                    name = expr.name.lexeme
-                },
+                operand1: expr.name.lexeme,
                 operand2: true);
 
             // Who knows if this will work... :)
@@ -1088,10 +1032,7 @@ namespace SmolScript.Internals
             // it as a property
 
             chunk.AppendInstruction(OpCode.FETCH,
-                operand1: new SmolVariableDefinition()
-                {
-                    name = "@IndexerGet"
-                },
+                operand1: "@IndexerGet",
                 operand2: true);
 
             // Who knows if this will work... :)
@@ -1110,10 +1051,7 @@ namespace SmolScript.Internals
             chunk.AppendChunk(new ByteCodeInstruction()
             {
                 opcode = OpCode.STORE,
-                operand1 = new SmolVariableDefinition()
-                {
-                    name = (string)(expr.name.lexeme)
-                },
+                operand1 = (string)expr.name.lexeme,
                 operand2 = true // Means object reference on stack
             });
 
@@ -1121,12 +1059,7 @@ namespace SmolScript.Internals
 
             chunk.AppendChunk(expr.obj.Accept(this));
 
-            chunk.AppendInstruction(OpCode.FETCH,
-                new SmolVariableDefinition()
-                {
-                    name = expr.name.lexeme
-                }, true);
-
+            chunk.AppendInstruction(OpCode.FETCH, expr.name.lexeme, true);
 
             return chunk;
         }
@@ -1142,10 +1075,7 @@ namespace SmolScript.Internals
             chunk.AppendChunk(new ByteCodeInstruction()
             {
                 opcode = OpCode.STORE,
-                operand1 = new SmolVariableDefinition()
-                {
-                    name = (string)(expr.name.lexeme)
-                },
+                operand1 = expr.name.lexeme,
                 operand2 = true // Means object reference on stack
             });
 
@@ -1167,10 +1097,7 @@ namespace SmolScript.Internals
             chunk.AppendChunk(new ByteCodeInstruction()
             {
                 opcode = OpCode.STORE,
-                operand1 = new SmolVariableDefinition()
-                {
-                    name = "@IndexerSet"
-                },
+                operand1 = "@IndexerSet",
                 operand2 = true // Means object reference on stack
             });
 
@@ -1181,11 +1108,7 @@ namespace SmolScript.Internals
             // TODO: This won't even work for indexer++ etc.
             chunk.AppendChunk(expr.indexerExpr.Accept(this));
 
-            chunk.AppendInstruction(OpCode.FETCH,
-                new SmolVariableDefinition()
-                {
-                    name = "@IndexerGet"
-                }, true);
+            chunk.AppendInstruction(OpCode.FETCH, "@IndexerGet", true);
 
             return chunk;
         }
@@ -1221,10 +1144,7 @@ namespace SmolScript.Internals
             return (new ByteCodeInstruction()
             {
                 opcode = OpCode.FETCH,
-                operand1 = new SmolVariableDefinition()
-                {
-                    name = function_name
-                }
+                operand1 = function_name
             });
         }
     }
