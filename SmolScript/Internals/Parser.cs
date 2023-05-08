@@ -925,7 +925,7 @@ namespace SmolScript.Internals
 
         private Expression finishCall(Expression callee, bool isFollowingGetter = false)
         {
-            var args = new List<object?>();
+            var args = new List<Expression>();
 
             if (!check(TokenType.RIGHT_BRACKET))
             {
@@ -987,7 +987,7 @@ namespace SmolScript.Internals
 
                 consume(TokenType.LEFT_BRACKET, "Expect ')' after expression.");
 
-                var args = new List<object?>();
+                var args = new List<Expression>();
 
                 if (!check(TokenType.RIGHT_BRACKET))
                 {
@@ -1003,7 +1003,7 @@ namespace SmolScript.Internals
             {
                 var className = new Token(TokenType.IDENTIFIER, "Array", null, peek().line);
 
-                var args = new List<object?>();
+                var args = new List<Expression>();
 
                 if (!check(TokenType.RIGHT_SQUARE_BRACKET))
                 {
@@ -1019,7 +1019,7 @@ namespace SmolScript.Internals
             {
                 var className = new Token(TokenType.IDENTIFIER, "Object", null, peek().line);
 
-                var args = new List<object?>();
+                var args = new List<Expression>();
 
                 if (!check(TokenType.RIGHT_BRACE))
                 {

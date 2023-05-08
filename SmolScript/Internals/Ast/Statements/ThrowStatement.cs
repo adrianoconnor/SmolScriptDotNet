@@ -6,7 +6,7 @@ namespace SmolScript.Internals.Ast.Statements
     {
         public readonly Expression expression;
 
-        public ThrowStatement(Expression expression = null)
+        public ThrowStatement(Expression expression)
         {
             this.expression = expression;
         }
