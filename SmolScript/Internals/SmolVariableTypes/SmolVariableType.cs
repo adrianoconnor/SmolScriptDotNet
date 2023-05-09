@@ -23,34 +23,37 @@ namespace SmolScript.Internals.SmolVariableTypes
             }
             else
             {
-                var t = value.GetType();
+                var tryCastValue = value as SmolVariableType;
 
-                if (t == typeof(string))
+                if (tryCastValue != null)
                 {
-                    return new SmolString((string)value);
-                }
-                else if (t == typeof(double))
-                {
-                    return new SmolNumber((double)value);
-                }
-                else if (t == typeof(int))
-                {
-                    return new SmolNumber(Convert.ToDouble((int)value));
-                }
-                else if (t == typeof(Int64))
-                {
-                    return new SmolNumber(Convert.ToDouble((Int64)value));
-                }
-                else if (t == typeof(bool))
-                {
-                    return new SmolBool((bool)value);
-                }
-                else if (t == typeof(SmolUndefined))
-                {
-                    return (SmolVariableType)value;
+                    return tryCastValue;
                 }
                 else
                 {
+                    var t = value.GetType();
+
+                    if (t == typeof(string))
+                    {
+                        return new SmolString((string)value);
+                    }
+                    else if (t == typeof(double))
+                    {
+                        return new SmolNumber((double)value);
+                    }
+                    else if (t == typeof(int))
+                    {
+                        return new SmolNumber(Convert.ToDouble((int)value));
+                    }
+                    else if (t == typeof(Int64))
+                    {
+                        return new SmolNumber(Convert.ToDouble((Int64)value));
+                    }
+                    else if (t == typeof(bool))
+                    {
+                        return new SmolBool((bool)value);
+                    }
+
                     throw new Exception($"Could not create a valid stack value from: {value.GetType()}");
                 }
             }

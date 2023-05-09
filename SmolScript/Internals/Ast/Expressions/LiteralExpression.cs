@@ -1,10 +1,12 @@
-﻿namespace SmolScript.Internals.Ast.Expressions
+﻿using SmolScript.Internals.SmolVariableTypes;
+
+namespace SmolScript.Internals.Ast.Expressions
 {
     internal class LiteralExpression : Expression
     {
-        public readonly object? value;
+        public readonly SmolVariableType value;
 
-        public LiteralExpression(object? value)
+        public LiteralExpression(SmolVariableType value)
         {
             this.value = value;
         }

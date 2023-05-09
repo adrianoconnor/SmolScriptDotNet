@@ -1,5 +1,6 @@
 using SmolScript.Internals.Ast.Expressions;
 using SmolScript.Internals.Ast.Statements;
+using SmolScript.Internals.SmolVariableTypes;
 
 namespace SmolScript.Internals
 {
@@ -237,13 +238,8 @@ namespace SmolScript.Internals
         {
             _statementCallStack.Push("FUNCTION");
 
-            Token? functionName = null;
-
-            if (!check(TokenType.LEFT_BRACKET))
-            {
-                functionName = consume(TokenType.IDENTIFIER, "Expected function name");
-            }
-
+            Token functionName = consume(TokenType.IDENTIFIER, "Expected function name");
+            
             var functionParams = new List<Token>();
 
             consume(TokenType.LEFT_BRACKET, "Expected (");
@@ -330,7 +326,7 @@ namespace SmolScript.Internals
             if (match(TokenType.CONTINUE)) return continueStatement();
             if (match(TokenType.LEFT_BRACE)) return block();
             if (match(TokenType.DEBUGGER)) return debuggerStatement();
-            if (match(TokenType.CLASS)) return classDeclaration();
+            //if (match(TokenType.CLASS)) return classDeclaration();
 
             return expressionStatement();
         }
@@ -363,9 +359,6 @@ namespace SmolScript.Internals
 
         private Statement breakStatement()
         {
-            //Console.WriteLine("BREAK");
-            //Console.WriteLine(String.Join('|', _statementCallStack.ToArray()));
-
             if (!_statementCallStack.Contains("WHILE"))
             {
                 throw error(previous(), "Break should be inside a while or for loop");
@@ -513,7 +506,7 @@ namespace SmolScript.Internals
             }
             else
             {
-                condition = new LiteralExpression(true);
+                condition = new LiteralExpression(new SmolBool(true));
             }
 
             consume(TokenType.SEMICOLON, "Expected ;");
@@ -578,7 +571,7 @@ namespace SmolScript.Internals
 
         private Expression assignment()
         {
-            var expr = functionExpression(); // logicalOr();
+            var expr = functionExpression();
 
             if (match(TokenType.EQUAL))
             {
@@ -730,7 +723,7 @@ namespace SmolScript.Internals
 
             return expr;
         }
-
+        
         private Expression functionExpression()
         {
             if (match(TokenType.FUNC))
@@ -934,19 +927,24 @@ namespace SmolScript.Internals
 
             var closingParen = consume(TokenType.RIGHT_BRACKET, "Expected )");
 
-            return new CallExpression(callee, closingParen, args, isFollowingGetter);
+            return new CallExpression(callee, args, isFollowingGetter);
         }
 
         private Expression primary()
         {
-            if (match(TokenType.FALSE)) return new LiteralExpression(false);
-            if (match(TokenType.TRUE)) return new LiteralExpression(true);
-            if (match(TokenType.NULL)) return new LiteralExpression(null);
-            if (match(TokenType.UNDEFINED)) return new LiteralExpression(new SmolVariableTypes.SmolUndefined());
+            if (match(TokenType.FALSE)) return new LiteralExpression(new SmolBool(false));
+            if (match(TokenType.TRUE)) return new LiteralExpression(new SmolBool(true));
+            if (match(TokenType.NULL)) return new LiteralExpression(new SmolNull());
+            if (match(TokenType.UNDEFINED)) return new LiteralExpression(new SmolUndefined());
 
-            if (match(TokenType.NUMBER, TokenType.STRING))
+            if (match(TokenType.NUMBER))
             {
-                return new LiteralExpression(previous().literal!);
+                return new LiteralExpression(new SmolNumber((double)previous().literal!));
+            }
+
+            if (match(TokenType.STRING))
+            {
+                return new LiteralExpression(new SmolString((string)previous().literal!));
             }
 
             if (match(TokenType.PREFIX_INCREMENT))

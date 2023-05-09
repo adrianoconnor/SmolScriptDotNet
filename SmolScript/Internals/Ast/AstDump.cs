@@ -78,7 +78,7 @@ namespace SmolScript.Internals.Ast
 
         public object? Visit(CallExpression expr)
         {
-            return $"(call {expr.callee.Accept(this)} {expr.paren.lexeme} args[{expr.args.Count}])";
+            return $"(call {expr.callee.Accept(this)} args[{expr.args.Count}])";
         }
 
         public object? Visit(VarStatement stmt)

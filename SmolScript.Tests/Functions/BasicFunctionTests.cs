@@ -11,7 +11,7 @@ namespace SmolScript.Tests.Functions
 
             vm.Run();
 
-            Assert.AreEqual(3.0, vm.GetGlobalVar<double>("a"));
+            Assert.AreEqual(3.0, vm.GetGlobalVar<double>("a")); 
         }
 
         [TestMethod]

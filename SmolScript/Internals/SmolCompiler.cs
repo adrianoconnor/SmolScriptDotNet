@@ -18,7 +18,6 @@ namespace SmolScript.Internals
 
         private List<SmolFunction> function_table = new List<SmolFunction>();
         private List<List<ByteCodeInstruction>> function_bodies = new List<List<ByteCodeInstruction>>();
-        private Dictionary<string, string?> class_table = new Dictionary<string, string?>();
 
         private List<SmolVariableType> constants = new List<SmolVariableType>()
         {
@@ -905,7 +904,7 @@ namespace SmolScript.Internals
 
         public object? Visit(ClassStatement stmt)
         {
-            this.class_table.Add(stmt.className.lexeme, stmt.superclassName?.lexeme);
+            //this.class_table.Add(stmt.className.lexeme, stmt.superclassName?.lexeme);
 
             foreach (var fn in stmt.functions)
             {
