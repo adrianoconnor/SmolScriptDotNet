@@ -1,4 +1,4 @@
-﻿using System;
+﻿    using System;
 using System.Reflection.Metadata;
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
@@ -89,7 +89,7 @@ namespace SmolScript
             Call<object?>(functionName, args);
         }
 
-        public T Call<T>(string functionName, params object[] args)
+        public T? Call<T>(string functionName, params object[] args)
         {
             if (this.runMode != RunMode.Done)
             {
@@ -434,7 +434,7 @@ namespace SmolScript
                                 var right = (SmolVariableType)stack.Pop();
                                 var left = (SmolVariableType)stack.Pop();
 
-                                stack.Push(SmolVariableType.Create(left.GetValue().Equals(right.GetValue())));
+                                stack.Push(SmolVariableType.Create(left.GetValue()!.Equals(right.GetValue())));
 
                                 break;
                             }
@@ -444,7 +444,7 @@ namespace SmolScript
                                 var right = (SmolVariableType)stack.Pop();
                                 var left = (SmolVariableType)stack.Pop();
 
-                                stack.Push(SmolVariableType.Create(!left.GetValue().Equals(right.GetValue())));
+                                stack.Push(SmolVariableType.Create(!left.GetValue()!.Equals(right.GetValue())));
 
                                 break;
                             }
@@ -554,7 +554,7 @@ namespace SmolScript
                             break;
 
                         case OpCode.DECLARE:
-                            environment.Define((string)instr.operand1!, null);
+                            environment.Define((string)instr.operand1!, new SmolUndefined());
                             break;
 
                         case OpCode.STORE:
@@ -611,7 +611,7 @@ namespace SmolScript
 
                                 var env_in_context = environment;
 
-                                if (name == "@IndexerGet")
+                                if (name == "@IndexerGet" || name == "@zIndxerSet")
                                 {
                                     // Special case for square brackets!
 

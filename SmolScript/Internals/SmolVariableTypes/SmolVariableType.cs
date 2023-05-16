@@ -81,8 +81,8 @@ namespace SmolScript.Internals.SmolVariableTypes
             {
                 // TODO: Need a Stringify helper method.
 
-                string aString = a.GetValue()!.ToString();
-                string bString = b.GetValue()!.ToString();
+                string aString = a.GetValue()!.ToString()!;
+                string bString = b.GetValue()!.ToString()!;
 
                 return new SmolString(aString + bString);
             }

@@ -33,7 +33,7 @@ namespace SmolScript
         T GetGlobalVar<T>(string variableName);
 
         void Call(string functionName, params object[] args);
-        T Call<T>(string functionName, params object[] args);
+        T? Call<T>(string functionName, params object[] args);
 
         void Run();
         void Reset();

@@ -44,7 +44,10 @@ namespace SmolScript.Internals.SmolVariableTypes
         {
             if (int.TryParse(propName, out int index))
             {
-                while (index > this.elements.Count() - 1)
+                // If we have an array with 2 elements ([0] and [1]), and we want to set 
+                // The element at index [3], we need to insert undefined at [2]
+
+                while (index >= this.elements.Count())
                 {
                     elements.Add(new SmolUndefined());
                 }
