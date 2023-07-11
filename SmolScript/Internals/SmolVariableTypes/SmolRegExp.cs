@@ -1,33 +1,33 @@
-﻿using SmolScript.Internals.SmolStackTypes;
+﻿using System.Text.RegularExpressions;
+using SmolScript.Internals.SmolStackTypes;
 
 namespace SmolScript.Internals.SmolVariableTypes
 {
-    internal class SmolString : SmolVariableType, ISmolNativeCallable
+    internal class SmolRegExp : SmolVariableType, ISmolNativeCallable
     {
-        internal readonly string value;
+        internal readonly string pattern;
+        internal readonly Regex regex;
 
-        internal SmolString(string value)
+        internal SmolRegExp(string pattern)
         {
-            this.value = value;
+            this.pattern = pattern;
+            this.regex = new Regex(pattern);
         }
 
         internal override object? GetValue()
         {
-            return this.value;
+            return this.pattern;
         }
 
         public override string ToString()
         {
-            return $"(SmolString) {value}";
+            return $"(SmolRegExp) {pattern}";
         }
 
         public SmolVariableType GetProp(string propName)
         {
             switch (propName)
             {
-                case "length":
-                    return new SmolNumber(this.value.Length);
-
                 default:
                     throw new Exception($"{this.GetType()} cannot handle native property {propName}");
             }
@@ -42,18 +42,6 @@ namespace SmolScript.Internals.SmolVariableTypes
         {
             switch (funcName)
             {
-                case "indexOf":
-
-                    var p1 = ((SmolString)parameters[0]).value;
-
-                    return new SmolNumber(this.value.IndexOf(p1));
-
-                case "search":
-
-                    var regex = (SmolRegExp)parameters.First();
-     
-                    return new SmolNumber(regex.regex.Match(this.value).Index);
-
                 default:
                     throw new Exception($"{this.GetType()} cannot handle native function {funcName}");
             }
@@ -65,15 +53,8 @@ namespace SmolScript.Internals.SmolVariableTypes
             {
                 case "constructor":
 
-                    if (parameters.Any())
-                    {
-                        return new SmolString(parameters.First().GetValue()!.ToString()!);
-                    }
-                    else
-                    {
-                        return new SmolString("");
-                    }
-
+                    return new SmolRegExp(parameters.First().GetValue()!.ToString()!);
+                    
                 default:
                     throw new Exception($"String class cannot handle static function {funcName}");
             }

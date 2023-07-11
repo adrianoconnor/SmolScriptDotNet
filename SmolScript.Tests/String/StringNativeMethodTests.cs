@@ -1,5 +1,4 @@
-﻿using System;
-namespace SmolScript.Tests.String
+﻿namespace SmolScript.Tests.String
 {
     [TestClass]
 	public class StringNativeMethodTests

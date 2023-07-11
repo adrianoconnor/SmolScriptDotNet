@@ -200,6 +200,7 @@ namespace SmolScript
             staticTypes.Add("String", typeof(SmolString));
             staticTypes.Add("Array", typeof(SmolArray));
             staticTypes.Add("Object", typeof(SmolObject));
+            staticTypes.Add("RegExp", typeof(SmolRegExp));
             staticTypes.Add("Error", typeof(SmolError));
         }
 
