@@ -42,6 +42,9 @@ namespace SmolScript.Internals.SmolVariableTypes
         {
             switch (funcName)
             {
+                case "test":
+                    return new SmolBool(this.regex.IsMatch(((SmolString)parameters[0]).value));
+
                 default:
                     throw new Exception($"{this.GetType()} cannot handle native function {funcName}");
             }

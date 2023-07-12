@@ -1,0 +1,3 @@
+[submodule "SmolScriptTests"]
+	path = SmolScriptTests
+	url = git@github.com:adrianoconnor/SmolScriptTests.git
