@@ -1,4 +1,5 @@
 ﻿    using System;
+using System.Reflection;
 using System.Reflection.Metadata;
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
@@ -231,6 +232,74 @@ namespace SmolScript
                         jmplocs[(int)instr.operand1!] = j;
                     }
                 }
+            }
+        }
+       
+        internal Dictionary<string, object> externalMethods = new Dictionary<string, object>();
+
+        public void RegisterMethod(string methodName, object lambda)
+        {           
+            externalMethods.Add(methodName, lambda);
+        }
+
+        internal SmolVariableType CallExternalMethod(string methodName, int numberOfPassedArgs)
+        {
+            var lambdaObj = externalMethods[methodName];
+            var methodInfos = lambdaObj.GetType().GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static);
+            var methodTypeName = methodInfos[0].DeclaringType!.Name;
+            var returnType = ((MethodInfo)methodInfos[0]).ReturnType.Name;
+            var argTypes = methodInfos[0].ReflectedType!.GenericTypeArguments;
+            var args = new List<object>();
+            var numberOfParams = Math.Max(argTypes.Count() - (returnType == "Void" ? 0 : 1), 0);
+
+            var typeCheck = new Regex("^(Func`|Action`)[0-9]+$");
+
+            if (!typeCheck.IsMatch(methodTypeName))
+            {
+                throw new Exception("External methods need to be lambdas (of type Func or Action) only");
+            }
+
+            if (numberOfParams != numberOfPassedArgs)
+            {
+                throw new Exception($"{methodName} expects {numberOfParams} args, but got {numberOfPassedArgs}");
+            }
+
+            for (int i = 0; i < numberOfPassedArgs; i++)
+            {
+                var argInfo = argTypes[i];
+                var value = stack.Pop() as SmolVariableType;
+
+                if (argInfo.Name == "String")
+                {
+                    args.Add(Convert.ChangeType(value!.GetValue()!, typeof(string)));
+                }
+                else if (argInfo.Name == "Double")
+                {
+                    args.Add(Convert.ChangeType(value!.GetValue()!, typeof(double)));
+                }
+                else if (argInfo.Name == "Int32" || argInfo.Name == "Int64")
+                {
+                    args.Add(Convert.ChangeType(value!.GetValue()!, typeof(int)));
+                }
+                else if (argInfo.Name == "Boolean")
+                {
+                    args.Add(Convert.ChangeType(value!.GetValue()!, typeof(bool)));
+                }
+                else
+                {
+                    throw new Exception($"Failed to process argument {i+1} when calling {methodName} (type {argInfo.Name})");
+                }
+            }
+
+            var result = methodInfos[0].Invoke(lambdaObj, args.ToArray());
+
+            if (returnType == "Void")
+            {
+                return new SmolUndefined();
+            }
+            else
+            {
+                return SmolVariableType.Create(result);
             }
         }
 
@@ -737,6 +806,15 @@ namespace SmolScript
                                     if (program.function_table.Any(f => f.global_function_name == name))
                                     {
                                         stack.Push(program.function_table.First(f => f.global_function_name == name));
+                                    }
+                                    else if (externalMethods.Keys.Contains(name))
+                                    {
+                                        var peek_instr = program.code_sections[code_section][PC];
+                                   
+                                        stack.Push(CallExternalMethod(name, (int)peek_instr.operand1!));
+
+                                        stack.Push(new SmolNativeFunctionResult()); // Call will use this to see that the call is already done.
+                                        //stack.Push(new SmolNativeFunctionResult()); // Pop and Discard following Call will discard this
                                     }
                                     else
                                     {

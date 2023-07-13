@@ -1,6 +1,8 @@
 ﻿using System;
 namespace SmolScript
 {
+    public delegate object NativeFunctionDelegate(params object[] parameters);
+
     public interface ISmolRuntime
     {
         /// <summary>
@@ -34,6 +36,8 @@ namespace SmolScript
 
         void Call(string functionName, params object[] args);
         T? Call<T>(string functionName, params object[] args);
+
+        void RegisterMethod(string methodName, object lambda);
 
         void Run();
         void Reset();

@@ -1,4 +1,5 @@
-﻿using SmolScript;
+﻿using System.Reflection;
+using SmolScript;
 
 namespace SmolScript.Tests.DotNetInterop;
 
@@ -162,4 +163,114 @@ function getA() { return a; }
         Assert.AreEqual(4, vm.GetGlobalVar<int>("a"));
     }
 
+    [TestMethod]
+    public void CallDotnetMethodDoubleReturningDouble()
+    {
+        var code = @"var result = externalMethodToMultiplyByTen(5);";
+
+        var vm = SmolVM.Compile(code);
+
+        var ten = 10;
+
+        vm.RegisterMethod("externalMethodToMultiplyByTen", (double value) => {
+            return value * ten;
+        });
+
+        vm.Run();
+
+        Assert.AreEqual(50, vm.GetGlobalVar<int>("result"));
+    }
+
+    [TestMethod]
+    public void CallDotnetMethodReturningVoid()
+    {
+        var code = @"returnVoid();";
+
+        var vm = SmolVM.Compile(code);
+
+        var called = false;
+
+        vm.RegisterMethod("returnVoid", () => {
+            called = true;
+        });
+
+        vm.Run();
+
+        Assert.AreEqual(true, called);
+    }
+
+    [TestMethod]
+    public void CallDotnetMethodReturningString()
+    {
+        var code = @"var a = reverseString('abcde');";
+
+        var vm = SmolVM.Compile(code);
+
+        vm.RegisterMethod("reverseString", (string s) => {
+            var charArray = s.ToCharArray();
+            System.Array.Reverse(charArray);
+            return new string(charArray);
+        });
+
+        vm.Run();
+
+        Assert.AreEqual("edcba", vm.GetGlobalVar<string>("a"));
+    }
+
+    [TestMethod]
+    public void CallDotnetMethodReturningInt()
+    {
+        var code = @"var a = mul(3, 5);";
+
+        var vm = SmolVM.Compile(code);
+
+        vm.RegisterMethod("mul", (int a, int b) => {
+            return a * b;
+        });
+
+        vm.Run();
+
+        Assert.AreEqual(15, vm.GetGlobalVar<int>("a"));
+    }
+
+    [TestMethod]
+    public void InvalidDotNetMethod()
+    {
+        var code = @"var a = mul(3, 5);";
+
+        var vm = SmolVM.Compile(code);
+
+        vm.RegisterMethod("mul", 1); // 1 is not a valid function
+
+        Assert.ThrowsException<SmolRuntimeException>(vm.Run);
+    }
+
+    [TestMethod]
+    public void CallDotnetMethodReturningBool()
+    {
+        var code = @"var a = eql(3, 5);";
+
+        var vm = SmolVM.Compile(code);
+
+        vm.RegisterMethod("eql", (int a, int b) => {
+            return a == b;
+        });
+
+        vm.Run();
+
+        Assert.IsFalse(vm.GetGlobalVar<bool>("a"));
+    }
+
+    [TestMethod]
+    public void CallDotNetPassingVariousTypes()
+    {
+        var code = @"test(3, 5, 'a', true);";
+
+        var vm = SmolVM.Compile(code);
+
+        vm.RegisterMethod("test", (int a, double b, string c, bool d) => {
+        });
+
+        vm.Run();
+    }
 }
