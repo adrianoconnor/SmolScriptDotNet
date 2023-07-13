@@ -5,6 +5,17 @@
     <RootNamespace>SmolScript</RootNamespace>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <Description>A very smol embedded runtime for a JS-like language. This software is early alpha, it is not suitable for production.</Description>
+    <PackageId>SmolScript</PackageId>
+    <Version>0.0.1</Version>
+    <Authors>Adrian O'Connor</Authors>
+    <Company>Arctus Limited</Company>
+    <Product>SmolScript</Product>
+    <PacakgeDescription>A very smol embedded runtime for a JS-like language. This software is early alpha, it is not suitable for production.</PacakgeDescription>
+    <PackageTags>EmbeddedLanguage,VM</PackageTags>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
     <Folder Include="Internals\" />
