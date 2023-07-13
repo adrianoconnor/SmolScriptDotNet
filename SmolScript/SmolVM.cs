@@ -252,7 +252,7 @@ namespace SmolScript
             var args = new List<object>();
             var numberOfParams = Math.Max(argTypes.Count() - (returnType == "Void" ? 0 : 1), 0);
 
-            var typeCheck = new Regex("^(Func`|Action`)[0-9]+$");
+            var typeCheck = new Regex("^(Func|Action)(`[0-9]+){0,1}$");
 
             if (!typeCheck.IsMatch(methodTypeName))
             {
