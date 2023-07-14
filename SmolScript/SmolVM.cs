@@ -78,9 +78,14 @@ namespace SmolScript
         internal SmolScript.Internals.Environment globalEnv = new SmolScript.Internals.Environment();
         internal SmolScript.Internals.Environment environment;
 
-        public T GetGlobalVar<T>(string variableName)
+        public T? GetGlobalVar<T>(string variableName)
         {
             var v = (SmolVariableType)globalEnv.Get(variableName)!;
+
+            if (v.GetType() == typeof(SmolUndefined))
+            {
+                return default(T);
+            }
 
             return (T)Convert.ChangeType(v.GetValue()!, typeof(T));
         }
