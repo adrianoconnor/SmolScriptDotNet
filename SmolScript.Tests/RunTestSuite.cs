@@ -1,24 +1,43 @@
-﻿using System;
-using System.Reflection;
-using System.Text;
+﻿using System.Reflection;
 using System.Text.RegularExpressions;
-using static System.Net.Mime.MediaTypeNames;
+using Microsoft.Extensions.Configuration;
 
 namespace SmolScript.Tests
 {
 	[TestClass]
-	public class RunExternalTests
+	public class RunTestSuite
 	{
         public static IEnumerable<object[]> AllTestData
         {
             get
             {
-                // This is stupid.
-                var d = Directory.GetParent(Environment.CurrentDirectory).Parent.Parent.Parent.GetDirectories("SmolScriptTests").First();
+                var config = new ConfigurationBuilder()
+                   .AddJsonFile("appsettings.test.json", true)
+                   .Build();
+                
+                var testSuiteFolderPath = config["TestSuiteFolder"];
+                DirectoryInfo? testSuiteDirectory;
+
+                if (!string.IsNullOrEmpty(testSuiteFolderPath))
+                {
+                    Console.WriteLine($"Got test suite directory '{testSuiteFolderPath}' from AppConfig");
+                    testSuiteDirectory = new DirectoryInfo(testSuiteFolderPath);
+                }
+                else
+                {
+                    // Assume we're running in the SmolScript.Tests directory (in bin/Debug/net6.0 probably)
+
+                    var pwd = Environment.CurrentDirectory;
+
+                    // We just need to switch from SmolScripts.Tests to the git submodile folder SmolScriptTests
+                    testSuiteFolderPath = Path.Combine(pwd.Substring(0, pwd.IndexOf("SmolScript.Tests")), "SmolScriptTests");
+
+                    testSuiteDirectory = new DirectoryInfo(testSuiteFolderPath);
+                }
 
                 var tests = new List<object[]>();
 
-                foreach(var f in d.EnumerateFiles("*.test.smol", SearchOption.AllDirectories))
+                foreach(var f in testSuiteDirectory.EnumerateFiles("*.test.smol", SearchOption.AllDirectories))
                 {
                     tests.Add(new object[] { f.FullName });
                 }
