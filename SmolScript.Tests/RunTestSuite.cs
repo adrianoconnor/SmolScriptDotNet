@@ -48,7 +48,9 @@ namespace SmolScript.Tests
 
         public static string GetCustomDynamicDataDisplayName(MethodInfo methodInfo, object[] data)
         {
-            return string.Format("{0} {1}", methodInfo.Name, data[0]);
+            var f = (string)data[0];
+
+            return string.Format("{0}", f.Substring(f.IndexOf("SmolScriptTests") + 16, f.Length - (f.IndexOf("SmolScriptTests") + 16 + 10)));
         }
 
         Regex regexTestFileHeader = new Regex(@"\/\*(.*?)(Steps:.*?\n)(.*?)\*\/", RegexOptions.Singleline);
