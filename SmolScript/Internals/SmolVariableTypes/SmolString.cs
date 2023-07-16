@@ -1,4 +1,5 @@
-﻿using SmolScript.Internals.SmolStackTypes;
+﻿using System.Text.RegularExpressions;
+using SmolScript.Internals.SmolStackTypes;
 
 namespace SmolScript.Internals.SmolVariableTypes
 {
@@ -43,17 +44,32 @@ namespace SmolScript.Internals.SmolVariableTypes
             switch (funcName)
             {
                 case "indexOf":
+                    {
+                        var p1 = ((SmolString)parameters[0]).value;
 
-                    var p1 = ((SmolString)parameters[0]).value;
-
-                    return new SmolNumber(this.value.IndexOf(p1));
-
+                        return new SmolNumber(this.value.IndexOf(p1));
+                    }
                 case "search":
+                    {
+                        var regex = (SmolRegExp)parameters.First();
 
-                    var regex = (SmolRegExp)parameters.First();
-     
-                    return new SmolNumber(regex.regex.Match(this.value).Index);
+                        return new SmolNumber(regex.regex.Match(this.value).Index);
+                    }
+                case "substring":
+                    {
+                        var p1 = (SmolNumber)parameters[0];
 
+                        if (parameters.Count == 1)
+                        {
+                            return new SmolString(this.value.Substring(Convert.ToInt32(p1.value)));
+                        }
+                        else
+                        {
+                            var p2 = (SmolNumber)parameters[1];
+
+                            return new SmolString(this.value.Substring(Convert.ToInt32(p1.value), Convert.ToInt32(p2.value)));
+                        }
+                    }
                 default:
                     throw new Exception($"{this.GetType()} cannot handle native function {funcName}");
             }
