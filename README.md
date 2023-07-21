@@ -55,26 +55,38 @@ What is not on our roadmap to support:
 
 ## Try it out
 
-To try it out, add the SmolScript nuget to your project (currently version 0.0.2) and do something like this:
+To try it out, add the SmolScript nuget package to your project (currently version 0.0.2) and do something like this:
 
 ```csharp
+using SmolScript;
+
 var exampleSmolScriptCode = @"
 
   // This is the smol script program, not .net
   var a = 10;
 
-  function mutiplyA(valueToMultiplyBy) {
+  function multiplyA(valueToMultiplyBy) {
     a = a * valueToMultiplyBy;
   }
 
-  mutiplyA(10);
+  multiplyA(10);
 ";
 
 var vm = SmolVM.Compile(exampleSmolScriptCode);
 
 vm.Run(); // This executes the script we passed in
 
-var valueOfA = vm.GetGlobalVar<int>("a") // Fetch the value of variable 'a' from the VM, will be 100. 
+var valueOfA = vm.GetGlobalVar<int>("a"); // Fetch the value of variable 'a' from the VM, will be 100
+```
+
+That's it! If you want to call the function from .net:
+
+```csharp
+// You can only call after vm.Run or vm.Init has been called -- so the VM is primed with initial state...
+
+vm.Call("multiplyA", 2);
+
+var newValueOfA = vm.GetGlobalVar<int>("a"); // 200
 ```
 
 ## I want to use it in my project!
