@@ -172,7 +172,8 @@ function getA() { return a; }
 
         var ten = 10;
 
-        vm.RegisterMethod("externalMethodToMultiplyByTen", (double value) => {
+        vm.RegisterMethod("externalMethodToMultiplyByTen", (double value) =>
+        {
             return value * ten;
         });
 
@@ -190,7 +191,8 @@ function getA() { return a; }
 
         var called = false;
 
-        vm.RegisterMethod("returnVoid", () => {
+        vm.RegisterMethod("returnVoid", () =>
+        {
             called = true;
         });
 
@@ -206,7 +208,8 @@ function getA() { return a; }
 
         var vm = SmolVM.Compile(code);
 
-        vm.RegisterMethod("reverseString", (string s) => {
+        vm.RegisterMethod("reverseString", (string s) =>
+        {
             var charArray = s.ToCharArray();
             System.Array.Reverse(charArray);
             return new string(charArray);
@@ -224,7 +227,8 @@ function getA() { return a; }
 
         var vm = SmolVM.Compile(code);
 
-        vm.RegisterMethod("mul", (int a, int b) => {
+        vm.RegisterMethod("mul", (int a, int b) =>
+        {
             return a * b;
         });
 
@@ -252,7 +256,8 @@ function getA() { return a; }
 
         var vm = SmolVM.Compile(code);
 
-        vm.RegisterMethod("eql", (int a, int b) => {
+        vm.RegisterMethod("eql", (int a, int b) =>
+        {
             return a == b;
         });
 
@@ -268,7 +273,8 @@ function getA() { return a; }
 
         var vm = SmolVM.Compile(code);
 
-        vm.RegisterMethod("test", (int a, double b, string c, bool d) => {
+        vm.RegisterMethod("test", (int a, double b, string c, bool d) =>
+        {
         });
 
         vm.Run();

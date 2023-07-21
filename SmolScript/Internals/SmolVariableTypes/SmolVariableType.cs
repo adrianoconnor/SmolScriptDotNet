@@ -4,7 +4,7 @@ using SmolScript.Internals.SmolStackTypes;
 
 namespace SmolScript.Internals.SmolVariableTypes
 {
-	internal abstract class SmolVariableType : SmolStackType
+    internal abstract class SmolVariableType : SmolStackType
     {
         abstract internal object? GetValue();
 

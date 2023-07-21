@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Reflection;
 using System.Reflection.Metadata;
 using System.Runtime.CompilerServices;
@@ -15,7 +15,7 @@ namespace SmolScript
 {
     public class SmolVM : ISmolRuntime
     {
-        private class SmolThrown: Exception
+        private class SmolThrown : Exception
         {
 
         }
@@ -31,8 +31,10 @@ namespace SmolScript
         internal SmolProgram program;
 
         private Action<string>? _DebugLogDelegate;
-        public Action<string> OnDebugLog {
-            set {
+        public Action<string> OnDebugLog
+        {
+            set
+            {
                 _DebugLogDelegate = value;
                 _debug = value != null;
             }
@@ -177,7 +179,7 @@ namespace SmolScript
         {
             return ByteCodeDisassembler.Disassemble(this.program);
         }
-        
+
         public SmolVM(string source)
         {
             environment = globalEnv;
@@ -239,11 +241,11 @@ namespace SmolScript
                 }
             }
         }
-       
+
         internal Dictionary<string, object> externalMethods = new Dictionary<string, object>();
 
         public void RegisterMethod(string methodName, object lambda)
-        {           
+        {
             externalMethods.Add(methodName, lambda);
         }
 
@@ -292,7 +294,7 @@ namespace SmolScript
                 }
                 else
                 {
-                    throw new Exception($"Failed to process argument {i+1} when calling {methodName} (type {argInfo.Name})");
+                    throw new Exception($"Failed to process argument {i + 1} when calling {methodName} (type {argInfo.Name})");
                 }
             }
 
@@ -646,7 +648,7 @@ namespace SmolScript
                                 }
 
                                 var value = (SmolVariableType)stack.Pop(); // Hopefully always true...
-                                
+
                                 var env_in_context = environment;
                                 bool isPropertySetter = false;
 
@@ -724,14 +726,14 @@ namespace SmolScript
                                                     paramValues.Add((SmolVariableType)this.stack.Pop());
                                                 }
 
-                                                stack.Push(((ISmolNativeCallable)objRef).NativeCall(name, paramValues)!);
+                                                stack.Push(((ISmolNativeCallable)objRef).NativeCall(name!, paramValues)!);
                                                 stack.Push(new SmolNativeFunctionResult()); // Call will use this to see that the call is already done.
                                             }
                                             else
                                             {
                                                 // For now won't work with Setter
 
-                                                stack.Push(((ISmolNativeCallable)objRef).GetProp(name)!);
+                                                stack.Push(((ISmolNativeCallable)objRef).GetProp(name!)!);
                                             }
 
                                             break;
@@ -739,7 +741,8 @@ namespace SmolScript
                                         else if (objRef is SmolNativeFunctionResult)
                                         {
                                             var classMethodRegEx = new Regex(@"\@([A-Za-z]+)[\.]([A-Za-z]+)");
-                                            var rex = classMethodRegEx.Match(name);
+                                            var rex = classMethodRegEx.Match(name!);
+
                                             if (rex.Success)
                                             {
                                                 List<object> parameters = new List<object>();
@@ -766,14 +769,12 @@ namespace SmolScript
 
                                                 // Put our actual new object on after calling the ctor:
 
-                                                //var r = staticNativeClassMethods["@String.constructor"](paramValues);
-
-                                                var r = (SmolVariableType)staticTypes[rex.Groups[1].Value].GetMethod("StaticCall")!.Invoke(null, parameters.ToArray());
+                                                var r = (SmolVariableType)staticTypes[rex.Groups[1].Value].GetMethod("StaticCall")!.Invoke(null, parameters.ToArray())!;
 
                                                 if (name == "@Object.constructor")
                                                 {
                                                     // Hack alert!!!
-                                                    ((SmolObject)r).object_env = new Internals.Environment(this.globalEnv);
+                                                    ((SmolObject)r!).object_env = new Internals.Environment(this.globalEnv);
                                                 }
 
                                                 stack.Push(r);
@@ -793,7 +794,7 @@ namespace SmolScript
                                     }
                                 }
 
-                                var fetchedValue = env_in_context.TryGet(name);
+                                var fetchedValue = env_in_context.TryGet(name!);
 
                                 if (fetchedValue?.GetType() == typeof(SmolFunction))
                                 {
@@ -815,8 +816,8 @@ namespace SmolScript
                                     else if (externalMethods.Keys.Contains(name))
                                     {
                                         var peek_instr = program.code_sections[code_section][PC];
-                                   
-                                        stack.Push(CallExternalMethod(name, (int)peek_instr.operand1!));
+
+                                        stack.Push(CallExternalMethod(name!, (int)peek_instr.operand1!));
 
                                         stack.Push(new SmolNativeFunctionResult()); // Call will use this to see that the call is already done.
                                         //stack.Push(new SmolNativeFunctionResult()); // Pop and Discard following Call will discard this
@@ -1065,7 +1066,7 @@ namespace SmolScript
                 catch (Exception e) // (SmolRuntimeException e)
                 {
                     bool handled = false;
-                  
+
                     while (stack.Any())
                     {
                         var next = stack.Pop();

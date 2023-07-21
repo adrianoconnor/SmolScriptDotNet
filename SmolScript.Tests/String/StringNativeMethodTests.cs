@@ -1,8 +1,8 @@
 ﻿namespace SmolScript.Tests.String
 {
     [TestClass]
-	public class StringNativeMethodTests
-	{
+    public class StringNativeMethodTests
+    {
         [TestMethod]
         public void StringLength()
         {

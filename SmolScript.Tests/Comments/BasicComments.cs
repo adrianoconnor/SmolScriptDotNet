@@ -1,12 +1,12 @@
 ﻿using System;
 namespace SmolScript.Tests.Comments
 {
-	[TestClass]
-	public class BasicComments
-	{
-		[TestMethod]
-		public void SingleLineComments()
-		{
+    [TestClass]
+    public class BasicComments
+    {
+        [TestMethod]
+        public void SingleLineComments()
+        {
             var code = @"
 
 var a = 1;

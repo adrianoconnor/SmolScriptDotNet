@@ -1,8 +1,8 @@
 ﻿using System;
 namespace SmolScript.Tests.Math
 {
-	[TestClass]
-	public class BasicArithmeticTests
+    [TestClass]
+    public class BasicArithmeticTests
     {
         [TestMethod]
         public void AddThreeNumbers()

@@ -29,8 +29,4 @@
     <Compile Remove="Internals\Ast\Interpreter\ICallableSmolFunction.cs" />
     <Compile Remove="Internals\Ast\Interpreter\SmolFunctionWrapper.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <None Remove="Internals\SmolStackTypes\" />
-    <None Remove="Internals\SmolVariableTypes\" />
-  </ItemGroup>
 </Project>

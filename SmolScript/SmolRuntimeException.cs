@@ -8,7 +8,7 @@ namespace SmolScript
         }
 
         public SmolRuntimeException(string message, Exception innerException) : base(message, innerException)
-        {            
+        {
         }
     }
 }

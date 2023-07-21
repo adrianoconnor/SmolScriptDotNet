@@ -57,7 +57,7 @@ namespace SmolScript.Internals.SmolVariableTypes
                 case "constructor":
 
                     return new SmolRegExp(parameters.First().GetValue()!.ToString()!);
-                    
+
                 default:
                     throw new Exception($"String class cannot handle static function {funcName}");
             }

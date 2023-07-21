@@ -4,9 +4,9 @@ using Microsoft.Extensions.Configuration;
 
 namespace SmolScript.Tests
 {
-	[TestClass]
-	public class RunTestSuite
-	{
+    [TestClass]
+    public class RunTestSuite
+    {
         public static IEnumerable<object[]> AllTestData
         {
             get
@@ -14,7 +14,7 @@ namespace SmolScript.Tests
                 var config = new ConfigurationBuilder()
                    .AddJsonFile("appsettings.test.json", true)
                    .Build();
-                
+
                 var testSuiteFolderPath = config["TestSuiteFolder"];
                 DirectoryInfo? testSuiteDirectory;
 
@@ -37,7 +37,7 @@ namespace SmolScript.Tests
 
                 var tests = new List<object[]>();
 
-                foreach(var f in testSuiteDirectory.EnumerateFiles("*.test.smol", SearchOption.AllDirectories))
+                foreach (var f in testSuiteDirectory.EnumerateFiles("*.test.smol", SearchOption.AllDirectories))
                 {
                     tests.Add(new object[] { f.FullName });
                 }
@@ -78,7 +78,7 @@ namespace SmolScript.Tests
                 {
                     var vm = SmolVM.Compile(fileData);
 
-                    foreach(Match matchedStep in matchedSteps!)
+                    foreach (Match matchedStep in matchedSteps!)
                     {
                         string step = matchedStep.Value;
 
@@ -152,6 +152,6 @@ namespace SmolScript.Tests
                 throw new Exception("No steps :(");
             }
         }
-	}
+    }
 }
 

@@ -528,7 +528,7 @@ namespace SmolScript.Internals
 
             chunk.AppendChunk(stmt.expression.Accept(this));
             chunk.AppendInstruction(OpCode.THROW);
-            
+
             return chunk;
         }
 

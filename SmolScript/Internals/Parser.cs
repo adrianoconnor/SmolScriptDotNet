@@ -239,7 +239,7 @@ namespace SmolScript.Internals
             _statementCallStack.Push("FUNCTION");
 
             Token functionName = consume(TokenType.IDENTIFIER, "Expected function name");
-            
+
             var functionParams = new List<Token>();
 
             consume(TokenType.LEFT_BRACKET, "Expected (");
@@ -339,7 +339,7 @@ namespace SmolScript.Internals
         }
 
         private Statement throwStatement()
-        {             
+        {
             var expr = expression();
             consume(TokenType.SEMICOLON, "Expected ;");
             return new ThrowStatement(expr);
@@ -723,7 +723,7 @@ namespace SmolScript.Internals
 
             return expr;
         }
-        
+
         private Expression functionExpression()
         {
             if (match(TokenType.FUNC))
