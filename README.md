@@ -1,6 +1,6 @@
-# WARNING: This is a learning project written by someone who knows nothing about building this kind of software. It is not suitable for any kind of production use, and probably never will be. Use at your own risk.
+> WARNING: This is a learning project written by someone who knows nothing about building this kind of software. It is not suitable for any kind of production use, and probably never will be. Use at your own risk.
 
-## SmolScript
+# SmolScript
 
 SmolScript is a JS-like language that runs inside a tiny stack based VM. It is designed to be relatively easy to implement in other languages (there is also a TypeScript version currently), but each version is going to be different because we use the host language's features very heavily (e.g., we are totally dependent on the .net implementation of strings, regexes, serialization routines, networking, JSON etc). This choice allows SmolScript itself be *very* smol.
 
@@ -45,6 +45,7 @@ On our list of things that we think we want to add:
 * Better try/catch
 * Exposing tokens/line numbers for compiled source
 * Much better compiler errors
+* Support for code without semicolons
 
 What is not on our roadmap to support:
 
@@ -52,7 +53,31 @@ What is not on our roadmap to support:
 * Async/await
 * file, network, database etc -- for that we expect you to use native custom functions exposed to your VM (this is how we make it secure!)
 
-## I want to use it!
+## Try it out
+
+To try it out, add the SmolScript nuget to your project (currently version 0.0.2) and do something like this:
+
+```csharp
+var exampleSmolScriptCode = @"
+
+  // This is the smol script program, not .net
+  var a = 10;
+
+  function mutiplyA(valueToMultiplyBy) {
+    a = a * valueToMultiplyBy;
+  }
+
+  mutiplyA(10);
+";
+
+var vm = SmolVM.Compile(exampleSmolScriptCode);
+
+vm.Run(); // This executes the script we passed in
+
+var valueOfA = vm.GetGlobalVar<int>("a") // Fetch the value of variable 'a' from the VM, will be 100. 
+```
+
+## I want to use it in my project!
 
 No, it is not ready, it is not a commercial project and I don't have time to support it.
 
@@ -61,3 +86,5 @@ Also, it is incredibly slow -- probably the least optimised language you've ever
 Also, it is a bit messy. Unit tests prove it works as designed, but I made some questionable choices due to lack of experience.
 
 I do hope somebody will find this interesting at least. I've certainly enjoyed creating it, and I've learned so much. Maybe one day it will be actually useful.
+
+This version is MIT licensed.
