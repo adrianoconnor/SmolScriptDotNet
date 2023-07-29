@@ -1,5 +1,7 @@
 > WARNING: This is a learning project written by someone who knows nothing about building this kind of software. It is not suitable for any kind of production use, and probably never will be. Use at your own risk.
 
+> Note: Everything I know about building interpreters and compilers I learned from http://craftinginterpreters.com. It is an incredible resource, and I cannot recommend it highly enough. If you want to learn about programming languages, that is where you should go.
+
 # SmolScript
 
 SmolScript is a JS-like language that runs inside a tiny stack based VM. It is designed to be relatively easy to implement in other languages (there is also a TypeScript version currently), but each version is going to be different because we use the host language's features very heavily (e.g., we are totally dependent on the .net implementation of strings, regexes, serialization routines, networking, JSON etc). This choice allows SmolScript itself be *very* smol.
