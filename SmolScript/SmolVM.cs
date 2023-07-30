@@ -246,6 +246,16 @@ namespace SmolScript
 
         public void RegisterMethod(string methodName, object lambda)
         {
+            var methodInfos = lambda.GetType().GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static);
+            var methodTypeName = methodInfos[0].DeclaringType!.Name;
+
+            var typeCheck = new Regex("^(Func|Action)(`[0-9]+){0,1}$");
+
+            if (!typeCheck.IsMatch(methodTypeName))
+            {
+                throw new Exception($"External method '{methodName}' could not be registered because the second parameter was not a lambda (we expect a Func or Action, but an object with type {methodTypeName} was received)");
+            }
+
             externalMethods.Add(methodName, lambda);
         }
 
@@ -263,7 +273,7 @@ namespace SmolScript
 
             if (!typeCheck.IsMatch(methodTypeName))
             {
-                throw new Exception("External methods need to be lambdas (of type Func or Action) only");
+                throw new Exception($"External method '{methodName}' is not a lambda (should be a Func or Action only)");
             }
 
             if (numberOfParams != numberOfPassedArgs)
