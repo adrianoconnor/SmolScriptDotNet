@@ -35,7 +35,7 @@ namespace SmolTests
 
             var tokens = s.ScanTokens();
 
-            foreach (var t in tokens.tokens)
+            foreach (var t in tokens)
             {
                 Console.WriteLine(t);
             }
@@ -58,7 +58,7 @@ namespace SmolTests
 
             var tokens = s.ScanTokens();
 
-            foreach (var t in tokens.tokens)
+            foreach (var t in tokens)
             {
                 Console.WriteLine(t);
             }

@@ -39,7 +39,8 @@ namespace SmolScript.Tests
 
                 foreach (var f in testSuiteDirectory.EnumerateFiles("*.test.smol", SearchOption.AllDirectories))
                 {
-                    tests.Add(new object[] { f.FullName });
+                    tests.Add(new object[] { f.FullName, false });
+                    tests.Add(new object[] { f.FullName, true });
                 }
 
                 return tests;
@@ -63,11 +64,17 @@ namespace SmolScript.Tests
 
         [TestMethod]
         [DynamicData(nameof(AllTestData), DynamicDataDisplayName = nameof(GetCustomDynamicDataDisplayName))]
-        public void ParseExecuteAndEvaluate(string testFile)
-        {
-            var fileData = File.ReadAllText(testFile);
+        public void ParseExecuteAndEvaluate(string testFile, bool removeSemicolons)
+        { 
+            var source = File.ReadAllText(testFile);
 
-            var headerMatch = regexTestFileHeader.Matches(fileData);
+            if (removeSemicolons)
+            {
+                var rem = new Regex("(?<!(for\\(.*?;.*?)|for\\(.*?);", RegexOptions.Multiline);
+                source = rem.Replace(source, "");
+            }
+
+            var headerMatch = regexTestFileHeader.Matches(source);
 
             if (headerMatch.Any())
             {
@@ -76,7 +83,7 @@ namespace SmolScript.Tests
 
                 if (matchedSteps.Any())
                 {
-                    var vm = SmolVM.Compile(fileData);
+                    var vm = SmolVM.Compile(source);
 
                     foreach (Match matchedStep in matchedSteps!)
                     {

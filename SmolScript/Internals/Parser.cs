@@ -173,7 +173,18 @@ namespace SmolScript.Internals
         {
             if (check(tokenType)) return advance();
 
-            //Console.WriteLine(peek().type);
+            // If we expected a ; but got a newline, we just wave it through
+            if (tokenType == TokenType.SEMICOLON && _tokens[_current - 1].followedByLineBreak)
+            {
+                // We need to return a token, so we'll make a fake semicolon
+                return new Token(TokenType.SEMICOLON, "", "", -1);
+            }
+
+            // If we expected a ; but got a }, we also wave that through
+            if (tokenType == TokenType.SEMICOLON && (this.check(TokenType.RIGHT_BRACE) || this.peek().type == TokenType.EOF))
+            {
+                return new Token(TokenType.SEMICOLON, "", "", -1);//, -1, -1, -1);
+            }
 
             throw error(peek(), errorIfNotFound);
         }

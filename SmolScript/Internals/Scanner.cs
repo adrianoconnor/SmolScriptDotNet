@@ -2,7 +2,7 @@ using System.Text;
 
 namespace SmolScript.Internals
 {
-    internal record ScannerError
+    public class ScannerError : Exception
     {
         public int line { get; set; }
         public string message { get; set; }
@@ -24,7 +24,6 @@ namespace SmolScript.Internals
         private int _line = 1;
 
         private IList<Token> _tokens = new List<Token>();
-        private IList<ScannerError> _errors = new List<ScannerError>();
 
         private IDictionary<string, TokenType> _keywords = new Dictionary<string, TokenType>()
         {
@@ -64,7 +63,7 @@ namespace SmolScript.Internals
             this._sourceRaw = source.ToCharArray();
         }
 
-        public (IList<Token> tokens, IList<ScannerError> errors) ScanTokens()
+        public IList<Token> ScanTokens()
         {
             while (!ReachedEnd())
             {
@@ -74,7 +73,7 @@ namespace SmolScript.Internals
 
             _tokens.Add(new Token(TokenType.EOF, "", null, _line));
 
-            return (_tokens, _errors);
+            return _tokens;
         }
 
         private void ScanToken()
@@ -96,7 +95,7 @@ namespace SmolScript.Internals
                 case '-':
                     if (MatchNext('-'))
                     {
-                        if (_tokens.LastOrDefault()?.type == TokenType.IDENTIFIER)
+                        if (_tokens.LastOrDefault()?.type == TokenType.IDENTIFIER && _tokens.LastOrDefault()?.followedByLineBreak == false)
                         {
                             AddToken(TokenType.POSTFIX_DECREMENT);
                         }
@@ -117,7 +116,7 @@ namespace SmolScript.Internals
                 case '+':
                     if (MatchNext('+'))
                     {
-                        if (_tokens.LastOrDefault()?.type == TokenType.IDENTIFIER)
+                        if (_tokens.LastOrDefault()?.type == TokenType.IDENTIFIER && _tokens.LastOrDefault()?.followedByLineBreak == false)
                         {
                             AddToken(TokenType.POSTFIX_INCREMENT);
                         }
@@ -212,7 +211,8 @@ namespace SmolScript.Internals
                         {
                             if (ReachedEnd())
                             {
-                                _errors.Add(new ScannerError(_line, $"Expected end of comment block"));
+                                //_errors.Add(
+                                throw new ScannerError(_line, $"Expected end of comment block");
                             }
                             else
                             {
@@ -260,7 +260,14 @@ namespace SmolScript.Internals
                     break;
 
                 case '\n':
+
                     _line++;
+
+                    if (_tokens.Any())
+                    {
+                        _tokens[_tokens.Count()- 1].followedByLineBreak = true;
+                    }
+
                     break;
 
                 case '\'':
@@ -286,7 +293,8 @@ namespace SmolScript.Internals
                     }
                     else
                     {
-                        _errors.Add(new ScannerError(_line, $"Unexpected character '{c}'"));
+                        //_errors.Add(
+                        throw new ScannerError(_line, $"Unexpected character '{c}'");
                     }
 
                     break;
@@ -352,8 +360,9 @@ namespace SmolScript.Internals
                 if (MatchNext('\n')) // Peek() == '\n')
                 {
                     _line++;
-                    _errors.Add(new ScannerError(_line, "Unexpected Line break in string"));
-                    return;
+                    //_errors.Add(new ScannerError(_line, "Unexpected Line break in string"));
+                    throw new ScannerError(_line, "Unexpected Line break in string");
+                    //return;
                 }
 
                 if (Peek() == '\\')
@@ -396,8 +405,10 @@ namespace SmolScript.Internals
 
             if (ReachedEnd())
             {
-                _errors.Add(new ScannerError(_line, "Unterminated string"));
-                return;
+                throw new ScannerError(_line, "Unterminated string");
+
+                //_errors.Add(new ScannerError(_line, "Unterminated string"));
+                //return;
             }
 
             // Consume the closing "
@@ -513,7 +524,7 @@ namespace SmolScript.Internals
 
                             AddToken(TokenType.LEFT_BRACKET);
 
-                            foreach (var t in embeddedTokens.tokens)
+                            foreach (var t in embeddedTokens)
                             {
                                 if (t.type == TokenType.EOF)
                                 {
@@ -538,8 +549,9 @@ namespace SmolScript.Internals
 
             if (ReachedEnd())
             {
-                _errors.Add(new ScannerError(_line, "Unterminated string"));
-                return;
+                throw new ScannerError(_line, "Unterminated string");
+                //_errors.Add(new ScannerError(_line, "Unterminated string"));
+                //return;
             }
 
             // Consume the closing `

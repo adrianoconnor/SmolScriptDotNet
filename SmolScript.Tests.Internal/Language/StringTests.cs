@@ -1,5 +1,4 @@
-﻿using System;
-using SmolScript;
+﻿using SmolScript;
 using SmolScript.Internals;
 
 namespace SmolTests
@@ -118,6 +117,22 @@ namespace SmolTests
             vm.Run();
 
             Assert.AreEqual("test x}x", vm.GetGlobalVar<string>("a"));
+        }
+
+        [TestMethod]
+        public void IllegalMultilineStrings()
+        {
+            var source = @"var a = 'test
+123';";
+
+            /*
+            var s = new Scanner(source);
+            var (t, e) = s.ScanTokens();
+            var p = new Parser(t);
+            var x = p.Parse();
+            */
+
+            Assert.ThrowsException<ScannerError>(() => SmolVM.Compile(source));
         }
     }
 }

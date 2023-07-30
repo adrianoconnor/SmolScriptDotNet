@@ -78,7 +78,7 @@ namespace SmolScript.Internals
         {
             var scanner = new Scanner(source);
             var scanResult = scanner.ScanTokens();
-            var parser = new Parser(scanResult.tokens);
+            var parser = new Parser(scanResult);
             var statements = parser.Parse();
 
             // Creating the main chunk will populate the constants

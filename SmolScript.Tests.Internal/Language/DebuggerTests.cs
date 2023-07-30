@@ -16,9 +16,15 @@ namespace SmolTests
         [TestMethod]
         public void TryCreatingByteCodeForAGlobalFunction()
         {
-            var program = SmolCompiler.Compile("debugger; var a = 10; function addOne(num) { return num + 1; } a = addOne(a);");
-
-            var vm = new SmolVM(program);
+            var source = @"
+debugger;
+var a = 10;
+function addOne(num) {
+    return num + 1;
+}
+a = addOne(a);
+";
+            var vm = SmolVM.Compile(source);
 
             vm.Run();
 

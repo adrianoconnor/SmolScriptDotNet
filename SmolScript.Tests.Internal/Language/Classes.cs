@@ -22,7 +22,7 @@ namespace SmolTests
 
             var s = new Scanner(source);
             var tokens = s.ScanTokens();
-            var p = new Parser(tokens.tokens);
+            var p = new Parser(tokens);
             var dump = new SmolScript.Internals.Ast.AstDump().Print(p.Parse());
             Console.WriteLine(source);
             Console.WriteLine(dump);
@@ -47,7 +47,7 @@ class testClass {
         return n + 1;
     }
 
-    #addTwo(n) {
+    addTwo(n) {
         return n + 2;
     }
 }
@@ -58,7 +58,7 @@ var a = t.addOne(1);
 
             var s = new Scanner(source);
             var tokens = s.ScanTokens();
-            var p = new Parser(tokens.tokens);
+            var p = new Parser(tokens);
             var dump = new SmolScript.Internals.Ast.AstDump().Print(p.Parse());
             Console.WriteLine(dump);
 

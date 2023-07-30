@@ -54,7 +54,7 @@ var b = a1 + a2 + a3;
 var a = ""123
 456"";
 ";
-            Assert.ThrowsException<ParseError>(() => SmolVM.Init(code));
+            Assert.ThrowsException<ScannerError>(() => SmolVM.Init(code));
         }
 
         [TestMethod]
@@ -64,7 +64,8 @@ var a = ""123
 var a = '123
 456';
 ";
-            Assert.ThrowsException<ParseError>(() => SmolVM.Init(code));
+
+            Assert.ThrowsException<ScannerError>(() => SmolVM.Init(code));
         }
 
         [TestMethod]
