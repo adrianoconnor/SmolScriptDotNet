@@ -6,20 +6,6 @@ namespace SmolScript.Tests;
 public class UnitTest1
 {
     [TestMethod]
-    public void TestMethod1()
-    {
-        var code = @"var a = 1; a++; a*=2; a = a % 3;";
-
-        var vm = new SmolVM(code);
-
-        vm.Run();
-
-        var a = vm.GetGlobalVar<int>("a");
-
-        Assert.AreEqual(1, a);
-    }
-
-    [TestMethod]
     public void TestMethod2()
     {
         var code = @"

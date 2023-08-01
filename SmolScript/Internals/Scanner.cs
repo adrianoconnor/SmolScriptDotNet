@@ -230,7 +230,14 @@ namespace SmolScript.Internals
                     }
                     break;
                 case '%':
-                    AddToken(TokenType.REMAINDER);
+                    if (MatchNext('='))
+                    {
+                        AddToken(TokenType.REMAINDER_EQUALS);
+                    }
+                    else
+                    {
+                        AddToken(TokenType.REMAINDER);
+                    }
                     break;
                 case '&':
                     if (MatchNext('&'))

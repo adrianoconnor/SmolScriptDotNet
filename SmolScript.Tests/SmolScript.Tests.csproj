@@ -32,9 +32,7 @@
     <None Remove="Array\" />
     <None Remove="ErrorHandling\" />
     <None Remove="String\" />
-    <None Remove="Object\" />
     <None Remove="Comments\" />
-    <None Remove="Functions\" />
     <None Remove="Math\" />
   </ItemGroup>
   <ItemGroup>
@@ -42,9 +40,7 @@
     <Folder Include="Array\" />
     <Folder Include="ErrorHandling\" />
     <Folder Include="String\" />
-    <Folder Include="Object\" />
     <Folder Include="Comments\" />
-    <Folder Include="Functions\" />
     <Folder Include="Math\" />
   </ItemGroup>
   <ItemGroup>

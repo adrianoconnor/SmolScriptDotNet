@@ -732,6 +732,31 @@ namespace SmolScript.Internals
                 throw error(equals, "Invalid assignment target.");
             }
 
+            if (match(TokenType.REMAINDER_EQUALS))
+            {
+                var equals = previous();
+                var value = assignment();
+                var remainderExpr = new BinaryExpression(expr, new Token(TokenType.REMAINDER, "/=", null, 0), value);
+
+                if (expr.GetType() == typeof(VariableExpression))
+                {
+                    return new AssignExpression(((VariableExpression)expr).name, remainderExpr);
+                }
+                else if (expr.GetType() == typeof(GetExpression))
+                {
+                    var getExpr = (GetExpression)expr;
+
+                    return new SetExpression(getExpr.obj, getExpr.name, remainderExpr);
+                }
+                else if (expr.GetType() == typeof(IndexerGetExpression))
+                {
+                    var getExpr = (IndexerGetExpression)expr;
+                    return new IndexerSetExpression(getExpr.obj, getExpr.indexerExpr, remainderExpr);
+                }
+
+                throw error(equals, "Invalid assignment target.");
+            }
+
             return expr;
         }
 

@@ -44,7 +44,7 @@ namespace SmolScript.Internals
         MULTIPLY_EQUALS,
         POW_EQUALS,
         DIVIDE_EQUALS,
-        REMAINER_EQUALS,
+        REMAINDER_EQUALS,
 
         POSTFIX_INCREMENT,
         PREFIX_INCREMENT,

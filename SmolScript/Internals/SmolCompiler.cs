@@ -389,9 +389,20 @@ namespace SmolScript.Internals
 
             chunk.AppendInstruction(OpCode.ENTER_SCOPE);
 
+            bool blockIsEmpty = true;
+
             foreach (var blockStmt in stmt.statements)
             {
                 chunk.AppendChunk(blockStmt.Accept(this));
+
+                blockIsEmpty = false;
+            }
+
+            if (!blockIsEmpty)
+            {
+                var c = chunk.Last();
+                c.StepCheckpoint = true;
+                chunk[chunk.Count() - 1] = c;
             }
 
             chunk.AppendInstruction(OpCode.LEAVE_SCOPE);
