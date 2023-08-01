@@ -54,6 +54,20 @@ namespace SmolScript
             }
         }
 
+        private int _MaxCycleCount = int.MaxValue;
+
+        public int MaxCycleCount
+        {
+            get
+            {
+                return _MaxCycleCount;
+            }
+            set
+            {
+                _MaxCycleCount = value;
+            }
+        }
+
         public void Reset()
         {
             stack.Clear();
@@ -351,11 +365,21 @@ namespace SmolScript
         void _Run(RunMode newRunMode)
         {
             this.runMode = newRunMode;
+            var hasExecutedAtLeastOnce = false; // Used to ensure Step-through trips after at least one instruction is executed
+            var consumedCycles = 0;
 
             double t = System.Environment.TickCount;
 
             while (true)
             {
+                if (this.runMode == RunMode.Step
+                    && (program.code_sections[code_section][PC].IsStatementStartpoint ?? false)
+                    && hasExecutedAtLeastOnce)
+                {
+                    this.runMode = RunMode.Paused;
+                    return;
+                }
+
                 var instr = program.code_sections[code_section][PC++];
 
                 debug($"{instr}");//: {System.Environment.TickCount - t}");
@@ -1105,12 +1129,12 @@ namespace SmolScript
                 }
 
                 if (this.stack.Count > _MaxStackSize) throw new Exception("Stack overflow");
+                
+                hasExecutedAtLeastOnce = true;
 
-                if (this.runMode == RunMode.Step && instr.StepCheckpoint == true)
-                {
-                    this.runMode = RunMode.Paused;
-                    return;
-                }
+                consumedCycles += 1;
+
+                if (_MaxCycleCount > -1 && consumedCycles > _MaxCycleCount) throw new Exception("Too many cycles");
             }
         }
     }

@@ -57,11 +57,14 @@ namespace SmolScript.Internals
 
             foreach (var stmt in stmts)
             {
-                chunk.AppendChunk(stmt.Accept(this));
+                var stmtChunk = new List<ByteCodeInstruction>();
+                stmtChunk.AppendChunk(stmt.Accept(this));
+                
+                var c = stmtChunk.First();
+                c.IsStatementStartpoint = true;
+                stmtChunk[0] = c;
 
-                var c = chunk.Last();
-                c.StepCheckpoint = true;
-                chunk[chunk.Count() - 1] = c;
+                chunk.AppendChunk(stmtChunk);
             }
 
             return chunk;
@@ -389,20 +392,13 @@ namespace SmolScript.Internals
 
             chunk.AppendInstruction(OpCode.ENTER_SCOPE);
 
-            bool blockIsEmpty = true;
-
             foreach (var blockStmt in stmt.statements)
             {
-                chunk.AppendChunk(blockStmt.Accept(this));
-
-                blockIsEmpty = false;
-            }
-
-            if (!blockIsEmpty)
-            {
-                var c = chunk.Last();
-                c.StepCheckpoint = true;
-                chunk[chunk.Count() - 1] = c;
+                var c = blockStmt.Accept(this);
+                var x = chunk.First();
+                x.IsStatementStartpoint = true;
+                chunk[0] = x;
+                chunk.AppendChunk(c);
             }
 
             chunk.AppendInstruction(OpCode.LEAVE_SCOPE);

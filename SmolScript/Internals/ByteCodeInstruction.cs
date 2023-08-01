@@ -9,7 +9,7 @@ namespace SmolScript.Internals
         public object? operand1;
         public object? operand2;
 
-        public bool StepCheckpoint;
+        public bool? IsStatementStartpoint;
 
         public override string ToString()
         {
