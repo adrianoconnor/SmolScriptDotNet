@@ -29,19 +29,15 @@
   </ItemGroup>
   <ItemGroup>
     <None Remove="DotNetInterop\" />
-    <None Remove="Array\" />
     <None Remove="ErrorHandling\" />
-    <None Remove="String\" />
-    <None Remove="Comments\" />
     <None Remove="Math\" />
+    <None Remove="Debugger\" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="DotNetInterop\" />
-    <Folder Include="Array\" />
     <Folder Include="ErrorHandling\" />
-    <Folder Include="String\" />
-    <Folder Include="Comments\" />
     <Folder Include="Math\" />
+    <Folder Include="Debugger\" />
   </ItemGroup>
   <ItemGroup>
     <None Update="app.config">

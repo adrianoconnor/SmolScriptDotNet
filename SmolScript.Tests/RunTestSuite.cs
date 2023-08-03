@@ -57,7 +57,7 @@ namespace SmolScript.Tests
         Regex regexTestFileHeader = new Regex(@"\/\*(.*?)(Steps:.*?\n)(.*?)\*\/", RegexOptions.Singleline);
         Regex regexStepMatcher = new Regex(@"^- (.*?)$", RegexOptions.Multiline);
         Regex runStepRegex = new Regex(@"- run$", RegexOptions.IgnoreCase);
-        Regex expectGlobalNumberRegex = new Regex(@"- Expect global (.*?) to be number ([0-9]+(\.{0,1}[0-9]*))", RegexOptions.IgnoreCase | RegexOptions.ECMAScript);
+        Regex expectGlobalNumberRegex = new Regex(@"- expect global (.*?) to be number (-{0,1}[0-9]+(\.{0,1}[0-9]*))", RegexOptions.IgnoreCase | RegexOptions.ECMAScript);
         Regex expectGlobalStringRegex = new Regex(@"- expect global (.*?) to be string (.*)", RegexOptions.IgnoreCase);
         Regex expectGlobalBoolRegex = new Regex(@"- expect global (.*?) to be boolean (.*)", RegexOptions.IgnoreCase);
         Regex expectGlobalUndefinedRegex = new Regex(@"- expect global (.*?) to be undefined", RegexOptions.IgnoreCase);
@@ -112,7 +112,7 @@ namespace SmolScript.Tests
                                 throw new Exception($"Could not parse {step}");
                             }
 
-                            Assert.AreEqual(vm.GetGlobalVar<double>(m[0].Groups[1].Value), Double.Parse(m[0].Groups[2].Value), step);
+                            Assert.AreEqual(Double.Parse(m[0].Groups[2].Value), vm.GetGlobalVar<double>(m[0].Groups[1].Value), step);
                         }
                         else if (expectGlobalStringRegex.IsMatch(step))
                         {
@@ -123,7 +123,7 @@ namespace SmolScript.Tests
                                 throw new Exception($"Could not parse {step}");
                             }
 
-                            Assert.AreEqual(vm.GetGlobalVar<string>(m[0].Groups[1].Value), m[0].Groups[2].Value, step);
+                            Assert.AreEqual(m[0].Groups[2].Value, vm.GetGlobalVar<string>(m[0].Groups[1].Value), step);
                         }
                         else if (expectGlobalBoolRegex.IsMatch(step))
                         {
@@ -134,7 +134,7 @@ namespace SmolScript.Tests
                                 throw new Exception($"Could not parse {step}");
                             }
 
-                            Assert.AreEqual(vm.GetGlobalVar<bool>(m[0].Groups[1].Value), Boolean.Parse(m[0].Groups[2].Value), step);
+                            Assert.AreEqual(Boolean.Parse(m[0].Groups[2].Value), vm.GetGlobalVar<bool>(m[0].Groups[1].Value), step);
                         }
                         else if (expectGlobalUndefinedRegex.IsMatch(step))
                         {

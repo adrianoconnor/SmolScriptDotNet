@@ -103,29 +103,6 @@ namespace SmolScript.Tests.Math
             Assert.AreEqual(-4.0, vm.GetGlobalVar<double>("b"));
         }
 
-        [TestMethod]
-        public void PlusPlus()
-        {
-            var vm = SmolVM.Compile("var a = 1; var b = ++a; a++;");
-
-            vm.Run();
-
-            Assert.AreEqual(3.0, vm.GetGlobalVar<double>("a"));
-            Assert.AreEqual(2.0, vm.GetGlobalVar<double>("b"));
-        }
-
-        [TestMethod]
-        public void MinusMinus()
-        {
-            var vm = SmolVM.Compile("var a = 3; var b = --a; var c = a--; --a; a--;");
-
-            vm.Run();
-
-            Assert.AreEqual(-1.0, vm.GetGlobalVar<double>("a"));
-            Assert.AreEqual(2.0, vm.GetGlobalVar<double>("b"));
-            Assert.AreEqual(2.0, vm.GetGlobalVar<double>("c"));
-
-        }
     }
 }
 

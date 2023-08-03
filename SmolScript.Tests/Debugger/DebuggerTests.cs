@@ -2,19 +2,13 @@
 using SmolScript;
 using SmolScript.Internals;
 
-namespace SmolTests
+namespace SmolScript.Tests.Debugger
 {
     [TestClass]
     public class DebuggerTests
     {
-        public DebuggerTests()
-        {
-
-
-        }
-
         [TestMethod]
-        public void TryCreatingByteCodeForAGlobalFunction()
+        public void StepThroughBasics()
         {
             var source = @"
 debugger;
@@ -36,7 +30,6 @@ a = addOne(a);
 
             Assert.AreEqual(11.0, vm.GetGlobalVar<double>("a"));
         }
-
     }
 }
 

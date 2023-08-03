@@ -7,7 +7,7 @@ namespace SmolScript.Tests.ErrorHandling
         [TestMethod]
         public void TryCatchOnly()
         {
-            var code = @"
+            var source = @"
 var a = 1;
 
 try {
@@ -17,9 +17,7 @@ catch {
   a = 2;
 }
 ";
-            var vm = SmolVM.Compile(code);
-
-            vm.OnDebugLog = Console.WriteLine;
+            var vm = SmolVM.Compile(source);
 
             vm.Run();
 
@@ -29,7 +27,7 @@ catch {
         [TestMethod]
         public void TryFinallyOnly()
         {
-            var code = @"
+            var source = @"
 var a = 1;
 
 try {
@@ -39,7 +37,7 @@ finally {
   a = 4;
 }
 ";
-            var vm = SmolVM.Compile(code);
+            var vm = SmolVM.Compile(source);
 
             Assert.ThrowsException<SmolRuntimeException>(() => vm.Run());
 
@@ -49,7 +47,7 @@ finally {
         [TestMethod]
         public void TryCatchAndFinallyWithException()
         {
-            var code = @"
+            var source = @"
 var a = 1;
 var b = 1;
 
@@ -63,9 +61,7 @@ finally {
   b = 2;
 }
 ";
-            var vm = SmolVM.Compile(code);
-
-            vm.OnDebugLog = Console.WriteLine;
+            var vm = SmolVM.Compile(source);
 
             vm.Run();
 
@@ -76,7 +72,7 @@ finally {
         [TestMethod]
         public void TryCatchAndFinallyWithExceptionInCatch()
         {
-            var code = @"
+            var source = @"
 var a = 1;
 var b = 1;
 
@@ -95,7 +91,7 @@ catch(e) {
   throw e;
 }
 ";
-            var vm = SmolVM.Compile(code);
+            var vm = SmolVM.Compile(source);
 
             Assert.ThrowsException<SmolRuntimeException>(() => vm.Run());
 
@@ -106,7 +102,7 @@ catch(e) {
         [TestMethod]
         public void TryCatchAndFinallyWithoutException()
         {
-            var code = @"
+            var source = @"
 var a = 1;
 var b = 1;
 
@@ -120,9 +116,7 @@ finally {
   b = 2;
 }
 ";
-            var vm = SmolVM.Compile(code);
-
-            vm.OnDebugLog = Console.WriteLine;
+            var vm = SmolVM.Compile(source);
 
             vm.Run();
 
@@ -149,13 +143,9 @@ catch(e) {
 var b = 4;
 ";
 
-            var vm = new SmolVM(source);
-
-            vm.OnDebugLog = Console.WriteLine;
+            var vm = SmolVM.Compile(source);
 
             vm.Run();
-
-            //Assert.AreEqual(3.0, vm.GetGlobalVar<double>("a"));
 
             Assert.AreEqual(3.0, vm.GetGlobalVar<double>("a"));
 
@@ -182,7 +172,7 @@ catch(e) {
 var b = 4;
 ";
 
-            var vm = new SmolVM(source);
+            var vm = SmolVM.Compile(source);
 
             vm.Run();
 
