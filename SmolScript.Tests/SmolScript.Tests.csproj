@@ -30,13 +30,11 @@
   <ItemGroup>
     <None Remove="DotNetInterop\" />
     <None Remove="ErrorHandling\" />
-    <None Remove="Math\" />
     <None Remove="Debugger\" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="DotNetInterop\" />
     <Folder Include="ErrorHandling\" />
-    <Folder Include="Math\" />
     <Folder Include="Debugger\" />
   </ItemGroup>
   <ItemGroup>
