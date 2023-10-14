@@ -15,17 +15,19 @@ namespace SmolScript
 {
     public class SmolVM : ISmolRuntime
     {
-        private class SmolThrown : Exception
+        private class SmolThrownFromInstruction : Exception
         {
 
         }
 
         enum RunMode
         {
+            Ready,
             Run,
             Paused,
             Step,
-            Done
+            Done,
+            Error
         }
 
         internal SmolProgram program;
@@ -91,16 +93,26 @@ namespace SmolScript
 
         Dictionary<int, int> jmplocs = new Dictionary<int, int>();
 
-        internal SmolScript.Internals.Environment globalEnv = new SmolScript.Internals.Environment();
-        internal SmolScript.Internals.Environment environment;
+        internal Internals.Environment globalEnv = new();
+        internal Internals.Environment environment;
 
         public T? GetGlobalVar<T>(string variableName)
         {
             var v = (SmolVariableType)globalEnv.Get(variableName)!;
 
-            if (v.GetType() == typeof(SmolUndefined))
+            if (v.GetType() == typeof(SmolUndefined) || v.GetType() == typeof(SmolNull))
             {
-                return default(T);
+                // Check if the default for type T is null, and if it is return that. We need to do this check
+                // because the default of a non-nullable type (like int) will be something that looks real (e.g., zero)
+                // and that would be potentially very misleading
+                if (default(T) == null)
+                {
+                    return default;
+                }
+                else
+                {
+                    throw new NullReferenceException($"Variable '{variableName}' is undefined or null and target type '{typeof(T).Name}' is not Nullable");
+                }
             }
 
             return (T)Convert.ChangeType(v.GetValue()!, typeof(T));
@@ -145,7 +157,14 @@ namespace SmolScript
             {
                 if (args.Count() > i)
                 {
-                    env.Define(fn.param_variable_names[i], SmolVariableType.Create(args[i]));
+                    try
+                    {
+                        env.Define(fn.param_variable_names[i], SmolVariableType.Create(args[i]));
+                    }
+                    catch(Exception)
+                    {
+                        env.Define(fn.param_variable_names[i], new SmolNativeTypeWrapper(args[i]));
+                    }
                 }
                 else
                 {
@@ -163,7 +182,7 @@ namespace SmolScript
 
             var returnValue = stack.Pop();
 
-            if (returnValue.GetType() == typeof(SmolUndefined))
+            if (returnValue.GetType() == typeof(SmolUndefined) || returnValue.GetType() == typeof(SmolNull))
             {
                 return default(T);
             }
@@ -950,17 +969,8 @@ namespace SmolScript
 
                             break;
 
-                        case OpCode.THROW:
-                            if (instr.operand1 as bool? ?? false) // This flag means the user provided an object to throw, and it's already on the stack
-                            {
-                                throw new SmolThrown(); // SmolRuntimeException("");
-                            }
-                            else
-                            {
-                                //stack.Push(new SmolValue()
-
-                                throw new SmolThrown();  // throw new SmolRuntimeException();
-                            }
+                        case OpCode.THROW:                            
+                            throw new SmolThrownFromInstruction();                            
 
                         case OpCode.LOOP_START:
 
@@ -1064,7 +1074,7 @@ namespace SmolScript
                             throw new Exception($"You forgot to handle an opcode: {instr.opcode}");
                     }
                 }
-                catch (SmolThrown e)
+                catch (SmolThrownFromInstruction e)
                 {
                     bool handled = false;
                     var thrownObject = (SmolVariableType)stack.Pop();
