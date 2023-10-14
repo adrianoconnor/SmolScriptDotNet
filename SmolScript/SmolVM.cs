@@ -399,7 +399,7 @@ namespace SmolScript
                     return;
                 }
 
-                var instr = program.code_sections[code_section][PC++];
+                var instr = program.code_sections[code_section][PC++]; // Increment PC after fetching the net (current) instruction
 
                 debug($"{instr}");//: {System.Environment.TickCount - t}");
 
@@ -935,10 +935,13 @@ namespace SmolScript
 
                         case OpCode.POP_AND_DISCARD:
                             // operand1 is optional bool, default true means fail if nothing to pop
-                            if (stack.Count > 0 || instr.operand1 == null || (bool)instr.operand1)
-                            {
+                            //if (stack.Count > 0 || instr.operand1 == null || (bool)instr.operand1)
+                            //{
                                 stack.Pop();
-                            }
+                            //}
+                            // TODO: Whatabout else, why is there no else here? I've commented the if out for now because
+                            // I'm not convinced it's valid...
+
                             break;
 
                         case OpCode.TRY:
@@ -969,7 +972,11 @@ namespace SmolScript
 
                             break;
 
-                        case OpCode.THROW:                            
+                        case OpCode.THROW:
+                            // We throw a custom exception and let the default Exception handler deal with
+                            // jumping to the correct location etc -- this is because it's the exact same
+                            // behaviour whether it's a user-defined throw or just something going wrong
+                            // in the internals, it still needs to look for a parent try/catch block...
                             throw new SmolThrownFromInstruction();                            
 
                         case OpCode.LOOP_START:
@@ -1074,58 +1081,32 @@ namespace SmolScript
                             throw new Exception($"You forgot to handle an opcode: {instr.opcode}");
                     }
                 }
-                catch (SmolThrownFromInstruction e)
+                catch (Exception e)
                 {
                     bool handled = false;
-                    var thrownObject = (SmolVariableType)stack.Pop();
+
+                    // If we're here because we're responding to a exception that was thrown by the user in their code,
+                    // then the argument to pass to the catch block is the next value on the stack
+
+                    bool isUserThrown = e.GetType() == typeof(SmolThrownFromInstruction);
+
+                    SmolVariableType? userThrownArgument = isUserThrown ? (SmolVariableType)stack.Pop() : null;
 
                     while (stack.Any())
                     {
-                        var next = stack.Pop();
+                        var next = stack.Pop(); // Keep didscarding whatever is on the stack until we find a try/catch state object (or reach the end)
 
                         if (next.GetType() == typeof(SmolTryRegionSaveState))
                         {
-                            // We found the start of a try section, restore our state and jump to the exception handler location
+                            // We found the start of a try section, restore our state and jump to the catch or finally location
 
                             var state = (SmolTryRegionSaveState)next;
 
                             this.code_section = state.code_section;
                             this.PC = state.jump_exception;
                             this.environment = state.this_env;
-
-                            stack.Push(thrownObject);
-
-                            handled = true;
-                            break;
-                        }
-                    }
-
-                    if (!handled)
-                    {
-                        throw new SmolRuntimeException(e.Message);
-                    }
-
-
-                }
-                catch (Exception e) // (SmolRuntimeException e)
-                {
-                    bool handled = false;
-
-                    while (stack.Any())
-                    {
-                        var next = stack.Pop();
-
-                        if (next.GetType() == typeof(SmolTryRegionSaveState))
-                        {
-                            // We found the start of a try section, restore our state and jump to the exception handler location
-
-                            var state = (SmolTryRegionSaveState)next;
-
-                            this.code_section = state.code_section;
-                            this.PC = state.jump_exception;
-                            this.environment = state.this_env;
-
-                            stack.Push(new SmolError(e.Message));
+                           
+                            stack.Push(isUserThrown ? userThrownArgument! : new SmolError(e.Message));
 
                             handled = true;
                             break;
