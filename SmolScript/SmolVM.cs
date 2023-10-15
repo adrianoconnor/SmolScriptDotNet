@@ -4,6 +4,8 @@ using System.Reflection.Metadata;
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using SmolScript.Internals;
 using SmolScript.Internals.Ast;
 using SmolScript.Internals.SmolStackTypes;
@@ -115,6 +117,20 @@ namespace SmolScript
                 }
             }
 
+            if (v.GetType() == typeof(SmolObject) && typeof(T) == typeof(JObject))
+            {
+                Dictionary<string, object> values = new Dictionary<string, object>();
+
+                foreach(var entry in ((SmolObject)v).object_env.variables)
+                {
+                    values.Add(entry.Key, entry.Value.GetValue());
+                }
+
+                // Stupid downcast to object and back resolves a compiler error
+
+                return (T)(object)JObject.FromObject(values);
+            }
+
             return (T)Convert.ChangeType(v.GetValue()!, typeof(T));
         }
 
@@ -206,7 +222,6 @@ namespace SmolScript
 
             return vm;
         }
-
 
         public string Decompile()
         {
@@ -741,7 +756,7 @@ namespace SmolScript
 
                                 var env_in_context = environment;
 
-                                if (name == "@IndexerGet" || name == "@zIndxerSet")
+                                if (name == "@IndexerGet")
                                 {
                                     // Special case for square brackets!
 

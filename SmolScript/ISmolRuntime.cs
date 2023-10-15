@@ -32,6 +32,18 @@ namespace SmolScript
         /// </summary>
         int MaxStackSize { get; set; }
 
+        /// <summary>
+        /// Sets a limit on the number of cycles in the VM that a single program execution
+        /// is allowed to consume. Prevents infinite loops etc.
+        /// </summary>
+        int MaxCycleCount { get; set; }
+
+        /// <summary>
+        /// Retrieve the value of a global variable from the VM after execution
+        /// </summary>
+        /// <typeparam name="T">The generic type to cast to</typeparam>
+        /// <param name="variableName">The name of the variable to get</param>
+        /// <returns>The value of the variable. If the variable is not defined returns null for nullable types, and throws if not nullable</returns>
         T? GetGlobalVar<T>(string variableName);
 
         void Call(string functionName, params object[] args);

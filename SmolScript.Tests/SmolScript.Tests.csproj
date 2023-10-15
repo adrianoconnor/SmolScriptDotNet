@@ -31,11 +31,13 @@
     <None Remove="DotNetInterop\" />
     <None Remove="ErrorHandling\" />
     <None Remove="Debugger\" />
+    <None Remove="JSON\" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="DotNetInterop\" />
     <Folder Include="ErrorHandling\" />
     <Folder Include="Debugger\" />
+    <Folder Include="JSON\" />
   </ItemGroup>
   <ItemGroup>
     <None Update="app.config">
