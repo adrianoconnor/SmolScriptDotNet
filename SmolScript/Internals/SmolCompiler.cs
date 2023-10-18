@@ -21,12 +21,12 @@ namespace SmolScript.Internals
 
         private List<SmolVariableType> constants = new List<SmolVariableType>()
         {
-            new SmolUndefined(),
-            new SmolBool(true),
+            new SmolUndefined()
+/*            new SmolBool(true),
             new SmolBool(false),
             new SmolNumber(0.0),
             new SmolNumber(1.0),
-            new SmolNull()
+            new SmolNull()*/
         };
 
         private int constantIndexForValue(object constantValue)
@@ -50,26 +50,7 @@ namespace SmolScript.Internals
             return 0;
         }
 
-        private List<ByteCodeInstruction> EmitChunk(IList<Statement> stmts)
-        {
-
-            var chunk = new List<ByteCodeInstruction>();
-
-            foreach (var stmt in stmts)
-            {
-                var stmtChunk = new List<ByteCodeInstruction>();
-                stmtChunk.AppendChunk(stmt.Accept(this));
-                
-                var c = stmtChunk.First();
-                c.IsStatementStartpoint = true;
-                stmtChunk[0] = c;
-
-                chunk.AppendChunk(stmtChunk);
-            }
-
-            return chunk;
-        }
-
+        
         internal static SmolProgram Compile(string source)
         {
             var compiler = new SmolCompiler();
@@ -84,25 +65,42 @@ namespace SmolScript.Internals
             var parser = new Parser(scanResult);
             var statements = parser.Parse();
 
-            // Creating the main chunk will populate the constants
-            var main_chunk = this.EmitChunk(statements);
+            // Creating the main chunk will populate the constants and build the function bodies too
+
+            var main_chunk = new List<ByteCodeInstruction>();
+
+            foreach (var stmt in statements)
+            {
+                var stmtChunk = new List<ByteCodeInstruction>();
+                stmtChunk.AppendChunk(stmt.Accept(this));
+
+                var c = stmtChunk.First(); // This is not in JS version
+                c.IsStatementStartpoint = true;
+                stmtChunk[0] = c;
+
+                main_chunk.AppendChunk(stmtChunk);
+            }
 
             main_chunk.AppendInstruction(OpCode.EOF);
 
-            var code_sections = new List<List<ByteCodeInstruction>>();
+            var ce = main_chunk.Last();
+            ce.IsStatementStartpoint = true;
+            main_chunk[main_chunk.Count - 1] = ce;
 
-            code_sections.Add(main_chunk);
-
-            foreach (var fb in function_bodies)
+            var code_sections = new List<List<ByteCodeInstruction>>
             {
-                code_sections.Add(fb);
-            }
+                main_chunk
+            };
+
+            code_sections.AddRange(function_bodies);
 
             return new SmolProgram()
             {
                 constants = this.constants,
                 code_sections = code_sections,
-                function_table = function_table
+                function_table = function_table,
+                tokens = scanResult,
+                source = source
             };
         }
 
@@ -356,24 +354,19 @@ namespace SmolScript.Internals
 
         public object? Visit(VarStatement stmt)
         {
-            if (stmt.initializerExpression != null)
-            {
-                var chunk = new List<ByteCodeInstruction>();
+            var chunk = new List<ByteCodeInstruction>();
 
-                chunk.AppendInstruction(OpCode.DECLARE, operand1: stmt.name.lexeme);
+            chunk.AppendInstruction(OpCode.DECLARE, operand1: stmt.name.lexeme);
+
+            if (stmt.initializerExpression != null)
+            {                
                 chunk.AppendChunk(stmt.initializerExpression.Accept(this));
                 chunk.AppendInstruction(OpCode.STORE, operand1: stmt.name.lexeme);
+            }
 
-                return chunk;
-            }
-            else
-            {
-                return new ByteCodeInstruction()
-                {
-                    opcode = OpCode.DECLARE,
-                    operand1 = stmt.name.lexeme
-                };
-            }
+            chunk.MapTokens(stmt.firstTokenIndex!.Value, stmt.lastTokenIndex);
+
+            return chunk;
         }
 
         public object? Visit(ExpressionStatement stmt)

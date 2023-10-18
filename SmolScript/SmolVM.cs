@@ -81,8 +81,8 @@ namespace SmolScript
             PC = 0;
         }
 
-        int code_section = 0;
-        int PC = 0; // Program Counter / Instruction Pointer
+        internal int code_section = 0;
+        internal int PC = 0; // Program Counter / Instruction Pointer
 
         bool _debug = false;
 
@@ -123,6 +123,9 @@ namespace SmolScript
 
                 foreach(var entry in ((SmolObject)v).object_env.variables)
                 {
+                    // For an array we need to do something like ((SmolArray)entry.value).elements, but it
+                    // needs to be recursive
+
                     values.Add(entry.Key, entry.Value.GetValue());
                 }
 

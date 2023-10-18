@@ -21,9 +21,11 @@
   <ItemGroup>
     <None Remove="SmolVmTests\" />
     <None Remove="Types\" />
+    <None Remove="Debugger\" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Language\" />
     <Folder Include="Types\" />
+    <Folder Include="Debugger\" />
   </ItemGroup>
 </Project>
