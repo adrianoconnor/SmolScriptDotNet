@@ -325,15 +325,7 @@ namespace SmolScript.Internals
 
         private void AddToken(TokenType tokenType, object? literal)
         {
-            //Console.WriteLine($"**ADD TOKEN**");
-
-            //Console.WriteLine($"Token Type: {tokenType}");
-            //Console.WriteLine($"Start: {_start}");
-            //Console.WriteLine($"Current: {_current}");
-
             var lexeme = _source.Substring(_startOfToken, _currentPos - _startOfToken);
-
-            //Console.WriteLine($"Text: {text}");
 
             _tokens.Add(new Token(tokenType, lexeme, literal, _currentLine, _previous - _currentLineStartIndex, _previous, _currentPos));
 

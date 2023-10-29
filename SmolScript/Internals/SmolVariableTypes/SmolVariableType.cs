@@ -54,16 +54,11 @@ namespace SmolScript.Internals.SmolVariableTypes
                         return new SmolBool((bool)value);
                     }
 
-                    throw new Exception($"Could not create a valid stack value from: {value.GetType()}");
+                    throw new Exception($"Could not create a valid SmolVariable object from {value.GetType()}");
                 }
             }
         }
-        /*
-        public override string ToString()
-        {
-            return $"({this.type.ToString()}) {this.value}";
-        }
-        */
+
         public static SmolVariableType operator +(SmolVariableType a, SmolVariableType b)
         {
             // Currently only handles really simple case of both values

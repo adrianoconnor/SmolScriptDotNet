@@ -21,28 +21,33 @@ namespace SmolScript.Internals
 
         private List<SmolVariableType> constants = new List<SmolVariableType>()
         {
+            // There's an edge case that isn't handled by the method that adds constants,
+            // becuase there's no natural analog for Undefined in the .net type system.
+            // To make it simpler we pre-propulate the constant and then the parser/compiler
+            // will just use it without any bother.
             new SmolUndefined()
-/*            new SmolBool(true),
-            new SmolBool(false),
-            new SmolNumber(0.0),
-            new SmolNumber(1.0),
-            new SmolNull()*/
         };
 
-        private int constantIndexForValue(object constantValue)
+        private int constantIndexForValue(object constantLiteralValue)
         {
-            var value = SmolVariableType.Create(constantValue);
+            var constantAsSmolType = SmolVariableType.Create(constantLiteralValue);
 
-            // Todo: Got some real weirdness with comparison of SmolStackTypes, not sure what I've done here..
-            var cIndex = constants.FindIndex(c => c.GetType() == value.GetType() && (((SmolVariableType)c).GetValue()?.Equals(value.GetValue()) ?? false)!);
+            // We used to have some real weirdness here comparing the value of our internal types which
+            // I think is related to the way that we override equals on the SmolVariableType base class.
+            // This approach looks a bit verbose, but it works fine and there's not really much need
+            // to change it now.
+            var existingConstantIndex = constants.FindIndex(c => c.GetType() == constantAsSmolType.GetType() && (((SmolVariableType)c).GetValue()?.Equals(constantAsSmolType.GetValue()) ?? false)!);
 
-            if (cIndex == -1)
+            if (existingConstantIndex == -1)
             {
-                constants.Add(value);
-                cIndex = constants.Count - 1;
-            }
+                constants.Add(constantAsSmolType);
 
-            return cIndex;
+                return constants.Count - 1; // It has to be the last item in the collection
+            }
+            else
+            {
+                return existingConstantIndex;
+            }
         }
 
         private int constantIndexForUndefined()

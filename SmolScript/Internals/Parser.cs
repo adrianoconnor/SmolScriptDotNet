@@ -28,6 +28,7 @@ namespace SmolScript.Internals
 
     declaration    → functionDecl
                    | varDecl
+                   | classDecl
                    | statement ;
 
     functionDecl   → "function" function ;
@@ -191,7 +192,7 @@ namespace SmolScript.Internals
 
         private ParseError error(Token token, string errorMessage)
         {
-            return new ParseError(token, errorMessage);
+            return new ParseError(token, $"{errorMessage} (Line {token.line}, Col {token.col})");
         }
 
         private void synchronize()
@@ -290,8 +291,8 @@ namespace SmolScript.Internals
             {
                 initializer = expression();
             }
-
-            var skip = consume(TokenType.SEMICOLON, "Expected ;").start_pos == -1 ? 1 : 2;
+          
+            var skip = consume(TokenType.SEMICOLON, "Expected either a value to be assigned or the end of the statement").start_pos == -1 ? 1 : 2;
             var lastTokenIndex = _current - skip;
 
             return new VarStatement(name, initializer, firstTokenIndex, lastTokenIndex);
@@ -1086,7 +1087,7 @@ namespace SmolScript.Internals
                 return new GroupingExpression(expr);
             }
 
-            throw error(peek(), $"Parser did not expect to see '{peek().lexeme}' on line {peek().line}, sorry :(");
+            throw error(peek(), $"Parser did not expect to see '{peek().lexeme}' on line {peek().line}, column {peek().col}, sorry");
         }
     }
 }
