@@ -7,7 +7,7 @@ using SmolScript.Internals.SmolVariableTypes;
 
 namespace SmolScript.Internals
 {
-    internal class SmolCompiler : IExpressionVisitor, IStatementVisitor
+    internal class Compiler : IExpressionVisitor, IStatementVisitor
     {
         private int _nextLabel = 1;
 
@@ -53,7 +53,7 @@ namespace SmolScript.Internals
         
         internal static SmolProgram Compile(string source)
         {
-            var compiler = new SmolCompiler();
+            var compiler = new Compiler();
 
             return compiler._Compile(source);
         }
@@ -74,18 +74,14 @@ namespace SmolScript.Internals
                 var stmtChunk = new List<ByteCodeInstruction>();
                 stmtChunk.AppendChunk(stmt.Accept(this));
 
-                var c = stmtChunk.First(); // This is not in JS version
-                c.IsStatementStartpoint = true;
-                stmtChunk[0] = c;
+                stmtChunk[0].IsStatementStartpoint = true;
 
                 main_chunk.AppendChunk(stmtChunk);
             }
 
             main_chunk.AppendInstruction(OpCode.EOF);
-
-            var ce = main_chunk.Last();
-            ce.IsStatementStartpoint = true;
-            main_chunk[main_chunk.Count - 1] = ce;
+         
+            main_chunk[main_chunk.Count - 1].IsStatementStartpoint = true;
 
             var code_sections = new List<List<ByteCodeInstruction>>
             {
@@ -364,7 +360,7 @@ namespace SmolScript.Internals
                 chunk.AppendInstruction(OpCode.STORE, operand1: stmt.name.lexeme);
             }
 
-            chunk.MapTokens(stmt.firstTokenIndex!.Value, stmt.lastTokenIndex);
+            chunk.MapTokens(stmt.firstTokenIndex, stmt.lastTokenIndex);
 
             return chunk;
         }

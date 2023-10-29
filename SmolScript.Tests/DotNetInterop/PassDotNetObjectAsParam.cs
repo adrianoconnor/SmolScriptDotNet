@@ -31,6 +31,8 @@ internal class TestPassObj
     {
         this.privateValue = newValue;
     }
+
+    //public TestPassObj obj2 = new TestPassObj();
 }
 
 [TestClass]
@@ -57,6 +59,8 @@ function test(obj) {
     result5 = obj.getPrivateValue();
     obj.setPrivateValue(321);
     result6 = obj.getPrivateValue();
+
+    //result7 = obj.obj2.getPrivateValue();
 }";
 
         var vm = SmolVM.Init(code);
@@ -71,5 +75,6 @@ function test(obj) {
         Assert.AreEqual(0, vm.GetGlobalVar<int>("result4"));
         Assert.AreEqual(111, vm.GetGlobalVar<int>("result5"));
         Assert.AreEqual(321, vm.GetGlobalVar<int>("result6"));
+        //Assert.AreEqual(111, vm.GetGlobalVar<int>("result7"));
     }
 }

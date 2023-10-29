@@ -72,13 +72,13 @@ namespace SmolScript.Internals
             });
         }
 
-        public static void MapTokens(this List<ByteCodeInstruction> chunk, int firstTokenIndex, int? lastTokenIndex = null)
+        public static void MapTokens(this List<ByteCodeInstruction> chunk, int? firstTokenIndex, int? lastTokenIndex = null)
         {
             foreach(var instr in chunk)
             {
                 if (instr.token_map_start_index == null)
                 {
-                    instr.token_map_start_index = firstTokenIndex;
+                    instr.token_map_start_index = firstTokenIndex!.Value;
                     instr.token_map_end_index = lastTokenIndex.HasValue ? lastTokenIndex.Value : firstTokenIndex;
                 }
             }

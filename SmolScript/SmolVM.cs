@@ -235,7 +235,7 @@ namespace SmolScript
         {
             environment = globalEnv;
 
-            this.program = SmolCompiler.Compile(source);
+            this.program = Compiler.Compile(source);
 
             CreateStdLib();
             BuildJumpTable();
