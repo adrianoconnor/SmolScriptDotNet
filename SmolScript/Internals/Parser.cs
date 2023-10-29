@@ -109,9 +109,14 @@ namespace SmolScript.Internals
             {
                 try
                 {
-                    //while (peek().type == TokenType.SEMICOLON) consume(TokenType.SEMICOLON, "");
-
-                    statements.Add(declaration());
+                    if (peek().type == TokenType.SEMICOLON)
+                    {
+                        consume(TokenType.SEMICOLON, "");
+                    }
+                    else
+                    {
+                        statements.Add(declaration());
+                    }
                 }
                 catch (ParseError e)
                 {
