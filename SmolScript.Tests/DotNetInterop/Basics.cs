@@ -115,7 +115,7 @@ FETCH         [op1: strB]
               [Loaded $SmolScript.Internals.SmolVariableTypes.SmolString world]
 ADD          
 RETURN       
-", debugOutput.ToString());
+".ReplaceLineEndings(), debugOutput.ToString().ReplaceLineEndings());
 
     }
 

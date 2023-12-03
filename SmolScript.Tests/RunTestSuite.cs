@@ -56,7 +56,7 @@ namespace SmolScript.Tests
 
         Regex regexTestFileHeader = new Regex(@"\/\*(.*?)(Steps:.*?\n)(.*?)\*\/", RegexOptions.Singleline);
         Regex regexStepMatcher = new Regex(@"^- (.*?)$", RegexOptions.Multiline);
-        Regex runStepRegex = new Regex(@"- run$", RegexOptions.IgnoreCase);
+        Regex runStepRegex = new Regex(@"- Run$", RegexOptions.IgnoreCase);
         Regex expectGlobalNumberRegex = new Regex(@"- expect global (.*?) to be number (-{0,1}[0-9]+(\.{0,1}[0-9]*))", RegexOptions.IgnoreCase | RegexOptions.ECMAScript);
         Regex expectGlobalStringRegex = new Regex(@"- expect global (.*?) to be string (.*)", RegexOptions.IgnoreCase);
         Regex expectGlobalBoolRegex = new Regex(@"- expect global (.*?) to be boolean (.*)", RegexOptions.IgnoreCase);
@@ -66,7 +66,7 @@ namespace SmolScript.Tests
         [DynamicData(nameof(AllTestData), DynamicDataDisplayName = nameof(GetCustomDynamicDataDisplayName))]
         public void ParseExecuteAndEvaluate(string testFile, bool removeSemicolons)
         { 
-            var source = File.ReadAllText(testFile);
+            var source = File.ReadAllText(testFile).ReplaceLineEndings("\n");
 
             if (removeSemicolons)
             {
@@ -123,7 +123,7 @@ namespace SmolScript.Tests
                                 throw new Exception($"Could not parse {step}");
                             }
 
-                            Assert.AreEqual(m[0].Groups[2].Value, vm.GetGlobalVar<string>(m[0].Groups[1].Value), step);
+                            Assert.AreEqual(m[0].Groups[2].Value.ReplaceLineEndings(), vm.GetGlobalVar<string>(m[0].Groups[1].Value), step);
                         }
                         else if (expectGlobalBoolRegex.IsMatch(step))
                         {
