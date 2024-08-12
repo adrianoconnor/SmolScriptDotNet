@@ -16,8 +16,8 @@ namespace SmolScript.Internals
 
     internal class Scanner
     {
-        private string _source;
-        private char[] _sourceRaw;
+        private readonly string _source;
+        private readonly char[] _sourceRaw;
 
         private int _startOfToken = 0;
         private int _currentPos = 0;
@@ -25,9 +25,9 @@ namespace SmolScript.Internals
         private int _currentLineStartIndex = 0;
         private int _previous = 0;
 
-        private IList<Token> _tokens = new List<Token>();
+        private readonly IList<Token> _tokens = new List<Token>();
 
-        private IDictionary<string, TokenType> _keywords = new Dictionary<string, TokenType>()
+        private readonly IDictionary<string, TokenType> _keywords = new Dictionary<string, TokenType>()
         {
             { "break", TokenType.BREAK },
             { "class", TokenType.CLASS },
@@ -97,7 +97,7 @@ namespace SmolScript.Internals
                 case '-':
                     if (MatchNext('-'))
                     {
-                        if (_tokens.LastOrDefault()?.type == TokenType.IDENTIFIER && _tokens.LastOrDefault()?.followedByLineBreak == false)
+                        if (_tokens.LastOrDefault()?.type == TokenType.IDENTIFIER && _tokens.LastOrDefault()?.followed_by_line_break == false)
                         {
                             AddToken(TokenType.POSTFIX_DECREMENT);
                         }
@@ -118,7 +118,7 @@ namespace SmolScript.Internals
                 case '+':
                     if (MatchNext('+'))
                     {
-                        if (_tokens.LastOrDefault()?.type == TokenType.IDENTIFIER && _tokens.LastOrDefault()?.followedByLineBreak == false)
+                        if (_tokens.LastOrDefault()?.type == TokenType.IDENTIFIER && _tokens.LastOrDefault()?.followed_by_line_break == false)
                         {
                             AddToken(TokenType.POSTFIX_INCREMENT);
                         }
@@ -282,7 +282,7 @@ namespace SmolScript.Internals
 
                     if (_tokens.Any())
                     {
-                        _tokens[_tokens.Count()- 1].followedByLineBreak = true;
+                        _tokens[_tokens.Count()- 1].followed_by_line_break = true;
                     }
 
                     break;

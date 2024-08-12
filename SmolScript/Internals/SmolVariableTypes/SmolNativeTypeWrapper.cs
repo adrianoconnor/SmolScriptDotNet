@@ -29,13 +29,17 @@ namespace SmolScript.Internals.SmolVariableTypes
         {
             try
             {
-                return SmolVariableType.Create(obj.GetType().GetFields().First(f => f.Name == propName).GetValue(obj));
+                var objValue = obj.GetType().GetFields().First(f => f.Name == propName).GetValue(obj);
+                
+                return SmolVariableType.Create(objValue);
             }
             catch { }
 
             try
             {
-                return SmolVariableType.Create(obj.GetType().GetProperties(BindingFlags.Public| BindingFlags.Instance).First(f => f.Name == propName).GetValue(obj));
+                var objValue = obj.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance).First(f => f.Name == propName).GetValue(obj);
+
+                return SmolVariableType.Create(objValue);
             }
             catch { }
 

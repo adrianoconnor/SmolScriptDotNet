@@ -180,7 +180,7 @@ namespace SmolScript.Internals
             if (check(tokenType)) return advance();
 
             // If we expected a ; but got a newline, we just wave it through
-            if (tokenType == TokenType.SEMICOLON && _tokens[_current - 1].followedByLineBreak)
+            if (tokenType == TokenType.SEMICOLON && _tokens[_current - 1].followed_by_line_break)
             {
                 // We need to return a token, so we'll make a fake semicolon
                 return new Token(TokenType.SEMICOLON, "", "", -1, -1, -1, -1);

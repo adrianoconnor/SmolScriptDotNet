@@ -20,12 +20,12 @@
         [TestMethod]
         public void IllegalMultilineStrings()
         {
-            Assert.Inconclusive();
+            //Assert.Inconclusive();
 
             var source = @"var a = 'test
 123';";
 
-            Assert.ThrowsException<Exception>(() => SmolVM.Compile(source));
+            Assert.ThrowsException<Internals.ScannerError>(() => SmolVM.Compile(source));
         }
     }
 }
