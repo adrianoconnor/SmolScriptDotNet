@@ -28,7 +28,7 @@ class testClass1 {
 var c = new testClass1(1, 2, 3);
 
 ";
-            var program = SmolCompiler.Compile(source);
+            var program = Compiler.Compile(source);
 
             var vm = new SmolVM(program);
 

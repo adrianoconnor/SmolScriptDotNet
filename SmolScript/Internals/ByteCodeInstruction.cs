@@ -2,14 +2,22 @@
 
 namespace SmolScript.Internals
 {
-    internal struct ByteCodeInstruction
+    internal class ByteCodeInstruction
     {
+        // These are the classic bytecode-style values, though we're just storing them
+        // as fields on an object
         public OpCode opcode { get; set; }
 
         public object? operand1;
         public object? operand2;
 
+        // This flag tells us that we're at the end of a single Statement, so this is where
+        // the debugger would naturally step to if we're stepping through our program
         public bool? IsStatementStartpoint;
+
+        // These attributes are used for mapping back to the original source code
+        public int? token_map_start_index;
+        public int? token_map_end_index;
 
         public override string ToString()
         {
@@ -62,6 +70,18 @@ namespace SmolScript.Internals
                 operand1 = operand1,
                 operand2 = operand2
             });
+        }
+
+        public static void MapTokens(this List<ByteCodeInstruction> chunk, int? firstTokenIndex, int? lastTokenIndex = null)
+        {
+            foreach(var instr in chunk)
+            {
+                if (instr.token_map_start_index == null)
+                {
+                    instr.token_map_start_index = firstTokenIndex!.Value;
+                    instr.token_map_end_index = lastTokenIndex.HasValue ? lastTokenIndex.Value : firstTokenIndex;
+                }
+            }
         }
     }
 }

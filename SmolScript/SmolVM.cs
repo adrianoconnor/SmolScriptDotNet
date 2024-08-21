@@ -4,6 +4,8 @@ using System.Reflection.Metadata;
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using SmolScript.Internals;
 using SmolScript.Internals.Ast;
 using SmolScript.Internals.SmolStackTypes;
@@ -15,17 +17,19 @@ namespace SmolScript
 {
     public class SmolVM : ISmolRuntime
     {
-        private class SmolThrown : Exception
+        private class SmolThrownFromInstruction : Exception
         {
 
         }
 
         enum RunMode
         {
+            Ready,
             Run,
             Paused,
             Step,
-            Done
+            Done,
+            Error
         }
 
         internal SmolProgram program;
@@ -77,8 +81,8 @@ namespace SmolScript
             PC = 0;
         }
 
-        int code_section = 0;
-        int PC = 0; // Program Counter / Instruction Pointer
+        internal int code_section = 0;
+        internal int PC = 0; // Program Counter / Instruction Pointer
 
         bool _debug = false;
 
@@ -91,16 +95,43 @@ namespace SmolScript
 
         Dictionary<int, int> jmplocs = new Dictionary<int, int>();
 
-        internal SmolScript.Internals.Environment globalEnv = new SmolScript.Internals.Environment();
-        internal SmolScript.Internals.Environment environment;
+        internal Internals.Environment globalEnv = new();
+        internal Internals.Environment environment;
 
         public T? GetGlobalVar<T>(string variableName)
         {
             var v = (SmolVariableType)globalEnv.Get(variableName)!;
 
-            if (v.GetType() == typeof(SmolUndefined))
+            if (v.GetType() == typeof(SmolUndefined) || v.GetType() == typeof(SmolNull))
             {
-                return default(T);
+                // Check if the default for type T is null, and if it is return that. We need to do this check
+                // because the default of a non-nullable type (like int) will be something that looks real (e.g., zero)
+                // and that would be potentially very misleading
+                if (default(T) == null)
+                {
+                    return default;
+                }
+                else
+                {
+                    throw new NullReferenceException($"Variable '{variableName}' is undefined or null and target type '{typeof(T).Name}' is not Nullable");
+                }
+            }
+
+            if (v.GetType() == typeof(SmolObject) && typeof(T) == typeof(JObject))
+            {
+                Dictionary<string, object> values = new Dictionary<string, object>();
+
+                foreach(var entry in ((SmolObject)v).object_env.variables)
+                {
+                    // For an array we need to do something like ((SmolArray)entry.value).elements, but it
+                    // needs to be recursive
+
+                    values.Add(entry.Key, entry.Value.GetValue());
+                }
+
+                // Stupid downcast to object and back resolves a compiler error
+
+                return (T)(object)JObject.FromObject(values);
             }
 
             return (T)Convert.ChangeType(v.GetValue()!, typeof(T));
@@ -145,7 +176,14 @@ namespace SmolScript
             {
                 if (args.Count() > i)
                 {
-                    env.Define(fn.param_variable_names[i], SmolVariableType.Create(args[i]));
+                    try
+                    {
+                        env.Define(fn.param_variable_names[i], SmolVariableType.Create(args[i]));
+                    }
+                    catch(Exception)
+                    {
+                        env.Define(fn.param_variable_names[i], new SmolNativeTypeWrapper(args[i]));
+                    }
                 }
                 else
                 {
@@ -163,7 +201,7 @@ namespace SmolScript
 
             var returnValue = stack.Pop();
 
-            if (returnValue.GetType() == typeof(SmolUndefined))
+            if (returnValue.GetType() == typeof(SmolUndefined) || returnValue.GetType() == typeof(SmolNull))
             {
                 return default(T);
             }
@@ -188,7 +226,6 @@ namespace SmolScript
             return vm;
         }
 
-
         public string Decompile()
         {
             return ByteCodeDisassembler.Disassemble(this.program);
@@ -198,7 +235,7 @@ namespace SmolScript
         {
             environment = globalEnv;
 
-            this.program = SmolCompiler.Compile(source);
+            this.program = Compiler.Compile(source);
 
             CreateStdLib();
             BuildJumpTable();
@@ -380,7 +417,7 @@ namespace SmolScript
                     return;
                 }
 
-                var instr = program.code_sections[code_section][PC++];
+                var instr = program.code_sections[code_section][PC++]; // Increment PC after fetching the net (current) instruction
 
                 debug($"{instr}");//: {System.Environment.TickCount - t}");
 
@@ -722,7 +759,7 @@ namespace SmolScript
 
                                 var env_in_context = environment;
 
-                                if (name == "@IndexerGet" || name == "@zIndxerSet")
+                                if (name == "@IndexerGet")
                                 {
                                     // Special case for square brackets!
 
@@ -916,10 +953,13 @@ namespace SmolScript
 
                         case OpCode.POP_AND_DISCARD:
                             // operand1 is optional bool, default true means fail if nothing to pop
-                            if (stack.Count > 0 || instr.operand1 == null || (bool)instr.operand1)
-                            {
+                            //if (stack.Count > 0 || instr.operand1 == null || (bool)instr.operand1)
+                            //{
                                 stack.Pop();
-                            }
+                            //}
+                            // TODO: Whatabout else, why is there no else here? I've commented the if out for now because
+                            // I'm not convinced it's valid...
+
                             break;
 
                         case OpCode.TRY:
@@ -951,16 +991,11 @@ namespace SmolScript
                             break;
 
                         case OpCode.THROW:
-                            if (instr.operand1 as bool? ?? false) // This flag means the user provided an object to throw, and it's already on the stack
-                            {
-                                throw new SmolThrown(); // SmolRuntimeException("");
-                            }
-                            else
-                            {
-                                //stack.Push(new SmolValue()
-
-                                throw new SmolThrown();  // throw new SmolRuntimeException();
-                            }
+                            // We throw a custom exception and let the default Exception handler deal with
+                            // jumping to the correct location etc -- this is because it's the exact same
+                            // behaviour whether it's a user-defined throw or just something going wrong
+                            // in the internals, it still needs to look for a parent try/catch block...
+                            throw new SmolThrownFromInstruction();                            
 
                         case OpCode.LOOP_START:
 
@@ -1064,58 +1099,32 @@ namespace SmolScript
                             throw new Exception($"You forgot to handle an opcode: {instr.opcode}");
                     }
                 }
-                catch (SmolThrown e)
+                catch (Exception e)
                 {
                     bool handled = false;
-                    var thrownObject = (SmolVariableType)stack.Pop();
+
+                    // If we're here because we're responding to a exception that was thrown by the user in their code,
+                    // then the argument to pass to the catch block is the next value on the stack
+
+                    bool isUserThrown = e.GetType() == typeof(SmolThrownFromInstruction);
+
+                    SmolVariableType? userThrownArgument = isUserThrown ? (SmolVariableType)stack.Pop() : null;
 
                     while (stack.Any())
                     {
-                        var next = stack.Pop();
+                        var next = stack.Pop(); // Keep didscarding whatever is on the stack until we find a try/catch state object (or reach the end)
 
                         if (next.GetType() == typeof(SmolTryRegionSaveState))
                         {
-                            // We found the start of a try section, restore our state and jump to the exception handler location
+                            // We found the start of a try section, restore our state and jump to the catch or finally location
 
                             var state = (SmolTryRegionSaveState)next;
 
                             this.code_section = state.code_section;
                             this.PC = state.jump_exception;
                             this.environment = state.this_env;
-
-                            stack.Push(thrownObject);
-
-                            handled = true;
-                            break;
-                        }
-                    }
-
-                    if (!handled)
-                    {
-                        throw new SmolRuntimeException(e.Message);
-                    }
-
-
-                }
-                catch (Exception e) // (SmolRuntimeException e)
-                {
-                    bool handled = false;
-
-                    while (stack.Any())
-                    {
-                        var next = stack.Pop();
-
-                        if (next.GetType() == typeof(SmolTryRegionSaveState))
-                        {
-                            // We found the start of a try section, restore our state and jump to the exception handler location
-
-                            var state = (SmolTryRegionSaveState)next;
-
-                            this.code_section = state.code_section;
-                            this.PC = state.jump_exception;
-                            this.environment = state.this_env;
-
-                            stack.Push(new SmolError(e.Message));
+                           
+                            stack.Push(isUserThrown ? userThrownArgument! : new SmolError(e.Message));
 
                             handled = true;
                             break;

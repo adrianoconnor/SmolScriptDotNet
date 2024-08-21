@@ -19,9 +19,11 @@ namespace SmolScript.Internals
         private string _source;
         private char[] _sourceRaw;
 
-        private int _start = 0;
-        private int _current = 0;
-        private int _line = 1;
+        private int _startOfToken = 0;
+        private int _currentPos = 0;
+        private int _currentLine = 1;
+        private int _currentLineStartIndex = 0;
+        private int _previous = 0;
 
         private IList<Token> _tokens = new List<Token>();
 
@@ -67,11 +69,11 @@ namespace SmolScript.Internals
         {
             while (!ReachedEnd())
             {
-                _start = _current;
+                _startOfToken = _currentPos;
                 ScanToken();
             }
 
-            _tokens.Add(new Token(TokenType.EOF, "", null, _line));
+            _tokens.Add(new Token(TokenType.EOF, "", null, _currentLine, _currentPos, _currentPos, _currentPos));
 
             return _tokens;
         }
@@ -212,12 +214,18 @@ namespace SmolScript.Internals
                             if (ReachedEnd())
                             {
                                 //_errors.Add(
-                                throw new ScannerError(_line, $"Expected end of comment block");
+                                throw new ScannerError(_currentLine, $"Expected end of a comment block but reached the end of the file");
                             }
                             else
                             {
                                 c = NextChar();
                                 //_current = NextChar();
+
+                                if (c == '\n')
+                                {
+                                    _currentLine++;
+                                    _currentLineStartIndex = _currentPos;
+                                }
                             }
                         }
 
@@ -261,6 +269,8 @@ namespace SmolScript.Internals
                     break;
 
                 case ' ':
+                    _previous = _currentPos;
+                    break;
                 case '\r':
                 case '\t':
                     // Ignore whitespace
@@ -268,7 +278,7 @@ namespace SmolScript.Internals
 
                 case '\n':
 
-                    _line++;
+                    _currentLine++;
 
                     if (_tokens.Any())
                     {
@@ -301,7 +311,7 @@ namespace SmolScript.Internals
                     else
                     {
                         //_errors.Add(
-                        throw new ScannerError(_line, $"Unexpected character '{c}'");
+                        throw new ScannerError(_currentLine, $"Unexpected character '{c}'");
                     }
 
                     break;
@@ -315,33 +325,27 @@ namespace SmolScript.Internals
 
         private void AddToken(TokenType tokenType, object? literal)
         {
-            //Console.WriteLine($"**ADD TOKEN**");
+            var lexeme = _source.Substring(_startOfToken, _currentPos - _startOfToken);
 
-            //Console.WriteLine($"Token Type: {tokenType}");
-            //Console.WriteLine($"Start: {_start}");
-            //Console.WriteLine($"Current: {_current}");
+            _tokens.Add(new Token(tokenType, lexeme, literal, _currentLine, _previous - _currentLineStartIndex, _previous, _currentPos));
 
-            var text = _source.Substring(_start, _current - _start);
-
-            //Console.WriteLine($"Text: {text}");
-
-            _tokens.Add(new Token(tokenType, text, literal, _line));
+            _previous = _currentPos;
         }
 
         private bool ReachedEnd()
         {
-            return _current >= _source.Length;
+            return _currentPos >= _source.Length;
         }
 
         private char NextChar()
         {
-            return _sourceRaw[_current++];
+            return _sourceRaw[_currentPos++];
         }
 
         private char Peek(int peekAhead = 0)
         {
             if (ReachedEnd()) return '\0';
-            return _sourceRaw[_current + peekAhead];
+            return _sourceRaw[_currentPos + peekAhead];
         }
 
         private bool MatchNext(char charToMatch)
@@ -366,9 +370,9 @@ namespace SmolScript.Internals
 
                 if (MatchNext('\n')) // Peek() == '\n')
                 {
-                    _line++;
+                    _currentLine++;
                     //_errors.Add(new ScannerError(_line, "Unexpected Line break in string"));
-                    throw new ScannerError(_line, "Unexpected Line break in string");
+                    throw new ScannerError(_currentLine, "Unexpected Line break in string");
                     //return;
                 }
 
@@ -412,7 +416,7 @@ namespace SmolScript.Internals
 
             if (ReachedEnd())
             {
-                throw new ScannerError(_line, "Unterminated string");
+                throw new ScannerError(_currentLine, "Unterminated string");
 
                 //_errors.Add(new ScannerError(_line, "Unterminated string"));
                 //return;
@@ -434,7 +438,7 @@ namespace SmolScript.Internals
                 // TODO: Need to refactor this so somehow it uses the same code as regular string parsing -- need it to
                 // match those rules exactly, an handle all of the same cases for escaping etc.
 
-                if (Peek() == '\n') _line++;
+                if (Peek() == '\n') _currentLine++;
 
                 if (Peek() == '\\')
                 {
@@ -556,7 +560,7 @@ namespace SmolScript.Internals
 
             if (ReachedEnd())
             {
-                throw new ScannerError(_line, "Unterminated string");
+                throw new ScannerError(_currentLine, "Unterminated string");
                 //_errors.Add(new ScannerError(_line, "Unterminated string"));
                 //return;
             }
@@ -602,7 +606,7 @@ namespace SmolScript.Internals
                 while (CharIsDigit(Peek())) _ = NextChar();
             }
 
-            var stringValue = _source.Substring(_start, _current - _start);
+            var stringValue = _source.Substring(_startOfToken, _currentPos - _startOfToken);
             AddToken(TokenType.NUMBER, Double.Parse(stringValue));
         }
 
@@ -610,7 +614,7 @@ namespace SmolScript.Internals
         {
             while (CharIsAlphaNumeric(Peek())) _ = NextChar();
 
-            var stringValue = _source.Substring(_start, _current - _start);
+            var stringValue = _source.Substring(_startOfToken, _currentPos - _startOfToken);
 
             if (_keywords.ContainsKey(stringValue))
             {

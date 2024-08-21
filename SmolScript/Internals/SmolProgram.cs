@@ -13,6 +13,9 @@ namespace SmolScript.Internals
         internal List<SmolVariableType> constants { get; set; }
         internal List<List<ByteCodeInstruction>> code_sections { get; set; }
         internal List<SmolFunction> function_table { get; set; }
+
+        internal IList<Token> tokens { get; set; }
+        internal string source { get;  set; }
     }
 }
 

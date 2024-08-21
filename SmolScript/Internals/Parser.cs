@@ -28,6 +28,7 @@ namespace SmolScript.Internals
 
     declaration    → functionDecl
                    | varDecl
+                   | classDecl
                    | statement ;
 
     functionDecl   → "function" function ;
@@ -108,9 +109,14 @@ namespace SmolScript.Internals
             {
                 try
                 {
-                    //while (peek().type == TokenType.SEMICOLON) consume(TokenType.SEMICOLON, "");
-
-                    statements.Add(declaration());
+                    if (peek().type == TokenType.SEMICOLON)
+                    {
+                        consume(TokenType.SEMICOLON, "");
+                    }
+                    else
+                    {
+                        statements.Add(declaration());
+                    }
                 }
                 catch (ParseError e)
                 {
@@ -177,13 +183,13 @@ namespace SmolScript.Internals
             if (tokenType == TokenType.SEMICOLON && _tokens[_current - 1].followedByLineBreak)
             {
                 // We need to return a token, so we'll make a fake semicolon
-                return new Token(TokenType.SEMICOLON, "", "", -1);
+                return new Token(TokenType.SEMICOLON, "", "", -1, -1, -1, -1);
             }
 
             // If we expected a ; but got a }, we also wave that through
             if (tokenType == TokenType.SEMICOLON && (this.check(TokenType.RIGHT_BRACE) || this.peek().type == TokenType.EOF))
             {
-                return new Token(TokenType.SEMICOLON, "", "", -1);//, -1, -1, -1);
+                return new Token(TokenType.SEMICOLON, "", "", -1, -1, -1, -1);
             }
 
             throw error(peek(), errorIfNotFound);
@@ -191,7 +197,7 @@ namespace SmolScript.Internals
 
         private ParseError error(Token token, string errorMessage)
         {
-            return new ParseError(token, errorMessage);
+            return new ParseError(token, $"{errorMessage} (Line {token.line}, Col {token.col})");
         }
 
         private void synchronize()
@@ -280,6 +286,8 @@ namespace SmolScript.Internals
 
         private Statement varDeclaration()
         {
+            var firstTokenIndex = _current - 1;
+
             var name = consume(TokenType.IDENTIFIER, "Expected variable name");
 
             Expression? initializer = null;
@@ -288,9 +296,11 @@ namespace SmolScript.Internals
             {
                 initializer = expression();
             }
+          
+            var skip = consume(TokenType.SEMICOLON, "Expected either a value to be assigned or the end of the statement").start_pos == -1 ? 1 : 2;
+            var lastTokenIndex = _current - skip;
 
-            consume(TokenType.SEMICOLON, "Expected ;");
-            return new VarStatement(name, initializer);
+            return new VarStatement(name, initializer, firstTokenIndex, lastTokenIndex);
         }
 
         private Statement classDeclaration()
@@ -610,9 +620,9 @@ namespace SmolScript.Internals
 
             if (match(TokenType.PLUS_EQUALS))
             {
-                var equals = previous();
+                var originalToken = previous();
                 var value = assignment();
-                var additionExpr = new BinaryExpression(expr, new Token(TokenType.PLUS, "+=", null, 0), value);
+                var additionExpr = new BinaryExpression(expr, new Token(TokenType.PLUS, "+=", null, originalToken.line, originalToken.col, originalToken.start_pos, originalToken.end_pos), value);
 
                 if (expr.GetType() == typeof(VariableExpression))
                 {
@@ -630,14 +640,14 @@ namespace SmolScript.Internals
                     return new IndexerSetExpression(getExpr.obj, getExpr.indexerExpr, additionExpr);
                 }
 
-                throw error(equals, "Invalid assignment target.");
+                throw error(originalToken, "Invalid assignment target.");
             }
 
             if (match(TokenType.MINUS_EQUALS))
             {
-                var equals = previous();
+                var originalToken = previous();
                 var value = assignment();
-                var subtractExpr = new BinaryExpression(expr, new Token(TokenType.MINUS, "-=", null, 0), value);
+                var subtractExpr = new BinaryExpression(expr, new Token(TokenType.MINUS, "-=", null, originalToken.line, originalToken.col, originalToken.start_pos, originalToken.end_pos), value);
 
                 if (expr.GetType() == typeof(VariableExpression))
                 {
@@ -655,14 +665,14 @@ namespace SmolScript.Internals
                     return new IndexerSetExpression(getExpr.obj, getExpr.indexerExpr, subtractExpr);
                 }
 
-                throw error(equals, "Invalid assignment target.");
+                throw error(originalToken, "Invalid assignment target.");
             }
 
             if (match(TokenType.POW_EQUALS))
             {
-                var equals = previous();
+                var originalToken = previous();
                 var value = assignment();
-                var powExpr = new BinaryExpression(expr, new Token(TokenType.POW, "*=", null, 0), value);
+                var powExpr = new BinaryExpression(expr, new Token(TokenType.POW, "*=", null, originalToken.line, originalToken.col, originalToken.start_pos, originalToken.end_pos), value);
 
                 if (expr.GetType() == typeof(VariableExpression))
                 {
@@ -679,14 +689,14 @@ namespace SmolScript.Internals
                     return new IndexerSetExpression(getExpr.obj, getExpr.indexerExpr, powExpr);
                 }
 
-                throw error(equals, "Invalid assignment target.");
+                throw error(originalToken, "Invalid assignment target.");
             }
 
             if (match(TokenType.DIVIDE_EQUALS))
             {
-                var equals = previous();
+                var originalToken = previous();
                 var value = assignment();
-                var divExpr = new BinaryExpression(expr, new Token(TokenType.DIVIDE, "/=", null, 0), value);
+                var divExpr = new BinaryExpression(expr, new Token(TokenType.DIVIDE, "/=", null, originalToken.line, originalToken.col, originalToken.start_pos, originalToken.end_pos), value);
 
                 if (expr.GetType() == typeof(VariableExpression))
                 {
@@ -704,14 +714,14 @@ namespace SmolScript.Internals
                     return new IndexerSetExpression(getExpr.obj, getExpr.indexerExpr, divExpr);
                 }
 
-                throw error(equals, "Invalid assignment target.");
+                throw error(originalToken, "Invalid assignment target.");
             }
 
             if (match(TokenType.MULTIPLY_EQUALS))
             {
-                var equals = previous();
+                var originalToken = previous();
                 var value = assignment();
-                var mulExpr = new BinaryExpression(expr, new Token(TokenType.MULTIPLY, "*=", null, 0), value);
+                var mulExpr = new BinaryExpression(expr, new Token(TokenType.MULTIPLY, "*=", null, originalToken.line, originalToken.col, originalToken.start_pos, originalToken.end_pos), value);
 
                 if (expr.GetType() == typeof(VariableExpression))
                 {
@@ -729,14 +739,14 @@ namespace SmolScript.Internals
                     return new IndexerSetExpression(getExpr.obj, getExpr.indexerExpr, mulExpr);
                 }
 
-                throw error(equals, "Invalid assignment target.");
+                throw error(originalToken, "Invalid assignment target.");
             }
 
             if (match(TokenType.REMAINDER_EQUALS))
             {
-                var equals = previous();
+                var originalToken = previous();
                 var value = assignment();
-                var remainderExpr = new BinaryExpression(expr, new Token(TokenType.REMAINDER, "/=", null, 0), value);
+                var remainderExpr = new BinaryExpression(expr, new Token(TokenType.REMAINDER, "/=", null, originalToken.line, originalToken.col, originalToken.start_pos, originalToken.end_pos), value);
 
                 if (expr.GetType() == typeof(VariableExpression))
                 {
@@ -754,7 +764,7 @@ namespace SmolScript.Internals
                     return new IndexerSetExpression(getExpr.obj, getExpr.indexerExpr, remainderExpr);
                 }
 
-                throw error(equals, "Invalid assignment target.");
+                throw error(originalToken, "Invalid assignment target.");
             }
 
             return expr;
@@ -1035,8 +1045,8 @@ namespace SmolScript.Internals
 
             if (match(TokenType.LEFT_SQUARE_BRACKET))
             {
-                var className = new Token(TokenType.IDENTIFIER, "Array", null, peek().line);
-
+                var originalToken = previous();
+                var className = new Token(TokenType.IDENTIFIER, "Array", null, originalToken.line, originalToken.col, originalToken.start_pos, originalToken.end_pos);
                 var args = new List<Expression>();
 
                 if (!check(TokenType.RIGHT_SQUARE_BRACKET))
@@ -1051,7 +1061,8 @@ namespace SmolScript.Internals
 
             if (match(TokenType.LEFT_BRACE))
             {
-                var className = new Token(TokenType.IDENTIFIER, "Object", null, peek().line);
+                var originalToken = previous();
+                var className = new Token(TokenType.IDENTIFIER, "Object", null, originalToken.line, originalToken.col, originalToken.start_pos, originalToken.end_pos);
 
                 var args = new List<Expression>();
 
@@ -1081,7 +1092,7 @@ namespace SmolScript.Internals
                 return new GroupingExpression(expr);
             }
 
-            throw error(peek(), $"Parser did not expect to see '{peek().lexeme}' on line {peek().line}, sorry :(");
+            throw error(peek(), $"Parser did not expect to see '{peek().lexeme}' on line {peek().line}, column {peek().col}, sorry");
         }
     }
 }

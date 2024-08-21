@@ -29,4 +29,7 @@
     <Compile Remove="Internals\Ast\Interpreter\ICallableSmolFunction.cs" />
     <Compile Remove="Internals\Ast\Interpreter\SmolFunctionWrapper.cs" />
   </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+  </ItemGroup>
 </Project>
