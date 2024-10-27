@@ -26,7 +26,6 @@
     <None Remove="Parser\" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Language\" />
     <Folder Include="Debugger\" />
     <Folder Include="Scanner\" />
     <Folder Include="Parser\" />

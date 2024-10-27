@@ -173,6 +173,10 @@ namespace SmolScript.Internals
                     {
                         AddToken(TokenType.EQUAL_EQUAL);
                     }
+                    else if (MatchNext('>'))
+                    {
+                        AddToken(TokenType.FAT_ARROW);
+                    }
                     else
                     {
                         AddToken(TokenType.EQUAL);

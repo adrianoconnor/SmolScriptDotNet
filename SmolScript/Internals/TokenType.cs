@@ -26,7 +26,6 @@ namespace SmolScript.Internals
         BITWISE_XOR,
         BITWISE_NOT,
 
-
         QUESTION_MARK,
         COLON,
 
@@ -50,6 +49,8 @@ namespace SmolScript.Internals
         PREFIX_INCREMENT,
         POSTFIX_DECREMENT,
         PREFIX_DECREMENT,
+        
+        FAT_ARROW,
 
         // Literals
 

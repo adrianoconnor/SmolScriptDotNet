@@ -3,7 +3,7 @@ using SmolScript.Internals.Ast;
 using SmolScript.Internals.SmolStackTypes;
 using SmolScript.Internals.SmolVariableTypes;
 
-namespace SmolScript.Tests.Internal.Types;
+namespace SmolScript.Tests.Internal.Language;
 
 [TestClass]
 public class Functions
