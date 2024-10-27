@@ -21,6 +21,18 @@ x = f();
     }
     
     [TestMethod]
+    public void FatArrows1b()
+    {
+        var vm = SmolVm.Init(@"
+var x = 0;
+var f = b => 1;
+x = f();
+");
+        
+        Assert.AreEqual(1, vm.GetGlobalVar<int>("x"));
+    }
+    
+    [TestMethod]
     public void FatArrows2()
     {
         var vm = SmolVm.Init(@"
@@ -110,12 +122,16 @@ var x = f(2);");
     [TestMethod]
     public void FatArrows0a()
     {
-        var vm = SmolVm.Init(@"var f = (n,m) => n * m;");
+        var vm = SmolVm.Init(@"var f = (n,m) => n * m; var x = f(2, 3);");
+        
+        Assert.AreEqual(6, vm.GetGlobalVar<int>("x"));
     }
     
     [TestMethod]
     public void FatArrows0b()
     {
-        var vm = SmolVm.Init(@"var f = n => n * n;");
+        var vm = SmolVm.Init(@"var f = n => n * n; var x = f(3);");
+        
+        Assert.AreEqual(9, vm.GetGlobalVar<int>("x"));
     }
 }

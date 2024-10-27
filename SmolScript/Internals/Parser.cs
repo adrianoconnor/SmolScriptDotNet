@@ -798,7 +798,7 @@ namespace SmolScript.Internals
         {
             if ((Peek().type == TokenType.LEFT_BRACKET || Peek().type == TokenType.IDENTIFIER) && IsInFatArrow(false))
             {
-                return FatArrowFunction(false);
+                return FatArrowFunctionExpression(false);
             }
             else if (Match(TokenType.FUNC))
             {
@@ -1020,7 +1020,7 @@ namespace SmolScript.Internals
             {
                 if (IsInFatArrow(false))
                 {
-                    return null;
+                    return null; // TODO: I thought we needed this but it seems we didn't... check the unit tests and remove it...
                 }
                 else
                 {
@@ -1124,7 +1124,7 @@ namespace SmolScript.Internals
             {
                 if (IsInFatArrow(true))
                 {
-                    return FatArrowFunction(true);
+                    return FatArrowFunctionExpression(true);
                 }
                 else
                 {
@@ -1139,7 +1139,7 @@ namespace SmolScript.Internals
             throw Error(Peek(), $"Parser did not expect to see '{Peek().lexeme}' on line {Peek().line}, column {Peek().col}, sorry");
         }
 
-        private FunctionExpression FatArrowFunction(bool openBracketConsumed = false)
+        private FunctionExpression FatArrowFunctionExpression(bool openBracketConsumed = false)
         {
             _statementCallStack.Push("FUNCTION");
             
