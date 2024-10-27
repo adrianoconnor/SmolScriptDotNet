@@ -160,29 +160,29 @@ namespace SmolScript
             var env = new SmolScript.Internals.Environment(this.globalEnv);
             this.environment = env;
 
-            var fn = Program.FunctionTable.First(f => f.global_function_name == functionName);
+            var fn = Program.FunctionTable.First(f => f.GlobalFunctionName == functionName);
 
 
             // Prime the new environment with variables for
             // the parameters in the function declaration (actual number
             // passed might be different)
 
-            for (var i = 0; i < fn.arity; i++)
+            for (var i = 0; i < fn.Arity; i++)
             {
                 if (args.Count() > i)
                 {
                     try
                     {
-                        env.Define(fn.param_variable_names[i], SmolVariableType.Create(args[i]));
+                        env.Define(fn.ParamVariableNames[i], SmolVariableType.Create(args[i]));
                     }
                     catch(Exception)
                     {
-                        env.Define(fn.param_variable_names[i], new SmolNativeTypeWrapper(args[i]));
+                        env.Define(fn.ParamVariableNames[i], new SmolNativeTypeWrapper(args[i]));
                     }
                 }
                 else
                 {
-                    env.Define(fn.param_variable_names[i], new SmolUndefined());
+                    env.Define(fn.ParamVariableNames[i], new SmolUndefined());
                 }
             }
 
@@ -190,7 +190,7 @@ namespace SmolScript
             stack.Push(state!);
 
             PC = 0;
-            code_section = fn.code_section;
+            code_section = fn.CodeSection;
             
             // Let the VM know that it's ok to proceed when we call Run
             this._runMode = RunMode.PAUSED;
@@ -447,15 +447,15 @@ namespace SmolScript
                                 // the parameters in the function declaration (actual number
                                 // passed might be different)
 
-                                for (int i = 0; i < callData.arity; i++)
+                                for (int i = 0; i < callData.Arity; i++)
                                 {
                                     if (paramValues.Count > i)
                                     {
-                                        env.Define(callData.param_variable_names[i], paramValues[i]);
+                                        env.Define(callData.ParamVariableNames[i], paramValues[i]);
                                     }
                                     else
                                     {
-                                        env.Define(callData.param_variable_names[i], new SmolUndefined());
+                                        env.Define(callData.ParamVariableNames[i], new SmolUndefined());
                                     }
                                 }
 
@@ -478,7 +478,7 @@ namespace SmolScript
                                 // Finally set our PC to the start of the function we're about to execute
 
                                 PC = 0;
-                                code_section = callData.code_section;
+                                code_section = callData.CodeSection;
 
                                 break;
                             }
@@ -638,7 +638,7 @@ namespace SmolScript
 
                             // Top value on the stack is the return value
 
-                            var return_value = stack.Pop();
+                            var returnValue = stack.Pop();
 
                             // Next value should be the original pre-call state that we saved
 
@@ -656,7 +656,7 @@ namespace SmolScript
                             this.code_section = savedCallState.code_section;
 
                             // Return value needs to go back on the stack
-                            stack.Push(return_value);
+                            stack.Push(returnValue);
 
                             if (savedCallState.call_is_extern)
                             {
@@ -681,14 +681,14 @@ namespace SmolScript
                                 {
                                     // Special case for square brackets!
 
-                                    // Not sure abotu this cast, might need to add an extra check for type
+                                    // Not sure about this cast, might need to add an extra check for type
 
                                     name = ((SmolVariableType)stack.Pop()).GetValue()!.ToString();
                                 }
 
                                 var value = (SmolVariableType)stack.Pop(); // Hopefully always true...
 
-                                var env_in_context = environment;
+                                var envInContext = environment;
                                 var isPropertySetter = false;
 
                                 if (instr.operand2 != null && (bool)instr.operand2)
@@ -699,7 +699,7 @@ namespace SmolScript
 
                                     if (objRef.GetType() == typeof(SmolObject))
                                     {
-                                        env_in_context = ((SmolObject)objRef).object_env;
+                                        envInContext = ((SmolObject)objRef).object_env;
                                     }
                                     else if (objRef is ISmolNativeCallable)
                                     {
@@ -712,7 +712,7 @@ namespace SmolScript
                                     }
                                 }
 
-                                env_in_context.Assign(name!, value, isPropertySetter);
+                                envInContext.Assign(name!, value, isPropertySetter);
 
 
                                 Debug($"              [Saved ${value}]");
@@ -848,18 +848,17 @@ namespace SmolScript
                                 }
                                 else
                                 {
-                                    if (Program.FunctionTable.Any(f => f.global_function_name == name))
+                                    if (Program.FunctionTable.Any(f => f.GlobalFunctionName == name))
                                     {
-                                        stack.Push(Program.FunctionTable.First(f => f.global_function_name == name));
+                                        stack.Push(Program.FunctionTable.First(f => f.GlobalFunctionName == name));
                                     }
                                     else if (externalMethods.Keys.Contains(name))
                                     {
-                                        var peek_instr = Program.CodeSections[code_section][PC];
+                                        var peekInstr = Program.CodeSections[code_section][PC];
 
-                                        stack.Push(CallExternalMethod(name!, (int)peek_instr.operand1!));
+                                        stack.Push(CallExternalMethod(name!, (int)peekInstr.operand1!));
 
-                                        stack.Push(new SmolNativeFunctionResult()); // Call will use this to see that the call is already done.
-                                        //stack.Push(new SmolNativeFunctionResult()); // Pop and Discard following Call will discard this
+                                        stack.Push(new SmolNativeFunctionResult()); // Call will use this to see that the call is already done
                                     }
                                     else
                                     {
@@ -871,16 +870,13 @@ namespace SmolScript
                             }
 
                         case OpCode.JMPFALSE:
+                            
+                            if (((SmolVariableType)stack.Pop()).IsFalsey())
                             {
-                                var value = (SmolVariableType)stack.Pop();
-
-                                if (value.IsFalsey())
-                                {
-                                    PC = this.Program.JumpTable[(int)instr.operand1!];
-                                }
-
-                                break;
+                                PC = this.Program.JumpTable[(int)instr.operand1!];
                             }
+                            
+                            break;
 
                         case OpCode.JMPTRUE:
 
@@ -893,41 +889,28 @@ namespace SmolScript
 
 
                         case OpCode.JMP:
-                            PC = this.Program.JumpTable[(int)instr.operand1!];
+                            this.PC = this.Program.JumpTable[(int)instr.operand1!];
                             break;
 
                         case OpCode.LABEL:
-                            // Just skip over this instruction, it's only here
-                            // to support branching
+                            // This instruction is only here to support branching, it's a No-op
+                            // TODO: Strip these during the compile stage?
                             break;
 
                         case OpCode.ENTER_SCOPE:
-                            {
-                                this.environment = new Internals.Environment(this.environment);
-                                break;
-                            }
+                            this.environment = new Internals.Environment(this.environment);
+                            break;
 
                         case OpCode.LEAVE_SCOPE:
-                            {
-                                this.environment = this.environment.enclosing!;
-                                break;
-                            }
+                            this.environment = this.environment.enclosing!;
+                            break;
 
                         case OpCode.DEBUGGER:
-                            {
-                                this._runMode = RunMode.PAUSED;
-                                return;
-                            }
+                            this._runMode = RunMode.PAUSED;
+                            return;
 
                         case OpCode.POP_AND_DISCARD:
-                            // operand1 is optional bool, default true means fail if nothing to pop
-                            //if (stack.Count > 0 || instr.operand1 == null || (bool)instr.operand1)
-                            //{
-                                stack.Pop();
-                            //}
-                            // TODO: Whatabout else, why is there no else here? I've commented the if out for now because
-                            // I'm not convinced it's valid...
-
+                            stack.Pop();
                             break;
 
                         case OpCode.TRY:
@@ -944,10 +927,10 @@ namespace SmolScript
                             }
 
                             stack.Push(new SmolTryRegionSaveState(
-                                    code_section: this.code_section,
-                                    PC: this.PC,
-                                    this_env: this.environment,
-                                    jump_exception: this.Program.JumpTable[(int)instr.operand1!]
+                                    codeSection: this.code_section,
+                                    programCounter: this.PC,
+                                    thisEnv: this.environment,
+                                    jumpException: this.Program.JumpTable[(int)instr.operand1!]
                                 )
                             );
 
@@ -1013,9 +996,9 @@ namespace SmolScript
                             // first and try and do the same (I think class hierarchies all share
                             // a single env?!
 
-                            var class_name = (string)instr.operand1!;
+                            var className = (string)instr.operand1!;
 
-                            if (staticTypes.ContainsKey(class_name))
+                            if (staticTypes.ContainsKey(className))
                             {
                                 stack.Push(new SmolNativeFunctionResult());
                                 break;
@@ -1023,21 +1006,21 @@ namespace SmolScript
 
                             var obj_environment = new SmolScript.Internals.Environment(this.globalEnv);
 
-                            foreach (var classFunc in Program.FunctionTable.Where(f => f.global_function_name!.StartsWith($"@{class_name}.")))
+                            foreach (var classFunc in Program.FunctionTable.Where(f => f.GlobalFunctionName!.StartsWith($"@{className}.")))
                             {
-                                var funcName = classFunc.global_function_name!.Substring(class_name.Length + 2);
+                                var funcName = classFunc.GlobalFunctionName!.Substring(className.Length + 2);
 
                                 obj_environment.Define(funcName, new SmolFunction(
-                                    arity: classFunc.arity,
-                                    code_section: classFunc.code_section,
-                                    global_function_name: classFunc.global_function_name,
-                                    param_variable_names: classFunc.param_variable_names
+                                    arity: classFunc.Arity,
+                                    codeSection: classFunc.CodeSection,
+                                    globalFunctionName: classFunc.GlobalFunctionName,
+                                    paramVariableNames: classFunc.ParamVariableNames
                                 ));
                             }
 
                             stack.Push(new SmolObject(
                                     object_env: obj_environment,
-                                    class_name: class_name
+                                    class_name: className
                                 )
                             );
 
@@ -1046,14 +1029,19 @@ namespace SmolScript
                             break;
 
                         case OpCode.DUPLICATE_VALUE:
-
+    
+                            // I feel like this is a bit of a hack, but it makes some scenarios possible and I'm
+                            // not sure what the alternative options are. The compiler can basically inject this
+                            // instruction to either duplicate the value on the top of the stack, or the value 'n'
+                            // items down (using op1).
+                            
+                            // We only use this when initializing a new instance of an object or a class, so we
+                            // might want to just revisit that code and work out a better approach, maybe with
+                            // a dedicated instruction for new.
+                            
                             int skip = instr.operand1 != null ? (int)instr.operand1 : 0;
 
                             var itemToDuplicate = stack.ElementAt(skip);
-
-                            if (itemToDuplicate.GetType() != typeof(SmolNativeFunctionResult))
-                            {
-                            }
 
                             stack.Push(itemToDuplicate);
 
@@ -1092,9 +1080,9 @@ namespace SmolScript
 
                             var state = (SmolTryRegionSaveState)next;
 
-                            this.code_section = state.code_section;
-                            this.PC = state.jump_exception;
-                            this.environment = state.this_env;
+                            this.code_section = state.CodeSection;
+                            this.PC = state.JumpException;
+                            this.environment = state.ThisEnv;
                            
                             stack.Push(isUserThrown ? userThrownArgument! : new SmolError(e.Message));
 

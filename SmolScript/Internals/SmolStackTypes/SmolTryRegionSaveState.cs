@@ -3,17 +3,17 @@ namespace SmolScript.Internals.SmolStackTypes
 {
     internal class SmolTryRegionSaveState : SmolStackType
     {
-        internal int code_section;
-        internal int PC;
-        internal Environment this_env;
-        internal int jump_exception;
+        internal int CodeSection;
+        internal int ProgramCounter;
+        internal Environment ThisEnv;
+        internal int JumpException;
 
-        internal SmolTryRegionSaveState(int code_section, int PC, Environment this_env, int jump_exception)
+        internal SmolTryRegionSaveState(int codeSection, int programCounter, Environment thisEnv, int jumpException)
         {
-            this.code_section = code_section;
-            this.PC = PC;
-            this.this_env = this_env;
-            this.jump_exception = jump_exception;
+            this.CodeSection = codeSection;
+            this.ProgramCounter = programCounter;
+            this.ThisEnv = thisEnv;
+            this.JumpException = jumpException;
         }
     }
 }

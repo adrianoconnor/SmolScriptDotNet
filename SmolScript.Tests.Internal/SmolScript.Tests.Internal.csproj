@@ -27,7 +27,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Language\" />
-    <Folder Include="Types\" />
     <Folder Include="Debugger\" />
     <Folder Include="Scanner\" />
     <Folder Include="Parser\" />

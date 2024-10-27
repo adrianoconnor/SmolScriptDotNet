@@ -38,7 +38,7 @@ namespace SmolScript.Internals
             }
             else
             {
-                throw new Exception("Variable undefined");
+                throw new SmolRuntimeException("Variable undefined");
             }
         }
 
@@ -54,7 +54,7 @@ namespace SmolScript.Internals
             }
             else
             {
-                throw new Exception("Variable undefined");
+                throw new SmolRuntimeException("Variable undefined");
             }
         }
 

@@ -109,13 +109,13 @@ namespace SmolScript.Internals
             {
                 try
                 {
-                    if (peek().type == TokenType.SEMICOLON)
+                    if (Peek().type == TokenType.SEMICOLON)
                     {
-                        consume(TokenType.SEMICOLON, "");
+                        Consume(TokenType.SEMICOLON, "");
                     }
                     else
                     {
-                        statements.Add(declaration());
+                        statements.Add(Declaration());
                     }
                 }
                 catch (ParseError e)
@@ -138,13 +138,13 @@ namespace SmolScript.Internals
             return statements;
         }
 
-        private bool match(params TokenType[] tokenTypes)
+        private bool Match(params TokenType[] tokenTypes)
         {
             foreach (var tokenType in tokenTypes)
             {
-                if (check(tokenType))
+                if (Check(tokenType))
                 {
-                    advance();
+                    Advance();
                     return true;
                 }
             }
@@ -152,32 +152,32 @@ namespace SmolScript.Internals
             return false;
         }
 
-        private bool check(TokenType tokenType, int skip = 0)
+        private bool Check(TokenType tokenType, int skip = 0)
         {
             if (ReachedEnd()) return false;
-            return peek(skip).type == tokenType;
+            return Peek(skip).type == tokenType;
         }
 
-        private Token peek(int skip = 0)
+        private Token Peek(int skip = 0)
         {
             return _tokens[_current + skip];
         }
 
-        private Token advance()
+        private Token Advance()
         {
             if (!ReachedEnd()) _current++;
 
-            return previous();
+            return Previous();
         }
 
-        public Token previous(int skip = 0)
+        public Token Previous(int skip = 0)
         {
             return _tokens[_current - 1 - (skip * 1)];
         }
 
-        public Token consume(TokenType tokenType, string errorIfNotFound)
+        public Token Consume(TokenType tokenType, string errorIfNotFound)
         {
-            if (check(tokenType)) return advance();
+            if (Check(tokenType)) return Advance();
 
             // If we expected a ; but got a newline, we just wave it through
             if (tokenType == TokenType.SEMICOLON && _tokens[_current - 1].followed_by_line_break)
@@ -187,28 +187,28 @@ namespace SmolScript.Internals
             }
 
             // If we expected a ; but got a }, we also wave that through
-            if (tokenType == TokenType.SEMICOLON && (this.check(TokenType.RIGHT_BRACE) || this.peek().type == TokenType.EOF))
+            if (tokenType == TokenType.SEMICOLON && (this.Check(TokenType.RIGHT_BRACE) || this.Peek().type == TokenType.EOF))
             {
                 return new Token(TokenType.SEMICOLON, "", "", -1, -1, -1, -1);
             }
 
-            throw error(peek(), errorIfNotFound);
+            throw Error(Peek(), errorIfNotFound);
         }
 
-        private ParseError error(Token token, string errorMessage)
+        private ParseError Error(Token token, string errorMessage)
         {
             return new ParseError(token, $"{errorMessage} (Line {token.line}, Col {token.col})");
         }
 
-        private void synchronize()
+        private void Synchronize()
         {
-            advance();
+            Advance();
 
             while (!ReachedEnd())
             {
-                if (previous().type == TokenType.SEMICOLON) return;
+                if (Previous().type == TokenType.SEMICOLON) return;
 
-                switch (peek().type)
+                switch (Peek().type)
                 {
                     case TokenType.CLASS:
                     case TokenType.FUNC:
@@ -222,7 +222,7 @@ namespace SmolScript.Internals
                         return;
                 }
 
-                advance();
+                Advance();
             }
 
             _statementCallStack.Clear();
@@ -230,213 +230,230 @@ namespace SmolScript.Internals
 
         private bool ReachedEnd()
         {
-            return peek().type == TokenType.EOF;
+            return Peek().type == TokenType.EOF;
         }
 
-        private Statement declaration()
+        private Statement Declaration()
         {
             try
             {
-                if (match(TokenType.FUNC)) return functionDeclaration();
-                if (match(TokenType.VAR)) return varDeclaration();
-                if (match(TokenType.CLASS)) return classDeclaration();
+                if (Match(TokenType.FUNC)) return FunctionDeclaration();
+                if (Match(TokenType.VAR)) return VarDeclaration();
+                if (Match(TokenType.CLASS)) return ClassDeclaration();
 
-                return statement();
+                return Statement();
             }
             catch (ParseError)
             {
-                synchronize();
+                Synchronize();
                 throw;
             }
 
         }
 
-        private Statement functionDeclaration()
+        private Statement FunctionDeclaration()
         {
+            // If this function is nested we're going to turn it into a var fnName = fnExpression() so that
+            // the function variable becomes a regular variable in the enclosing functions environment.
+            var firstTokenIndex = _current - 1;
+            var isNestedFunction = _statementCallStack.Contains("FUNCTION");
+            
+            // Regular function statement code...
+            
             _statementCallStack.Push("FUNCTION");
 
-            Token functionName = consume(TokenType.IDENTIFIER, "Expected function name");
+            var functionName = Consume(TokenType.IDENTIFIER, "Expected function name");
 
             var functionParams = new List<Token>();
 
-            consume(TokenType.LEFT_BRACKET, "Expected (");
+            Consume(TokenType.LEFT_BRACKET, "Expected (");
 
-            if (!check(TokenType.RIGHT_BRACKET))
+            if (!Check(TokenType.RIGHT_BRACKET))
             {
                 do
                 {
                     if (functionParams.Count() >= 127)
                     {
-                        error(peek(), "Can't define a function with more than 127 parameters.");
+                        Error(Peek(), "Can't define a function with more than 127 parameters.");
                     }
 
-                    functionParams.Add(consume(TokenType.IDENTIFIER, "Expected parameter name"));
-                } while (match(TokenType.COMMA));
+                    functionParams.Add(Consume(TokenType.IDENTIFIER, "Expected parameter name"));
+                } while (Match(TokenType.COMMA));
             }
 
-            consume(TokenType.RIGHT_BRACKET, "Expected )");
-            consume(TokenType.LEFT_BRACE, "Expected {");
+            Consume(TokenType.RIGHT_BRACKET, "Expected )");
+            Consume(TokenType.LEFT_BRACE, "Expected {");
 
-            var functionBody = block();
+            var functionBody = Block();
 
             _ = _statementCallStack.Pop();
 
-            return new FunctionStatement(functionName, functionParams, functionBody);
+            if (isNestedFunction) // Switch out the function statement for a var declaration if it's nested
+            {
+                var skip = Consume(TokenType.SEMICOLON, "Expected either a value to be assigned or the end of the statement").start_pos == -1 ? 1 : 2;
+                var lastTokenIndex = _current - skip;
+                
+                return new VarStatement(functionName, new FunctionExpression(functionParams, functionBody), firstTokenIndex, lastTokenIndex);
+            }
+            else
+            {
+                return new FunctionStatement(functionName, functionParams, functionBody);
+            }
         }
 
-        private Statement varDeclaration()
+        private Statement VarDeclaration()
         {
             var firstTokenIndex = _current - 1;
 
-            var name = consume(TokenType.IDENTIFIER, "Expected variable name");
+            var name = Consume(TokenType.IDENTIFIER, "Expected variable name");
 
             Expression? initializer = null;
 
-            if (match(TokenType.EQUAL))
+            if (Match(TokenType.EQUAL))
             {
-                initializer = expression();
+                initializer = Expression();
             }
           
-            var skip = consume(TokenType.SEMICOLON, "Expected either a value to be assigned or the end of the statement").start_pos == -1 ? 1 : 2;
+            var skip = Consume(TokenType.SEMICOLON, "Expected either a value to be assigned or the end of the statement").start_pos == -1 ? 1 : 2;
             var lastTokenIndex = _current - skip;
 
             return new VarStatement(name, initializer, firstTokenIndex, lastTokenIndex);
         }
 
-        private Statement classDeclaration()
+        private Statement ClassDeclaration()
         {
-            Token className = consume(TokenType.IDENTIFIER, "Expected class name");
+            var className = Consume(TokenType.IDENTIFIER, "Expected class name");
             Token? superclassName = null;
-            List<FunctionStatement> functions = new List<FunctionStatement>();
+            var functions = new List<FunctionStatement>();
 
-            if (match(TokenType.COLON))
+            if (Match(TokenType.COLON))
             {
-                superclassName = consume(TokenType.IDENTIFIER, "Expected superclass name");
+                superclassName = Consume(TokenType.IDENTIFIER, "Expected superclass name");
             }
 
-            consume(TokenType.LEFT_BRACE, "Expected {");
+            Consume(TokenType.LEFT_BRACE, "Expected {");
 
-            while (!check(TokenType.RIGHT_BRACE) && !ReachedEnd())
+            while (!Check(TokenType.RIGHT_BRACE) && !ReachedEnd())
             {
-                if (check(TokenType.IDENTIFIER) && check(TokenType.LEFT_BRACKET, 1))
+                if (Check(TokenType.IDENTIFIER) && Check(TokenType.LEFT_BRACKET, 1))
                 {
-                    functions.Add((FunctionStatement)functionDeclaration());
+                    functions.Add((FunctionStatement)FunctionDeclaration());
                 }
                 else
                 {
-                    throw new Exception($"Didn't expect to find {peek()} in the class body");
+                    throw new Exception($"Didn't expect to find {Peek()} in the class body");
                 }
             }
 
-            consume(TokenType.RIGHT_BRACE, "Expected }");
+            Consume(TokenType.RIGHT_BRACE, "Expected }");
 
             return new ClassStatement(className, superclassName, functions);
         }
 
 
-        private Statement statement()
+        private Statement Statement()
         {
-            if (match(TokenType.IF)) return ifStatement();
-            if (match(TokenType.WHILE)) return whileStatement();
-            if (match(TokenType.TRY)) return tryStatement();
-            if (match(TokenType.THROW)) return throwStatement();
-            if (match(TokenType.FOR)) return forStatement();
-            if (match(TokenType.PRINT)) return printStatement();
-            if (match(TokenType.RETURN)) return returnStatement();
-            if (match(TokenType.BREAK)) return breakStatement();
-            if (match(TokenType.CONTINUE)) return continueStatement();
-            if (match(TokenType.LEFT_BRACE)) return block();
-            if (match(TokenType.DEBUGGER)) return debuggerStatement();
+            if (Match(TokenType.IF)) return IfStatement();
+            if (Match(TokenType.WHILE)) return WhileStatement();
+            if (Match(TokenType.TRY)) return TryStatement();
+            if (Match(TokenType.THROW)) return ThrowStatement();
+            if (Match(TokenType.FOR)) return ForStatement();
+            if (Match(TokenType.PRINT)) return PrintStatement();
+            if (Match(TokenType.RETURN)) return ReturnStatement();
+            if (Match(TokenType.BREAK)) return BreakStatement();
+            if (Match(TokenType.CONTINUE)) return ContinueStatement();
+            if (Match(TokenType.LEFT_BRACE)) return Block();
+            if (Match(TokenType.DEBUGGER)) return DebuggerStatement();
             //if (match(TokenType.CLASS)) return classDeclaration();
 
-            return expressionStatement();
+            return ExpressionStatement();
         }
 
-        private Statement printStatement()
+        private Statement PrintStatement()
         {
-            var expr = expression();
-            consume(TokenType.SEMICOLON, "Expected ;");
+            var expr = Expression();
+            Consume(TokenType.SEMICOLON, "Expected ;");
             return new PrintStatement(expr);
         }
 
-        private Statement throwStatement()
+        private Statement ThrowStatement()
         {
-            var expr = expression();
-            consume(TokenType.SEMICOLON, "Expected ;");
+            var expr = Expression();
+            Consume(TokenType.SEMICOLON, "Expected ;");
             return new ThrowStatement(expr);
         }
 
-        private Statement returnStatement()
+        private Statement ReturnStatement()
         {
             if (!_statementCallStack.Contains("FUNCTION"))
             {
-                throw error(previous(), "Return not in function.");
+                throw Error(Previous(), "Return not in function.");
             }
 
-            var expr = expression();
-            consume(TokenType.SEMICOLON, "Expected ;");
+            var expr = Expression();
+            Consume(TokenType.SEMICOLON, "Expected ;");
             return new ReturnStatement(expr);
         }
 
-        private Statement breakStatement()
+        private Statement BreakStatement()
         {
             if (!_statementCallStack.Contains("WHILE"))
             {
-                throw error(previous(), "Break should be inside a while or for loop");
+                throw Error(Previous(), "Break should be inside a while or for loop");
             }
 
-            consume(TokenType.SEMICOLON, "Expected ;");
+            Consume(TokenType.SEMICOLON, "Expected ;");
             return new BreakStatement();
         }
 
-        private Statement continueStatement()
+        private Statement ContinueStatement()
         {
             if (!_statementCallStack.Contains("WHILE"))
             {
-                throw error(previous(), "Continue should be inside a while or for loop");
+                throw Error(Previous(), "Continue should be inside a while or for loop");
             }
 
-            consume(TokenType.SEMICOLON, "Expected ;");
+            Consume(TokenType.SEMICOLON, "Expected ;");
             return new ContinueStatement();
         }
 
-        private Statement debuggerStatement()
+        private Statement DebuggerStatement()
         {
-            consume(TokenType.SEMICOLON, "Expected ;");
+            Consume(TokenType.SEMICOLON, "Expected ;");
             return new DebuggerStatement();
         }
 
-        private BlockStatement block()
+        private BlockStatement Block()
         {
             _statementCallStack.Push("BLOCK");
 
             IList<Statement> statements = new List<Statement>();
 
-            while (!check(TokenType.RIGHT_BRACE) && !ReachedEnd())
+            while (!Check(TokenType.RIGHT_BRACE) && !ReachedEnd())
             {
-                statements.Add(declaration());
+                statements.Add(Declaration());
             }
 
             _ = _statementCallStack.Pop();
 
-            consume(TokenType.RIGHT_BRACE, "Expect '}' after block.");
+            Consume(TokenType.RIGHT_BRACE, "Expect '}' after block.");
             return new BlockStatement(statements);
         }
 
-        private Statement ifStatement()
+        private Statement IfStatement()
         {
             _statementCallStack.Push("IF");
 
-            consume(TokenType.LEFT_BRACKET, "Expected (");
-            var condition = expression();
-            consume(TokenType.RIGHT_BRACKET, "Expected )");
-            var thenStatement = statement();
+            Consume(TokenType.LEFT_BRACKET, "Expected (");
+            var condition = Expression();
+            Consume(TokenType.RIGHT_BRACKET, "Expected )");
+            var thenStatement = Statement();
 
             Statement? elseStatement = null;
 
-            if (match(TokenType.ELSE))
+            if (Match(TokenType.ELSE))
             {
-                elseStatement = statement();
+                elseStatement = Statement();
             }
 
             _ = _statementCallStack.Pop();
@@ -444,53 +461,53 @@ namespace SmolScript.Internals
             return new IfStatement(condition, thenStatement, elseStatement);
         }
 
-        private Statement whileStatement()
+        private Statement WhileStatement()
         {
             _statementCallStack.Push("WHILE");
 
-            consume(TokenType.LEFT_BRACKET, "Expected (");
-            var whileCondition = expression();
-            consume(TokenType.RIGHT_BRACKET, "Expected )");
-            var whileStatement = statement();
+            Consume(TokenType.LEFT_BRACKET, "Expected (");
+            var whileCondition = Expression();
+            Consume(TokenType.RIGHT_BRACKET, "Expected )");
+            var whileStatement = Statement();
 
             _ = _statementCallStack.Pop();
 
             return new WhileStatement(whileCondition, whileStatement);
         }
 
-        private Statement tryStatement()
+        private Statement TryStatement()
         {
             _statementCallStack.Push("TRY");
 
-            consume(TokenType.LEFT_BRACE, "Expected {");
-            BlockStatement tryBody = block();
+            Consume(TokenType.LEFT_BRACE, "Expected {");
+            BlockStatement tryBody = Block();
             BlockStatement? catchBody = null;
             BlockStatement? finallyBody = null;
 
             Token? exceptionVarName = null;
 
-            if (match(TokenType.CATCH))
+            if (Match(TokenType.CATCH))
             {
-                if (match(TokenType.LEFT_BRACKET))
+                if (Match(TokenType.LEFT_BRACKET))
                 {
-                    exceptionVarName = consume(TokenType.IDENTIFIER, "Expected a single variable name for exception variable");
+                    exceptionVarName = Consume(TokenType.IDENTIFIER, "Expected a single variable name for exception variable");
 
-                    consume(TokenType.RIGHT_BRACKET, "Expected )");
+                    Consume(TokenType.RIGHT_BRACKET, "Expected )");
                 }
 
-                consume(TokenType.LEFT_BRACE, "Expected {");
-                catchBody = block();
+                Consume(TokenType.LEFT_BRACE, "Expected {");
+                catchBody = Block();
             }
 
-            if (match(TokenType.FINALLY))
+            if (Match(TokenType.FINALLY))
             {
-                consume(TokenType.LEFT_BRACE, "Expected {");
-                finallyBody = block();
+                Consume(TokenType.LEFT_BRACE, "Expected {");
+                finallyBody = Block();
             }
 
             if (catchBody == null && finallyBody == null)
             {
-                consume(TokenType.CATCH, "Expected catch or finally");
+                Consume(TokenType.CATCH, "Expected catch or finally");
             }
 
             _ = _statementCallStack.Pop();
@@ -498,50 +515,50 @@ namespace SmolScript.Internals
             return new TryStatement(tryBody, exceptionVarName, catchBody, finallyBody);
         }
 
-        private Statement forStatement()
+        private Statement ForStatement()
         {
             _statementCallStack.Push("WHILE");
 
-            consume(TokenType.LEFT_BRACKET, "Expected (");
+            Consume(TokenType.LEFT_BRACKET, "Expected (");
 
             Statement? initialiser = null;
 
-            if (match(TokenType.SEMICOLON))
+            if (Match(TokenType.SEMICOLON))
             {
                 initialiser = null;
             }
-            else if (match(TokenType.VAR))
+            else if (Match(TokenType.VAR))
             {
-                initialiser = varDeclaration();
+                initialiser = VarDeclaration();
             }
             else
             {
-                initialiser = expressionStatement();
+                initialiser = ExpressionStatement();
             }
 
             Expression? condition = null;
 
-            if (!check(TokenType.SEMICOLON))
+            if (!Check(TokenType.SEMICOLON))
             {
-                condition = expression();
+                condition = Expression();
             }
             else
             {
                 condition = new LiteralExpression(new SmolBool(true));
             }
 
-            consume(TokenType.SEMICOLON, "Expected ;");
+            Consume(TokenType.SEMICOLON, "Expected ;");
 
             Expression? increment = null;
 
-            if (!check(TokenType.RIGHT_BRACKET))
+            if (!Check(TokenType.RIGHT_BRACKET))
             {
-                increment = expression();
+                increment = Expression();
             }
 
-            consume(TokenType.RIGHT_BRACKET, "Expected )");
+            Consume(TokenType.RIGHT_BRACKET, "Expected )");
 
-            var body = statement();
+            var body = Statement();
 
             if (increment != null)
             {
@@ -566,23 +583,23 @@ namespace SmolScript.Internals
             return body;
         }
 
-        private Statement expressionStatement()
+        private Statement ExpressionStatement()
         {
-            var expr = expression();
+            var expr = Expression();
 
-            consume(TokenType.SEMICOLON, "Expected ;");
+            Consume(TokenType.SEMICOLON, "Expected ;");
             return new ExpressionStatement(expr);
         }
 
-        private Expression expression()
+        private Expression Expression()
         {
-            var expr = assignment();
+            var expr = Assignment();
 
-            if (match(TokenType.QUESTION_MARK))
+            if (Match(TokenType.QUESTION_MARK))
             {
-                var thenExpression = expression(); // This isn't right, need to work out correct order
-                consume(TokenType.COLON, "Expected :");
-                var elseExpression = expression();
+                var thenExpression = Expression(); // This isn't right, need to work out correct order
+                Consume(TokenType.COLON, "Expected :");
+                var elseExpression = Expression();
 
                 return new TernaryExpression(expr, thenExpression, elseExpression);
             }
@@ -590,14 +607,14 @@ namespace SmolScript.Internals
             return expr;
         }
 
-        private Expression assignment()
+        private Expression Assignment()
         {
-            var expr = functionExpression();
+            var expr = FunctionExpression();
 
-            if (match(TokenType.EQUAL))
+            if (Match(TokenType.EQUAL))
             {
-                var equals = previous();
-                var value = assignment();
+                var equals = Previous();
+                var value = Assignment();
 
                 if (expr.GetType() == typeof(VariableExpression))
                 {
@@ -615,13 +632,13 @@ namespace SmolScript.Internals
                     return new IndexerSetExpression(getExpr.obj, getExpr.indexerExpr, value);
                 }
 
-                throw error(equals, "Invalid assignment target.");
+                throw Error(equals, "Invalid assignment target.");
             }
 
-            if (match(TokenType.PLUS_EQUALS))
+            if (Match(TokenType.PLUS_EQUALS))
             {
-                var originalToken = previous();
-                var value = assignment();
+                var originalToken = Previous();
+                var value = Assignment();
                 var additionExpr = new BinaryExpression(expr, new Token(TokenType.PLUS, "+=", null, originalToken.line, originalToken.col, originalToken.start_pos, originalToken.end_pos), value);
 
                 if (expr.GetType() == typeof(VariableExpression))
@@ -640,13 +657,13 @@ namespace SmolScript.Internals
                     return new IndexerSetExpression(getExpr.obj, getExpr.indexerExpr, additionExpr);
                 }
 
-                throw error(originalToken, "Invalid assignment target.");
+                throw Error(originalToken, "Invalid assignment target.");
             }
 
-            if (match(TokenType.MINUS_EQUALS))
+            if (Match(TokenType.MINUS_EQUALS))
             {
-                var originalToken = previous();
-                var value = assignment();
+                var originalToken = Previous();
+                var value = Assignment();
                 var subtractExpr = new BinaryExpression(expr, new Token(TokenType.MINUS, "-=", null, originalToken.line, originalToken.col, originalToken.start_pos, originalToken.end_pos), value);
 
                 if (expr.GetType() == typeof(VariableExpression))
@@ -665,13 +682,13 @@ namespace SmolScript.Internals
                     return new IndexerSetExpression(getExpr.obj, getExpr.indexerExpr, subtractExpr);
                 }
 
-                throw error(originalToken, "Invalid assignment target.");
+                throw Error(originalToken, "Invalid assignment target.");
             }
 
-            if (match(TokenType.POW_EQUALS))
+            if (Match(TokenType.POW_EQUALS))
             {
-                var originalToken = previous();
-                var value = assignment();
+                var originalToken = Previous();
+                var value = Assignment();
                 var powExpr = new BinaryExpression(expr, new Token(TokenType.POW, "*=", null, originalToken.line, originalToken.col, originalToken.start_pos, originalToken.end_pos), value);
 
                 if (expr.GetType() == typeof(VariableExpression))
@@ -689,13 +706,13 @@ namespace SmolScript.Internals
                     return new IndexerSetExpression(getExpr.obj, getExpr.indexerExpr, powExpr);
                 }
 
-                throw error(originalToken, "Invalid assignment target.");
+                throw Error(originalToken, "Invalid assignment target.");
             }
 
-            if (match(TokenType.DIVIDE_EQUALS))
+            if (Match(TokenType.DIVIDE_EQUALS))
             {
-                var originalToken = previous();
-                var value = assignment();
+                var originalToken = Previous();
+                var value = Assignment();
                 var divExpr = new BinaryExpression(expr, new Token(TokenType.DIVIDE, "/=", null, originalToken.line, originalToken.col, originalToken.start_pos, originalToken.end_pos), value);
 
                 if (expr.GetType() == typeof(VariableExpression))
@@ -714,13 +731,13 @@ namespace SmolScript.Internals
                     return new IndexerSetExpression(getExpr.obj, getExpr.indexerExpr, divExpr);
                 }
 
-                throw error(originalToken, "Invalid assignment target.");
+                throw Error(originalToken, "Invalid assignment target.");
             }
 
-            if (match(TokenType.MULTIPLY_EQUALS))
+            if (Match(TokenType.MULTIPLY_EQUALS))
             {
-                var originalToken = previous();
-                var value = assignment();
+                var originalToken = Previous();
+                var value = Assignment();
                 var mulExpr = new BinaryExpression(expr, new Token(TokenType.MULTIPLY, "*=", null, originalToken.line, originalToken.col, originalToken.start_pos, originalToken.end_pos), value);
 
                 if (expr.GetType() == typeof(VariableExpression))
@@ -739,13 +756,13 @@ namespace SmolScript.Internals
                     return new IndexerSetExpression(getExpr.obj, getExpr.indexerExpr, mulExpr);
                 }
 
-                throw error(originalToken, "Invalid assignment target.");
+                throw Error(originalToken, "Invalid assignment target.");
             }
 
-            if (match(TokenType.REMAINDER_EQUALS))
+            if (Match(TokenType.REMAINDER_EQUALS))
             {
-                var originalToken = previous();
-                var value = assignment();
+                var originalToken = Previous();
+                var value = Assignment();
                 var remainderExpr = new BinaryExpression(expr, new Token(TokenType.REMAINDER, "/=", null, originalToken.line, originalToken.col, originalToken.start_pos, originalToken.end_pos), value);
 
                 if (expr.GetType() == typeof(VariableExpression))
@@ -764,193 +781,193 @@ namespace SmolScript.Internals
                     return new IndexerSetExpression(getExpr.obj, getExpr.indexerExpr, remainderExpr);
                 }
 
-                throw error(originalToken, "Invalid assignment target.");
+                throw Error(originalToken, "Invalid assignment target.");
             }
 
             return expr;
         }
 
-        private Expression functionExpression()
+        private Expression FunctionExpression()
         {
-            if (match(TokenType.FUNC))
+            if (Match(TokenType.FUNC))
             {
                 _statementCallStack.Push("FUNCTION");
 
                 var functionParams = new List<Token>();
 
-                consume(TokenType.LEFT_BRACKET, "Expected (");
+                Consume(TokenType.LEFT_BRACKET, "Expected (");
 
-                if (!check(TokenType.RIGHT_BRACKET))
+                if (!Check(TokenType.RIGHT_BRACKET))
                 {
                     do
                     {
                         if (functionParams.Count() >= 127)
                         {
-                            error(peek(), "Can't define a function with more than 127 parameters.");
+                            Error(Peek(), "Can't define a function with more than 127 parameters.");
                         }
 
-                        functionParams.Add(consume(TokenType.IDENTIFIER, "Expected parameter name"));
-                    } while (match(TokenType.COMMA));
+                        functionParams.Add(Consume(TokenType.IDENTIFIER, "Expected parameter name"));
+                    } while (Match(TokenType.COMMA));
                 }
 
-                consume(TokenType.RIGHT_BRACKET, "Expected )");
-                consume(TokenType.LEFT_BRACE, "Expected {");
+                Consume(TokenType.RIGHT_BRACKET, "Expected )");
+                Consume(TokenType.LEFT_BRACE, "Expected {");
 
-                var functionBody = block();
+                var functionBody = Block();
 
                 _ = _statementCallStack.Pop();
 
                 return new FunctionExpression(functionParams, functionBody);
             }
 
-            return logicalOr();
+            return LogicalOr();
         }
 
-        private Expression logicalOr()
+        private Expression LogicalOr()
         {
-            var expr = logicalAnd();
+            var expr = LogicalAnd();
 
-            while (match(TokenType.LOGICAL_OR))
+            while (Match(TokenType.LOGICAL_OR))
             {
-                var op = previous();
-                var right = logicalAnd();
+                var op = Previous();
+                var right = LogicalAnd();
                 expr = new LogicalExpression(expr, op, right);
             }
 
             return expr;
         }
 
-        private Expression logicalAnd()
+        private Expression LogicalAnd()
         {
-            var expr = equality();
+            var expr = Equality();
 
-            while (match(TokenType.LOGICAL_AND))
+            while (Match(TokenType.LOGICAL_AND))
             {
-                var op = previous();
-                var right = equality();
+                var op = Previous();
+                var right = Equality();
                 expr = new LogicalExpression(expr, op, right);
             }
 
             return expr;
         }
 
-        private Expression equality()
+        private Expression Equality()
         {
-            var expr = comparison();
+            var expr = Comparison();
 
-            while (match(TokenType.NOT_EQUAL, TokenType.EQUAL_EQUAL))
+            while (Match(TokenType.NOT_EQUAL, TokenType.EQUAL_EQUAL))
             {
-                var op = previous();
-                var right = comparison();
+                var op = Previous();
+                var right = Comparison();
                 expr = new BinaryExpression(expr, op, right);
             }
 
             return expr;
         }
 
-        private Expression comparison()
+        private Expression Comparison()
         {
-            var expr = bitwise_op(); // Was term
+            var expr = BitwiseOperation(); // Was term
 
-            while (match(TokenType.GREATER, TokenType.GREATER_EQUAL, TokenType.LESS, TokenType.LESS_EQUAL))
+            while (Match(TokenType.GREATER, TokenType.GREATER_EQUAL, TokenType.LESS, TokenType.LESS_EQUAL))
             {
-                var op = previous();
-                var right = bitwise_op(); // Was term
+                var op = Previous();
+                var right = BitwiseOperation(); // Was term
                 expr = new BinaryExpression(expr, op, right);
             }
 
             return expr;
         }
 
-        private Expression bitwise_op()
+        private Expression BitwiseOperation()
         {
-            var expr = term();
+            var expr = Term();
 
-            while (match(TokenType.BITWISE_AND, TokenType.BITWISE_OR, TokenType.REMAINDER))
+            while (Match(TokenType.BITWISE_AND, TokenType.BITWISE_OR, TokenType.REMAINDER))
             {
-                var op = previous();
-                var right = term();
+                var op = Previous();
+                var right = Term();
                 expr = new BinaryExpression(expr, op, right);
             }
 
             return expr;
         }
 
-        private Expression term()
+        private Expression Term()
         {
-            var expr = factor();
+            var expr = Factor();
 
-            while (match(TokenType.MINUS, TokenType.PLUS))
+            while (Match(TokenType.MINUS, TokenType.PLUS))
             {
-                var op = previous();
-                var right = factor();
+                var op = Previous();
+                var right = Factor();
                 expr = new BinaryExpression(expr, op, right);
             }
 
             return expr;
         }
 
-        private Expression factor()
+        private Expression Factor()
         {
-            var expr = pow();
+            var expr = Pow();
 
-            while (match(TokenType.MULTIPLY, TokenType.DIVIDE))
+            while (Match(TokenType.MULTIPLY, TokenType.DIVIDE))
             {
-                var op = previous();
-                var right = pow();
+                var op = Previous();
+                var right = Pow();
                 expr = new BinaryExpression(expr, op, right);
             }
 
             return expr;
         }
 
-        private Expression pow()
+        private Expression Pow()
         {
-            var expr = unary();
+            var expr = Unary();
 
-            while (match(TokenType.POW))
+            while (Match(TokenType.POW))
             {
-                var op = previous();
-                var right = unary();
+                var op = Previous();
+                var right = Unary();
                 expr = new BinaryExpression(expr, op, right);
             }
 
             return expr;
         }
 
-        private Expression unary()
+        private Expression Unary()
         {
-            if (match(TokenType.NOT, TokenType.MINUS))
+            if (Match(TokenType.NOT, TokenType.MINUS))
             {
-                var op = previous();
-                var right = unary();
+                var op = Previous();
+                var right = Unary();
                 return new UnaryExpression(op, right);
             }
 
-            return call();
+            return Call();
         }
 
-        private Expression call()
+        private Expression Call()
         {
-            var expr = primary();
+            var expr = Primary();
 
             while (true)
             {
-                if (match(TokenType.LEFT_BRACKET))
+                if (Match(TokenType.LEFT_BRACKET))
                 {
-                    expr = finishCall(expr, expr.GetType() == typeof(GetExpression));
+                    expr = FinishCall(expr, expr.GetType() == typeof(GetExpression));
                 }
-                else if (match(TokenType.LEFT_SQUARE_BRACKET))
+                else if (Match(TokenType.LEFT_SQUARE_BRACKET))
                 {
-                    var indexerExpression = expression();
+                    var indexerExpression = Expression();
 
-                    var closingParen = consume(TokenType.RIGHT_SQUARE_BRACKET, "Expected ]");
+                    var closingParen = Consume(TokenType.RIGHT_SQUARE_BRACKET, "Expected ]");
 
                     expr = new IndexerGetExpression(expr, indexerExpression);
                 }
-                else if (match(TokenType.DOT))
+                else if (Match(TokenType.DOT))
                 {
-                    Token name = consume(TokenType.IDENTIFIER, "Expect property name after '.'.");
+                    Token name = Consume(TokenType.IDENTIFIER, "Expect property name after '.'.");
                     expr = new GetExpression(expr, name);
                 }
                 else
@@ -962,137 +979,137 @@ namespace SmolScript.Internals
             return expr;
         }
 
-        private Expression finishCall(Expression callee, bool isFollowingGetter = false)
+        private Expression FinishCall(Expression callee, bool isFollowingGetter = false)
         {
             var args = new List<Expression>();
 
-            if (!check(TokenType.RIGHT_BRACKET))
+            if (!Check(TokenType.RIGHT_BRACKET))
             {
-                do { args.Add(expression()); } while (match(TokenType.COMMA));
+                do { args.Add(Expression()); } while (Match(TokenType.COMMA));
             }
 
-            var closingParen = consume(TokenType.RIGHT_BRACKET, "Expected )");
+            var closingParen = Consume(TokenType.RIGHT_BRACKET, "Expected )");
 
             return new CallExpression(callee, args, isFollowingGetter);
         }
 
-        private Expression primary()
+        private Expression Primary()
         {
-            if (match(TokenType.FALSE)) return new LiteralExpression(new SmolBool(false));
-            if (match(TokenType.TRUE)) return new LiteralExpression(new SmolBool(true));
-            if (match(TokenType.NULL)) return new LiteralExpression(new SmolNull());
-            if (match(TokenType.UNDEFINED)) return new LiteralExpression(new SmolUndefined());
+            if (Match(TokenType.FALSE)) return new LiteralExpression(new SmolBool(false));
+            if (Match(TokenType.TRUE)) return new LiteralExpression(new SmolBool(true));
+            if (Match(TokenType.NULL)) return new LiteralExpression(new SmolNull());
+            if (Match(TokenType.UNDEFINED)) return new LiteralExpression(new SmolUndefined());
 
-            if (match(TokenType.NUMBER))
+            if (Match(TokenType.NUMBER))
             {
-                return new LiteralExpression(new SmolNumber((double)previous().literal!));
+                return new LiteralExpression(new SmolNumber((double)Previous().literal!));
             }
 
-            if (match(TokenType.STRING))
+            if (Match(TokenType.STRING))
             {
-                return new LiteralExpression(new SmolString((string)previous().literal!));
+                return new LiteralExpression(new SmolString((string)Previous().literal!));
             }
 
-            if (match(TokenType.PREFIX_INCREMENT))
+            if (Match(TokenType.PREFIX_INCREMENT))
             {
-                if (match(TokenType.IDENTIFIER))
+                if (Match(TokenType.IDENTIFIER))
                 {
-                    return new VariableExpression(previous(), TokenType.PREFIX_INCREMENT);
+                    return new VariableExpression(Previous(), TokenType.PREFIX_INCREMENT);
                 }
             }
 
-            if (match(TokenType.PREFIX_DECREMENT))
+            if (Match(TokenType.PREFIX_DECREMENT))
             {
-                if (match(TokenType.IDENTIFIER))
+                if (Match(TokenType.IDENTIFIER))
                 {
-                    return new VariableExpression(previous(), TokenType.PREFIX_DECREMENT);
+                    return new VariableExpression(Previous(), TokenType.PREFIX_DECREMENT);
                 }
             }
 
-            if (match(TokenType.IDENTIFIER))
+            if (Match(TokenType.IDENTIFIER))
             {
-                if (match(TokenType.POSTFIX_INCREMENT))
+                if (Match(TokenType.POSTFIX_INCREMENT))
                 {
-                    return new VariableExpression(previous(1), TokenType.POSTFIX_INCREMENT);
+                    return new VariableExpression(Previous(1), TokenType.POSTFIX_INCREMENT);
                 }
-                else if (match(TokenType.POSTFIX_DECREMENT))
+                else if (Match(TokenType.POSTFIX_DECREMENT))
                 {
-                    return new VariableExpression(previous(1), TokenType.POSTFIX_DECREMENT);
+                    return new VariableExpression(Previous(1), TokenType.POSTFIX_DECREMENT);
                 }
                 else
                 {
-                    return new VariableExpression(previous());
+                    return new VariableExpression(Previous());
                 }
             }
 
-            if (match(TokenType.NEW))
+            if (Match(TokenType.NEW))
             {
-                var className = consume(TokenType.IDENTIFIER, "Expected identifier after new");
+                var className = Consume(TokenType.IDENTIFIER, "Expected identifier after new");
 
-                consume(TokenType.LEFT_BRACKET, "Expect ')' after expression.");
+                Consume(TokenType.LEFT_BRACKET, "Expect ')' after expression.");
 
                 var args = new List<Expression>();
 
-                if (!check(TokenType.RIGHT_BRACKET))
+                if (!Check(TokenType.RIGHT_BRACKET))
                 {
-                    do { args.Add(expression()); } while (match(TokenType.COMMA));
+                    do { args.Add(Expression()); } while (Match(TokenType.COMMA));
                 }
 
-                var closingParen = consume(TokenType.RIGHT_BRACKET, "Expected )");
+                var closingParen = Consume(TokenType.RIGHT_BRACKET, "Expected )");
 
                 return new NewInstanceExpression(className, args);
             }
 
-            if (match(TokenType.LEFT_SQUARE_BRACKET))
+            if (Match(TokenType.LEFT_SQUARE_BRACKET))
             {
-                var originalToken = previous();
+                var originalToken = Previous();
                 var className = new Token(TokenType.IDENTIFIER, "Array", null, originalToken.line, originalToken.col, originalToken.start_pos, originalToken.end_pos);
                 var args = new List<Expression>();
 
-                if (!check(TokenType.RIGHT_SQUARE_BRACKET))
+                if (!Check(TokenType.RIGHT_SQUARE_BRACKET))
                 {
-                    do { args.Add(expression()); } while (match(TokenType.COMMA));
+                    do { args.Add(Expression()); } while (Match(TokenType.COMMA));
                 }
 
-                var closingParen = consume(TokenType.RIGHT_SQUARE_BRACKET, "Expected ]");
+                var closingParen = Consume(TokenType.RIGHT_SQUARE_BRACKET, "Expected ]");
 
                 return new NewInstanceExpression(className, args);
             }
 
-            if (match(TokenType.LEFT_BRACE))
+            if (Match(TokenType.LEFT_BRACE))
             {
-                var originalToken = previous();
+                var originalToken = Previous();
                 var className = new Token(TokenType.IDENTIFIER, "Object", null, originalToken.line, originalToken.col, originalToken.start_pos, originalToken.end_pos);
 
                 var args = new List<Expression>();
 
-                if (!check(TokenType.RIGHT_BRACE))
+                if (!Check(TokenType.RIGHT_BRACE))
                 {
                     do
                     {
 
-                        var name = consume(TokenType.IDENTIFIER, "Expected idetifier");
-                        _ = consume(TokenType.COLON, "Exepcted :");
-                        var value = expression();
+                        var name = Consume(TokenType.IDENTIFIER, "Expected idetifier");
+                        _ = Consume(TokenType.COLON, "Exepcted :");
+                        var value = Expression();
 
                         args.Add(new ObjectInitializerExpression(name, value));
 
-                    } while (match(TokenType.COMMA));
+                    } while (Match(TokenType.COMMA));
                 }
 
-                var closingParen = consume(TokenType.RIGHT_BRACE, "Expected }");
+                var closingParen = Consume(TokenType.RIGHT_BRACE, "Expected }");
 
                 return new NewInstanceExpression(className, args);
             }
 
-            if (match(TokenType.LEFT_BRACKET))
+            if (Match(TokenType.LEFT_BRACKET))
             {
-                Expression expr = expression();
-                consume(TokenType.RIGHT_BRACKET, "Expect ')' after expression.");
+                var expr = Expression();
+                Consume(TokenType.RIGHT_BRACKET, "Expect ')' after expression.");
                 return new GroupingExpression(expr);
             }
 
-            throw error(peek(), $"Parser did not expect to see '{peek().lexeme}' on line {peek().line}, column {peek().col}, sorry");
+            throw Error(Peek(), $"Parser did not expect to see '{Peek().lexeme}' on line {Peek().line}, column {Peek().col}, sorry");
         }
     }
 }

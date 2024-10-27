@@ -21,7 +21,7 @@ namespace SmolScript.Internals
 
             foreach (var fn in program.FunctionTable)
             {
-                sb.AppendLine($"Name: {fn.global_function_name} (code_section = {fn.code_section}, arity = {fn.arity})");
+                sb.AppendLine($"Name: {fn.GlobalFunctionName} (code_section = {fn.CodeSection}, arity = {fn.Arity})");
             }
 
             for (int i = 0; i < program.CodeSections.Count; i++)
@@ -33,6 +33,15 @@ namespace SmolScript.Internals
                 WriteInstructions(program.CodeSections[i], sb);
             }
 
+            sb.AppendLine($"");
+
+            for (int i = 0; i < program.FunctionTable.Count; i++)
+            {
+                var f = program.FunctionTable[i];
+
+                sb.AppendLine($".function {i}");
+                sb.AppendLine($"GlobalFunctionName = {f.GlobalFunctionName}, CodeSection = {f.CodeSection}, Arity = {f.Arity}");
+            }
 
             return sb.ToString();
         }

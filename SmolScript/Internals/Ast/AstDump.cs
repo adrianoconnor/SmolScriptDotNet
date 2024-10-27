@@ -6,21 +6,21 @@ namespace SmolScript.Internals.Ast
 {
     internal class AstDump : IExpressionVisitor, IStatementVisitor
     {
-        string newline = System.Environment.NewLine;
-        private int depth = 0;
-        private string indent
+        string _newline = System.Environment.NewLine;
+        private int _depth = 0;
+        private string Indent
         {
-            get { return "".PadLeft(depth * 2); }
+            get { return "".PadLeft(_depth * 2); }
         }
 
-        private void enter()
+        private void Enter()
         {
-            depth++;
+            _depth++;
         }
 
-        private void leave()
+        private void Leave()
         {
-            depth--;
+            _depth--;
         }
 
         public string? Print(IList<Statement> stmts)
@@ -83,7 +83,7 @@ namespace SmolScript.Internals.Ast
 
         public object? Visit(VarStatement stmt)
         {
-            enter();
+            Enter();
 
             if (stmt.initializerExpression != null)
             {

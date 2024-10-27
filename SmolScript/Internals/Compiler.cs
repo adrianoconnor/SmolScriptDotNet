@@ -231,8 +231,8 @@ namespace SmolScript.Internals
 
         public object? Visit(LiteralExpression expr)
         {
-            // Literal is always a constant, so see if we've got this
-            // literal in our list of constants and add it if we need to
+            // Literal is always a constant value. The helper method looks to see if we already
+            // have that constant (and if not adds it) and returns the index.
 
             return new ByteCodeInstruction()
             {
@@ -463,8 +463,8 @@ namespace SmolScript.Internals
         {
             var chunk = new List<ByteCodeInstruction>();
 
-            int notTrueLabel = ReserveLabelId();
-            int endLabel = ReserveLabelId();
+            var notTrueLabel = ReserveLabelId();
+            var endLabel = ReserveLabelId();
 
             chunk.AppendChunk(expr.evaluationExpression.Accept(this));
             chunk.AppendInstruction(OpCode.JMPFALSE, notTrueLabel);
@@ -638,16 +638,19 @@ namespace SmolScript.Internals
 
         public object? Visit(FunctionStatement stmt)
         {
-            var function_index = _functionBodies.Count() + 1;
-            var function_name = stmt.name?.lexeme! ?? $"$_anon_{function_index}";
+            var functionIndex = _functionBodies.Count() + 1;
+            var functionName = stmt.name?.lexeme! ?? $"$_anon_{functionIndex}";
 
             _functionTable.Add(new SmolFunction(
-                global_function_name: function_name,
-                code_section: function_index,
+                globalFunctionName: functionName,
+                codeSection: functionIndex,
                 arity: stmt.parameters.Count(),
-                param_variable_names: stmt.parameters.Select(p => p.lexeme).ToList()
+                paramVariableNames: stmt.parameters.Select(p => p.lexeme).ToList()
             ));
 
+            // Reserve the function body so if we're 
+            _functionBodies.Add(new List<ByteCodeInstruction>());
+            
             var body = (List<ByteCodeInstruction>)stmt.functionBody.Accept(this)!;
 
             if (!body.Any() || body.Last().opcode != OpCode.RETURN)
@@ -660,7 +663,7 @@ namespace SmolScript.Internals
                 body.AppendInstruction(OpCode.RETURN);
             }
 
-            _functionBodies.Add(body);
+            _functionBodies[functionIndex-1] = body;
 
             // We are declaring a function, we don't add anything to the byte stream at the current loc.
             // When we allow functions as expressions and assignments we'll need to do something
@@ -685,14 +688,14 @@ namespace SmolScript.Internals
 
             foreach (var fn in stmt.functions)
             {
-                var function_index = _functionBodies.Count() + 1;
-                var function_name = $"@{stmt.className.lexeme}.{fn.name!.lexeme}";
+                var functionIndex = _functionBodies.Count() + 1;
+                var functionName = $"@{stmt.className.lexeme}.{fn.name!.lexeme}";
 
                 _functionTable.Add(new SmolFunction(
-                    global_function_name: function_name,
-                    code_section: function_index,
+                    globalFunctionName: functionName,
+                    codeSection: functionIndex,
                     arity: fn.parameters.Count(),
-                    param_variable_names: fn.parameters.Select(p => p.lexeme).ToList()
+                    paramVariableNames: fn.parameters.Select(p => p.lexeme).ToList()
                 ));
 
                 var body = (List<ByteCodeInstruction>)fn.functionBody.Accept(this)!;
@@ -854,14 +857,14 @@ namespace SmolScript.Internals
 
         public object? Visit(FunctionExpression expr)
         {
-            var function_index = _functionBodies.Count() + 1;
-            var function_name = $"$_anon_{function_index}";
+            var functionIndex = _functionBodies.Count() + 1;
+            var functionName = $"$_anon_{functionIndex}";
 
             _functionTable.Add(new SmolFunction(
-                global_function_name: function_name,
-                code_section: function_index,
+                globalFunctionName: functionName,
+                codeSection: functionIndex,
                 arity: expr.parameters.Count(),
-                param_variable_names: expr.parameters.Select(p => p.lexeme).ToList()
+                paramVariableNames: expr.parameters.Select(p => p.lexeme).ToList()
             ));
 
             var body = (List<ByteCodeInstruction>)expr.functionBody.Accept(this)!;
@@ -879,7 +882,7 @@ namespace SmolScript.Internals
             return (new ByteCodeInstruction()
             {
                 opcode = OpCode.FETCH,
-                operand1 = function_name
+                operand1 = functionName
             });
         }
     }

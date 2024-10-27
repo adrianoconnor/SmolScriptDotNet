@@ -56,6 +56,8 @@ namespace SmolScript
         void Step();
 
         Action<string> OnDebugLog { set; }
+
+	    string Decompile();
     }
 }
 
