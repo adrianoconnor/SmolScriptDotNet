@@ -431,7 +431,14 @@ namespace SmolScript.Internals
 
             while (!Check(TokenType.RIGHT_BRACE) && !ReachedEnd())
             {
-                statements.Add(Declaration());
+                if (Peek().type == TokenType.SEMICOLON)
+                {
+                    Consume(TokenType.SEMICOLON, "");
+                }
+                else
+                {
+                    statements.Add(Declaration());
+                }
             }
 
             _ = _statementCallStack.Pop();
@@ -1108,7 +1115,7 @@ namespace SmolScript.Internals
                 Consume(TokenType.RIGHT_BRACKET, "Expect ')' after expression.");
                 return new GroupingExpression(expr);
             }
-
+            
             throw Error(Peek(), $"Parser did not expect to see '{Peek().lexeme}' on line {Peek().line}, column {Peek().col}, sorry");
         }
     }

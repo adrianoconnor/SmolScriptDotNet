@@ -77,14 +77,14 @@ function b() {
 
 function c() {
     function a() {
-        x = x + 2;
-    }// add ; to create another error :(
-    a();
-    x+=100;
-}
-
-b();
-c();
+        x = x + 2;;;;;
+    };;;;;
+    a();;;;;
+    x+=100;;;;;
+};;;;
+;;;;
+b();;;;
+c();;;;;
 ";
         var vm = SmolVm.Init(source);
   
