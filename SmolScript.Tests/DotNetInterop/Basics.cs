@@ -19,7 +19,7 @@ function aPlusPlus() { // Declare a function we can call from .net
 aPlusPlus(); // Call it once during initialization just to show this also is fine
 ";
 
-        var vm = SmolVM.Compile(code);
+        var vm = SmolVm.Compile(code);
 
         //vm.MaxStackSize = 4;
 
@@ -50,7 +50,7 @@ function aPlusNum(numToAdd) {
 }
 ";
 
-        var vm = SmolVM.Compile(code);
+        var vm = SmolVm.Compile(code);
 
         vm.Run(); // this executes the code above -- declares a and sets it to 1
 
@@ -75,7 +75,7 @@ function concat(strA, strB) {
 }
 ";
 
-        var vm = SmolVM.Init(code);
+        var vm = SmolVm.Init(code);
 
         //        vm.Run();
 
@@ -93,7 +93,7 @@ function concat(strA, strB) {
 }
 ";
 
-        var vm = SmolVM.Compile(code);
+        var vm = SmolVm.Compile(code);
 
         var debugOutput = new System.Text.StringBuilder();
 
@@ -127,7 +127,7 @@ var a = 1;
 function getA() { return a; }
 ";
 
-        var vm = SmolVM.Compile(code);
+        var vm = SmolVm.Compile(code);
 
         vm.Run();
 
@@ -148,7 +148,7 @@ a++;
 function getA() { return a; }
 ";
 
-        var vm = SmolVM.Compile(code);
+        var vm = SmolVm.Compile(code);
 
         vm.Run();
 
@@ -168,7 +168,7 @@ function getA() { return a; }
     {
         var code = @"var result = externalMethodToMultiplyByTen(5);";
 
-        var vm = SmolVM.Compile(code);
+        var vm = SmolVm.Compile(code);
 
         var ten = 10;
 
@@ -187,7 +187,7 @@ function getA() { return a; }
     {
         var code = @"returnVoid();";
 
-        var vm = SmolVM.Compile(code);
+        var vm = SmolVm.Compile(code);
 
         var called = false;
 
@@ -206,7 +206,7 @@ function getA() { return a; }
     {
         var code = @"var a = reverseString('abcde');";
 
-        var vm = SmolVM.Compile(code);
+        var vm = SmolVm.Compile(code);
 
         vm.RegisterMethod("reverseString", (string s) =>
         {
@@ -225,7 +225,7 @@ function getA() { return a; }
     {
         var code = @"var a = mul(3, 5);";
 
-        var vm = SmolVM.Compile(code);
+        var vm = SmolVm.Compile(code);
 
         vm.RegisterMethod("mul", (int a, int b) =>
         {
@@ -242,7 +242,7 @@ function getA() { return a; }
     {
         var code = @"var a = mul(3, 5);";
 
-        var vm = SmolVM.Compile(code);
+        var vm = SmolVm.Compile(code);
 
         var e = Assert.ThrowsException<Exception>(() => vm.RegisterMethod("mul", 1));
 
@@ -254,7 +254,7 @@ function getA() { return a; }
     {
         var code = @"var a = eql(3, 5);";
 
-        var vm = SmolVM.Compile(code);
+        var vm = SmolVm.Compile(code);
 
         vm.RegisterMethod("eql", (int a, int b) =>
         {
@@ -271,7 +271,7 @@ function getA() { return a; }
     {
         var code = @"test(3, 5, 'a', true);";
 
-        var vm = SmolVM.Compile(code);
+        var vm = SmolVm.Compile(code);
 
         vm.RegisterMethod("test", (int a, double b, string c, bool d) =>
         {

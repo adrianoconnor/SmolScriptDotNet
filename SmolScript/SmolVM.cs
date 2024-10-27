@@ -15,61 +15,50 @@ using SmolScript.Internals.SmolVariableTypes;
 
 namespace SmolScript
 {
-    public class SmolVM : ISmolRuntime
+    public class SmolVm : ISmolRuntime
     {
         private class SmolThrownFromInstruction : Exception
         {
 
         }
 
-        enum RunMode
+        private enum RunMode
         {
-            Ready,
-            Run,
-            Paused,
-            Step,
-            Done,
-            Error
+            READY,
+            RUN,
+            PAUSED,
+            STEP,
+            DONE,
+            ERROR
         }
 
-        internal SmolProgram program;
+        internal SmolProgram Program;
 
-        private Action<string>? _DebugLogDelegate;
+        private Action<string>? _debugLogDelegate;
+        
         public Action<string> OnDebugLog
         {
             set
             {
-                _DebugLogDelegate = value;
+                _debugLogDelegate = value;
                 _debug = value != null;
             }
         }
 
-        private int _MaxStackSize = int.MaxValue;
+        private int _maxStackSize = int.MaxValue;
 
         public int MaxStackSize
         {
-            get
-            {
-                return _MaxStackSize;
-            }
-            set
-            {
-                _MaxStackSize = value;
-            }
+            get => _maxStackSize;
+            set => _maxStackSize = value;
         }
 
-        private int _MaxCycleCount = int.MaxValue;
+        private int _maxCycleCount = int.MaxValue;
 
         public int MaxCycleCount
         {
-            get
-            {
-                return _MaxCycleCount;
-            }
-            set
-            {
-                _MaxCycleCount = value;
-            }
+            get => _maxCycleCount;
+            set => _maxCycleCount = value;
         }
 
         public void Reset()
@@ -86,14 +75,14 @@ namespace SmolScript
 
         bool _debug = false;
 
-        RunMode runMode = RunMode.Paused;
+        RunMode _runMode = RunMode.PAUSED;
 
         // This is a stack based VM, so this is for our working data.
         // We store everything here as SmolValue, which is a wrapper
         // for all of our types
         internal Stack<SmolStackType> stack = new Stack<SmolStackType>();
 
-        Dictionary<int, int> jmplocs = new Dictionary<int, int>();
+        
 
         internal Internals.Environment globalEnv = new();
         internal Internals.Environment environment;
@@ -142,16 +131,22 @@ namespace SmolScript
             Call<object?>(functionName, args);
         }
 
+        /// <summary>
+        /// Call a method from .net that has been defined in the current SmolScript program.
+        /// Requires that the current program has been initialized in the VM.
+        /// </summary>
+        /// <param name="functionName"></param>
+        /// <param name="args"></param>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
+        /// <exception cref="Exception"></exception>
         public T? Call<T>(string functionName, params object[] args)
         {
-            if (this.runMode != RunMode.Done)
+            if (this._runMode != RunMode.DONE)
             {
                 throw new Exception("Init() should be used before calling a function, to ensure the vm state is prepared");
             }
-
-            // Let the VM know that it's ok to proceed from wherever the PC was pointing next
-            this.runMode = RunMode.Paused;
-
+            
             // Store the current state. This doesn't matter too much, because it shouldn't really
             // be runnable after we're done, but it doesn't hurt to do this.
             var state = new SmolCallSiteSaveState(
@@ -165,14 +160,14 @@ namespace SmolScript
             var env = new SmolScript.Internals.Environment(this.globalEnv);
             this.environment = env;
 
-            var fn = program.function_table.First(f => f.global_function_name == functionName);
+            var fn = Program.FunctionTable.First(f => f.global_function_name == functionName);
 
 
             // Prime the new environment with variables for
             // the parameters in the function declaration (actual number
             // passed might be different)
 
-            for (int i = 0; i < fn.arity; i++)
+            for (var i = 0; i < fn.arity; i++)
             {
                 if (args.Count() > i)
                 {
@@ -196,6 +191,9 @@ namespace SmolScript
 
             PC = 0;
             code_section = fn.code_section;
+            
+            // Let the VM know that it's ok to proceed when we call Run
+            this._runMode = RunMode.PAUSED;
 
             Run();
 
@@ -214,12 +212,12 @@ namespace SmolScript
 
         public static ISmolRuntime Compile(string source)
         {
-            return new SmolVM(source);
+            return new SmolVm(source);
         }
 
         public static ISmolRuntime Init(string source)
         {
-            var vm = new SmolVM(source);
+            var vm = new SmolVm(source);
 
             vm.Run();
 
@@ -228,27 +226,25 @@ namespace SmolScript
 
         public string Decompile()
         {
-            return ByteCodeDisassembler.Disassemble(this.program);
+            return ByteCodeDisassembler.Disassemble(this.Program);
         }
 
-        public SmolVM(string source)
+        public SmolVm(string source)
         {
             environment = globalEnv;
 
-            this.program = Compiler.Compile(source);
+            this.Program = Compiler.Compile(source);
 
             CreateStdLib();
-            BuildJumpTable();
         }
 
-        internal SmolVM(SmolProgram program)
+        internal SmolVm(SmolProgram program)
         {
             environment = globalEnv;
 
-            this.program = program;
+            this.Program = program;
 
             CreateStdLib();
-            BuildJumpTable();
         }
 
         private void CreateStdLib()
@@ -265,33 +261,7 @@ namespace SmolScript
 
         internal Dictionary<string, Type> staticTypes = new Dictionary<string, Type>();
 
-        private void BuildJumpTable()
-        {
-            // Loop through all labels in all code sections, capturing
-            // the label number (always unique) and the location/index
-            // in the instructions for that section so we can jump
-            // if we need to.
-
-            for (int i = 0; i < this.program.code_sections.Count; i++)
-            {
-                // Not sure if this will hold up, might be too simplistic
-
-                for (int j = 0; j < this.program.code_sections[i].Count; j++)
-                {
-                    var instr = this.program.code_sections[i][j];
-
-                    if (instr.opcode == OpCode.LABEL)
-                    {
-                        // We're not storing anything about the section
-                        // number but this should be ok becuase we should
-                        // only ever jump inside the current section...
-                        // Jumps to other sections are handled in a different
-                        // way using the CALL instruction
-                        jmplocs[(int)instr.operand1!] = j;
-                    }
-                }
-            }
-        }
+        
 
         internal Dictionary<string, object> externalMethods = new Dictionary<string, object>();
 
@@ -373,35 +343,35 @@ namespace SmolScript
 
         public void Step()
         {
-            if (this.runMode != RunMode.Paused)
+            if (this._runMode != RunMode.PAUSED)
             {
                 throw new Exception("Step() is only allowed when the vm is paused (after invoking the debugger)");
             }
 
-            _Run(RunMode.Step);
+            _Run(RunMode.STEP);
         }
 
         public void Run()
         {
-            if (this.runMode == RunMode.Done)
+            if (this._runMode == RunMode.DONE)
             {
                 throw new Exception("Program execution is complete, either call Reset() before Run(), or invoke a specific function");
             }
 
-            _Run(RunMode.Run);
+            _Run(RunMode.RUN);
         }
 
-        private void debug(string s)
+        private void Debug(string s)
         {
-            if (_debug && _DebugLogDelegate != null)
+            if (_debug && _debugLogDelegate != null)
             {
-                _DebugLogDelegate(s);
+                _debugLogDelegate(s);
             }
         }
 
         void _Run(RunMode newRunMode)
         {
-            this.runMode = newRunMode;
+            this._runMode = newRunMode;
             var hasExecutedAtLeastOnce = false; // Used to ensure Step-through trips after at least one instruction is executed
             var consumedCycles = 0;
 
@@ -409,17 +379,17 @@ namespace SmolScript
 
             while (true)
             {
-                if (this.runMode == RunMode.Step
-                    && (program.code_sections[code_section][PC].IsStatementStartpoint ?? false)
+                if (this._runMode == RunMode.STEP
+                    && (Program.CodeSections[code_section][PC].IsStatementStartpoint ?? false)
                     && hasExecutedAtLeastOnce)
                 {
-                    this.runMode = RunMode.Paused;
+                    this._runMode = RunMode.PAUSED;
                     return;
                 }
 
-                var instr = program.code_sections[code_section][PC++]; // Increment PC after fetching the net (current) instruction
+                var instr = Program.CodeSections[code_section][PC++]; // Increment PC after fetching the net (current) instruction
 
-                debug($"{instr}");//: {System.Environment.TickCount - t}");
+                Debug($"{instr}");//: {System.Environment.TickCount - t}");
 
                 t = System.Environment.TickCount;
 
@@ -428,15 +398,12 @@ namespace SmolScript
                     switch (instr.opcode)
                     {
                         case OpCode.NOP:
-                            // Just skip over this instruction, no-op
                             break;
 
                         case OpCode.CONST:
-                            // Load a value from the data section at specified index
-                            // and place it on the stack
-                            stack.Push(program.constants[(int)instr.operand1!]);
+                            stack.Push(Program.Constants[(int)instr.operand1!]);
 
-                            debug($"              [Pushed ${program.constants[(int)instr.operand1!]}]");
+                            Debug($"              [Pushed ${Program.Constants[(int)instr.operand1!]}]");
 
                             break;
 
@@ -453,7 +420,7 @@ namespace SmolScript
 
                                 var callData = (SmolFunction)untypedCallData;
 
-                                // First create the env for our function
+                                // First create the env for our function -- we probably need to handle bind() here.
 
                                 var env = new SmolScript.Internals.Environment(this.globalEnv);
 
@@ -659,8 +626,8 @@ namespace SmolScript
 
                         case OpCode.EOF:
 
-                            debug($"Done, stack size = {stack.Count}");
-                            this.runMode = RunMode.Done;
+                            Debug($"Done, stack size = {stack.Count}");
+                            this._runMode = RunMode.DONE;
 
                             return;
 
@@ -679,7 +646,7 @@ namespace SmolScript
 
                             if (_savedCallState.GetType() != typeof(SmolCallSiteSaveState))
                             {
-                                throw new Exception("Tried to return but found something unexecpted on the stack");
+                                throw new SmolRuntimeException("Tried to return but found something unexecpted on the stack");
                             }
 
                             var savedCallState = (SmolCallSiteSaveState)_savedCallState;
@@ -695,7 +662,8 @@ namespace SmolScript
                             {
                                 // Not sure what to do about return value here
 
-                                this.runMode = RunMode.Paused;
+                                this._runMode = RunMode.PAUSED; // TODO: Should be DONE I think, check this
+                                
                                 return; // Don't like this, error prone
                             }
 
@@ -721,7 +689,7 @@ namespace SmolScript
                                 var value = (SmolVariableType)stack.Pop(); // Hopefully always true...
 
                                 var env_in_context = environment;
-                                bool isPropertySetter = false;
+                                var isPropertySetter = false;
 
                                 if (instr.operand2 != null && (bool)instr.operand2)
                                 {
@@ -747,7 +715,7 @@ namespace SmolScript
                                 env_in_context.Assign(name!, value, isPropertySetter);
 
 
-                                debug($"              [Saved ${value}]");
+                                Debug($"              [Saved ${value}]");
 
                                 break;
                             }
@@ -769,7 +737,7 @@ namespace SmolScript
                                 if (instr.operand2 != null && (bool)instr.operand2)
                                 {
                                     var objRef = stack.Pop();
-                                    var peek_instr = program.code_sections[code_section][PC];
+                                    var peek_instr = Program.CodeSections[code_section][PC];
 
                                     if (objRef.GetType() == typeof(SmolObject))
                                     {
@@ -876,17 +844,17 @@ namespace SmolScript
                                 {
                                     stack.Push((SmolStackType)fetchedValue!);
 
-                                    debug($"              [Loaded ${fetchedValue.GetType()} {((SmolVariableType)fetchedValue!).GetValue()}]");
+                                    Debug($"              [Loaded ${fetchedValue.GetType()} {((SmolVariableType)fetchedValue!).GetValue()}]");
                                 }
                                 else
                                 {
-                                    if (program.function_table.Any(f => f.global_function_name == name))
+                                    if (Program.FunctionTable.Any(f => f.global_function_name == name))
                                     {
-                                        stack.Push(program.function_table.First(f => f.global_function_name == name));
+                                        stack.Push(Program.FunctionTable.First(f => f.global_function_name == name));
                                     }
                                     else if (externalMethods.Keys.Contains(name))
                                     {
-                                        var peek_instr = program.code_sections[code_section][PC];
+                                        var peek_instr = Program.CodeSections[code_section][PC];
 
                                         stack.Push(CallExternalMethod(name!, (int)peek_instr.operand1!));
 
@@ -908,7 +876,7 @@ namespace SmolScript
 
                                 if (value.IsFalsey())
                                 {
-                                    PC = jmplocs[(int)instr.operand1!];
+                                    PC = this.Program.JumpTable[(int)instr.operand1!];
                                 }
 
                                 break;
@@ -918,14 +886,14 @@ namespace SmolScript
 
                             if (((SmolVariableType)stack.Pop()).IsTruthy())
                             {
-                                PC = jmplocs[(int)instr.operand1!];
+                                PC = this.Program.JumpTable[(int)instr.operand1!];
                             }
 
                             break;
 
 
                         case OpCode.JMP:
-                            PC = jmplocs[(int)instr.operand1!];
+                            PC = this.Program.JumpTable[(int)instr.operand1!];
                             break;
 
                         case OpCode.LABEL:
@@ -947,7 +915,7 @@ namespace SmolScript
 
                         case OpCode.DEBUGGER:
                             {
-                                this.runMode = RunMode.Paused;
+                                this._runMode = RunMode.PAUSED;
                                 return;
                             }
 
@@ -979,7 +947,7 @@ namespace SmolScript
                                     code_section: this.code_section,
                                     PC: this.PC,
                                     this_env: this.environment,
-                                    jump_exception: jmplocs[(int)instr.operand1!]
+                                    jump_exception: this.Program.JumpTable[(int)instr.operand1!]
                                 )
                             );
 
@@ -1012,7 +980,7 @@ namespace SmolScript
 
                         case OpCode.LOOP_EXIT:
 
-                            while (stack.Any())
+                            while (stack.Any()) // Start removing items from the stack until we find our loop start marker
                             {
                                 var next = stack.Pop();
 
@@ -1020,11 +988,15 @@ namespace SmolScript
                                 {
                                     this.environment = ((SmolLoopMarker)next).current_env;
 
-                                    stack.Push(next); // Needs to still be on the stack
+                                    stack.Push(next); // The loop marker needs to be left on the stack, it will eventually be removed by a LOOP_END
 
                                     if (instr.operand1 != null)
                                     {
-                                        this.PC = jmplocs[(int)instr.operand1!];
+                                        // Based on whether we are exiting the loop because of a break or a continue,
+                                        // we will need to jump to a specific location in code.
+                                        // The label index to jump to is stored in op1 for LOOP_EXIT instruction.
+                                        
+                                        this.PC = this.Program.JumpTable[(int)instr.operand1!];
                                     }
 
                                     break;
@@ -1051,7 +1023,7 @@ namespace SmolScript
 
                             var obj_environment = new SmolScript.Internals.Environment(this.globalEnv);
 
-                            foreach (var classFunc in program.function_table.Where(f => f.global_function_name!.StartsWith($"@{class_name}.")))
+                            foreach (var classFunc in Program.FunctionTable.Where(f => f.global_function_name!.StartsWith($"@{class_name}.")))
                             {
                                 var funcName = classFunc.global_function_name!.Substring(class_name.Length + 2);
 
@@ -1137,13 +1109,13 @@ namespace SmolScript
                     }
                 }
 
-                if (this.stack.Count > _MaxStackSize) throw new Exception("Stack overflow");
+                if (this.stack.Count > _maxStackSize) throw new Exception("Stack overflow");
                 
                 hasExecutedAtLeastOnce = true;
 
                 consumedCycles += 1;
 
-                if (_MaxCycleCount > -1 && consumedCycles > _MaxCycleCount) throw new Exception("Too many cycles");
+                if (_maxCycleCount > -1 && consumedCycles > _maxCycleCount) throw new Exception("Too many cycles");
             }
         }
     }

@@ -54,13 +54,13 @@ namespace SmolScript.Tests
             return string.Format("{0}", f.Substring(f.IndexOf("SmolScriptTests") + 16, f.Length - (f.IndexOf("SmolScriptTests") + 16 + 10)));
         }
 
-        Regex regexTestFileHeader = new Regex(@"\/\*(.*?)(Steps:.*?\n)(.*?)\*\/", RegexOptions.Singleline);
-        Regex regexStepMatcher = new Regex(@"^- (.*?)$", RegexOptions.Multiline);
-        Regex runStepRegex = new Regex(@"- Run$", RegexOptions.IgnoreCase);
-        Regex expectGlobalNumberRegex = new Regex(@"- expect global (.*?) to be number (-{0,1}[0-9]+(\.{0,1}[0-9]*))", RegexOptions.IgnoreCase | RegexOptions.ECMAScript);
-        Regex expectGlobalStringRegex = new Regex(@"- expect global (.*?) to be string (.*)", RegexOptions.IgnoreCase);
-        Regex expectGlobalBoolRegex = new Regex(@"- expect global (.*?) to be boolean (.*)", RegexOptions.IgnoreCase);
-        Regex expectGlobalUndefinedRegex = new Regex(@"- expect global (.*?) to be undefined", RegexOptions.IgnoreCase);
+        Regex _regexTestFileHeader = new Regex(@"\/\*(.*?)(Steps:.*?\n)(.*?)\*\/", RegexOptions.Singleline);
+        Regex _regexStepMatcher = new Regex(@"^- (.*?)$", RegexOptions.Multiline);
+        Regex _runStepRegex = new Regex(@"- run$", RegexOptions.IgnoreCase);
+        Regex _expectGlobalNumberRegex = new Regex(@"- expect global (.*?) to be number (-{0,1}[0-9]+(\.{0,1}[0-9]*))", RegexOptions.IgnoreCase | RegexOptions.ECMAScript);
+        Regex _expectGlobalStringRegex = new Regex(@"- expect global (.*?) to be string (.*)", RegexOptions.IgnoreCase);
+        Regex _expectGlobalBoolRegex = new Regex(@"- expect global (.*?) to be boolean (.*)", RegexOptions.IgnoreCase);
+        Regex _expectGlobalUndefinedRegex = new Regex(@"- expect global (.*?) to be undefined", RegexOptions.IgnoreCase);
 
         [TestMethod]
         [DynamicData(nameof(AllTestData), DynamicDataDisplayName = nameof(GetCustomDynamicDataDisplayName))]
@@ -74,22 +74,22 @@ namespace SmolScript.Tests
                 source = rem.Replace(source, "");
             }
 
-            var headerMatch = regexTestFileHeader.Matches(source);
+            var headerMatch = _regexTestFileHeader.Matches(source);
 
             if (headerMatch.Any())
             {
                 var stepsBlock = headerMatch[0].Groups[3].Value;
-                var matchedSteps = regexStepMatcher.Matches(stepsBlock);
+                var matchedSteps = _regexStepMatcher.Matches(stepsBlock);
 
                 if (matchedSteps.Any())
                 {
-                    var vm = SmolVM.Compile(source);
+                    var vm = SmolVm.Compile(source);
 
                     foreach (Match matchedStep in matchedSteps!)
                     {
                         string step = matchedStep.Value;
 
-                        if (runStepRegex.IsMatch(step))
+                        if (_runStepRegex.IsMatch(step))
                         {
                             try
                             {
@@ -103,9 +103,9 @@ namespace SmolScript.Tests
                                 throw;
                             }
                         }
-                        else if (expectGlobalNumberRegex.IsMatch(step))
+                        else if (_expectGlobalNumberRegex.IsMatch(step))
                         {
-                            var m = expectGlobalNumberRegex.Matches(step);
+                            var m = _expectGlobalNumberRegex.Matches(step);
 
                             if (!m.Any())
                             {
@@ -114,9 +114,9 @@ namespace SmolScript.Tests
 
                             Assert.AreEqual(Double.Parse(m[0].Groups[2].Value), vm.GetGlobalVar<double>(m[0].Groups[1].Value), step);
                         }
-                        else if (expectGlobalStringRegex.IsMatch(step))
+                        else if (_expectGlobalStringRegex.IsMatch(step))
                         {
-                            var m = expectGlobalStringRegex.Matches(step);
+                            var m = _expectGlobalStringRegex.Matches(step);
 
                             if (!m.Any())
                             {
@@ -125,9 +125,9 @@ namespace SmolScript.Tests
 
                             Assert.AreEqual(m[0].Groups[2].Value.ReplaceLineEndings(), vm.GetGlobalVar<string>(m[0].Groups[1].Value), step);
                         }
-                        else if (expectGlobalBoolRegex.IsMatch(step))
+                        else if (_expectGlobalBoolRegex.IsMatch(step))
                         {
-                            var m = expectGlobalBoolRegex.Matches(step);
+                            var m = _expectGlobalBoolRegex.Matches(step);
 
                             if (!m.Any())
                             {
@@ -136,9 +136,9 @@ namespace SmolScript.Tests
 
                             Assert.AreEqual(Boolean.Parse(m[0].Groups[2].Value), vm.GetGlobalVar<bool>(m[0].Groups[1].Value), step);
                         }
-                        else if (expectGlobalUndefinedRegex.IsMatch(step))
+                        else if (_expectGlobalUndefinedRegex.IsMatch(step))
                         {
-                            var m = expectGlobalUndefinedRegex.Matches(step);
+                            var m = _expectGlobalUndefinedRegex.Matches(step);
 
                             if (!m.Any())
                             {

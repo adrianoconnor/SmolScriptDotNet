@@ -8,14 +8,46 @@ namespace SmolScript.Internals
     /// intermediate state, it is not meant to be persisted
     /// (but it could be if that ever becomes a requirement)
     /// </summary>
-    internal struct SmolProgram
+    internal class SmolProgram
     {
-        internal List<SmolVariableType> constants { get; set; }
-        internal List<List<ByteCodeInstruction>> code_sections { get; set; }
-        internal List<SmolFunction> function_table { get; set; }
+        internal required List<SmolVariableType> Constants { get; set; }
+        internal required List<List<ByteCodeInstruction>> CodeSections { get; set; }
+        internal required List<SmolFunction> FunctionTable { get; set; }
+        
+        
+        
+        internal required IList<Token> Tokens { get; set; }
+        internal required string Source { get;  set; }
+        
+        internal Dictionary<int, int> JumpTable = new Dictionary<int, int>();
+        
+        internal void BuildJumpTable()
+        {
+            // Loop through all labels in all code sections, capturing
+            // the label number (always unique) and the location/index
+            // in the instructions for that section so we can jump
+            // if we need to.
 
-        internal IList<Token> tokens { get; set; }
-        internal string source { get;  set; }
+            for (int i = 0; i < this.CodeSections.Count; i++)
+            {
+                // Not sure if this will hold up, might be too simplistic
+
+                for (int j = 0; j < this.CodeSections[i].Count; j++)
+                {
+                    var instr = this.CodeSections[i][j];
+
+                    if (instr.opcode == OpCode.LABEL)
+                    {
+                        // We're not storing anything about the section
+                        // number but this should be ok becuase we should
+                        // only ever jump inside the current section...
+                        // Jumps to other sections are handled in a different
+                        // way using the CALL instruction
+                        JumpTable[(int)instr.operand1!] = j;
+                    }
+                }
+            }
+        }
     }
 }
 

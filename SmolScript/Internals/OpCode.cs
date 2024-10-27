@@ -2,10 +2,18 @@
 {
     internal enum OpCode
     {
+        /// <summary>
+        /// No Operation
+        /// </summary>
         NOP,
 
         LABEL,
+        
+        /// <summary>
+        /// Call a function or method (including external) using function details on the stack. Op1 is number of args (int), Op2 indicates we're calling a method on an object/class (bool)
+        /// </summary>
         CALL,
+        
         RETURN,
 
         ADD,
@@ -31,6 +39,9 @@
 
         DECLARE,
 
+        /// <summary>
+        /// Load a pre-defined Constant onto the stack. Op1 is the index of the constant in the lookup table.
+        /// </summary>
         CONST,
         FETCH,
 

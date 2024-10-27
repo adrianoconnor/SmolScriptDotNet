@@ -11,15 +11,15 @@ namespace SmolScript.Internals
     {
         private int _nextLabel = 1;
 
-        private int reserveLabelId()
+        private int ReserveLabelId()
         {
             return _nextLabel++;
         }
 
-        private List<SmolFunction> function_table = new List<SmolFunction>();
-        private List<List<ByteCodeInstruction>> function_bodies = new List<List<ByteCodeInstruction>>();
+        private List<SmolFunction> _functionTable = new List<SmolFunction>();
+        private List<List<ByteCodeInstruction>> _functionBodies = new List<List<ByteCodeInstruction>>();
 
-        private List<SmolVariableType> constants = new List<SmolVariableType>()
+        private List<SmolVariableType> _constants = new List<SmolVariableType>()
         {
             // There's an edge case that isn't handled by the method that adds constants,
             // becuase there's no natural analog for Undefined in the .net type system.
@@ -28,7 +28,7 @@ namespace SmolScript.Internals
             new SmolUndefined()
         };
 
-        private int constantIndexForValue(object constantLiteralValue)
+        private int ConstantIndexForValue(object constantLiteralValue)
         {
             var constantAsSmolType = SmolVariableType.Create(constantLiteralValue);
 
@@ -36,13 +36,13 @@ namespace SmolScript.Internals
             // I think is related to the way that we override equals on the SmolVariableType base class.
             // This approach looks a bit verbose, but it works fine and there's not really much need
             // to change it now.
-            var existingConstantIndex = constants.FindIndex(c => c.GetType() == constantAsSmolType.GetType() && (((SmolVariableType)c).GetValue()?.Equals(constantAsSmolType.GetValue()) ?? false)!);
+            var existingConstantIndex = _constants.FindIndex(c => c.GetType() == constantAsSmolType.GetType() && (((SmolVariableType)c).GetValue()?.Equals(constantAsSmolType.GetValue()) ?? false)!);
 
             if (existingConstantIndex == -1)
             {
-                constants.Add(constantAsSmolType);
+                _constants.Add(constantAsSmolType);
 
-                return constants.Count - 1; // It has to be the last item in the collection
+                return _constants.Count - 1; // It has to be the last item in the collection
             }
             else
             {
@@ -50,7 +50,7 @@ namespace SmolScript.Internals
             }
         }
 
-        private int constantIndexForUndefined()
+        private int ConstantIndexForUndefined()
         {
             return 0;
         }
@@ -72,7 +72,7 @@ namespace SmolScript.Internals
 
             // Creating the main chunk will populate the constants and build the function bodies too
 
-            var main_chunk = new List<ByteCodeInstruction>();
+            var mainChunk = new List<ByteCodeInstruction>();
 
             foreach (var stmt in statements)
             {
@@ -81,28 +81,32 @@ namespace SmolScript.Internals
 
                 stmtChunk[0].IsStatementStartpoint = true;
 
-                main_chunk.AppendChunk(stmtChunk);
+                mainChunk.AppendChunk(stmtChunk);
             }
 
-            main_chunk.AppendInstruction(OpCode.EOF);
+            mainChunk.AppendInstruction(OpCode.EOF);
          
-            main_chunk[main_chunk.Count - 1].IsStatementStartpoint = true;
+            mainChunk[mainChunk.Count - 1].IsStatementStartpoint = true;
 
-            var code_sections = new List<List<ByteCodeInstruction>>
+            var codeSections = new List<List<ByteCodeInstruction>>
             {
-                main_chunk
+                mainChunk
             };
 
-            code_sections.AddRange(function_bodies);
+            codeSections.AddRange(_functionBodies);
 
-            return new SmolProgram()
+            var prog = new SmolProgram()
             {
-                constants = this.constants,
-                code_sections = code_sections,
-                function_table = function_table,
-                tokens = scanResult,
-                source = source
+                Constants = _constants,
+                CodeSections = codeSections,
+                FunctionTable = _functionTable,
+                Tokens = scanResult,
+                Source = source
             };
+            
+            prog.BuildJumpTable();
+
+            return prog;
         }
 
         public object? Visit(BinaryExpression expr)
@@ -182,8 +186,8 @@ namespace SmolScript.Internals
         {
             var chunk = new List<ByteCodeInstruction>();
 
-            int shortcutLabel = reserveLabelId();
-            int testCompleteLabel = reserveLabelId();
+            int shortcutLabel = ReserveLabelId();
+            int testCompleteLabel = ReserveLabelId();
 
             switch (expr.op.type)
             {
@@ -199,7 +203,7 @@ namespace SmolScript.Internals
                     // instruction popped the false result from the stack, so we need to put it back. I think a
                     // specific test instruction would make this nicer, but for now we can live with a few extra steps...
 
-                    chunk.AppendInstruction(OpCode.CONST, operand1: constantIndexForValue(false));
+                    chunk.AppendInstruction(OpCode.CONST, operand1: ConstantIndexForValue(false));
                     chunk.AppendInstruction(OpCode.LABEL, operand1: testCompleteLabel);
 
                     break;
@@ -211,7 +215,7 @@ namespace SmolScript.Internals
                     chunk.AppendChunk(expr.right.Accept(this));
                     chunk.AppendInstruction(OpCode.JMP, operand1: testCompleteLabel);
                     chunk.AppendInstruction(OpCode.LABEL, operand1: shortcutLabel);
-                    chunk.AppendInstruction(OpCode.CONST, operand1: constantIndexForValue(true));
+                    chunk.AppendInstruction(OpCode.CONST, operand1: ConstantIndexForValue(true));
                     chunk.AppendInstruction(OpCode.LABEL, operand1: testCompleteLabel);
 
                     break;
@@ -233,7 +237,7 @@ namespace SmolScript.Internals
             return new ByteCodeInstruction()
             {
                 opcode = OpCode.CONST,
-                operand1 = constantIndexForValue(expr.value)
+                operand1 = ConstantIndexForValue(expr.value)
             };
         }
 
@@ -247,18 +251,18 @@ namespace SmolScript.Internals
                     {
                         chunk.AppendChunk(expr.right.Accept(this));
 
-                        int isTrueLabel = reserveLabelId();
-                        int endLabel = reserveLabelId();
+                        int isTrueLabel = ReserveLabelId();
+                        int endLabel = ReserveLabelId();
 
                         chunk.AppendInstruction(OpCode.JMPTRUE, operand1: isTrueLabel);
 
                         // If we're here it was false, so now it's true
-                        chunk.AppendInstruction(OpCode.CONST, operand1: constantIndexForValue(true));
+                        chunk.AppendInstruction(OpCode.CONST, operand1: ConstantIndexForValue(true));
                         chunk.AppendInstruction(OpCode.JMP, operand1: endLabel);
                         chunk.AppendInstruction(OpCode.LABEL, operand1: isTrueLabel);
 
                         // If we're here it was true, so now it's false
-                        chunk.AppendInstruction(OpCode.CONST, operand1: constantIndexForValue(false));
+                        chunk.AppendInstruction(OpCode.CONST, operand1: ConstantIndexForValue(false));
                         chunk.AppendInstruction(OpCode.LABEL, operand1: endLabel);
 
                         break;
@@ -266,7 +270,7 @@ namespace SmolScript.Internals
 
                 case TokenType.MINUS:
 
-                    chunk.AppendInstruction(OpCode.CONST, operand1: constantIndexForValue(0.0));
+                    chunk.AppendInstruction(OpCode.CONST, operand1: ConstantIndexForValue(0.0));
                     chunk.AppendChunk(expr.right.Accept(this));
                     chunk.AppendInstruction(OpCode.SUB);
 
@@ -288,7 +292,7 @@ namespace SmolScript.Internals
                 if (expr.prepostfixop == TokenType.POSTFIX_INCREMENT)
                 {
                     chunk.AppendInstruction(OpCode.FETCH, operand1: expr.name.lexeme);
-                    chunk.AppendInstruction(OpCode.CONST, operand1: constantIndexForValue(1.0));
+                    chunk.AppendInstruction(OpCode.CONST, operand1: ConstantIndexForValue(1.0));
                     chunk.AppendInstruction(OpCode.ADD);
                     chunk.AppendInstruction(OpCode.STORE, operand1: expr.name.lexeme);
                 }
@@ -296,14 +300,14 @@ namespace SmolScript.Internals
                 if (expr.prepostfixop == TokenType.POSTFIX_DECREMENT)
                 {
                     chunk.AppendInstruction(OpCode.FETCH, operand1: expr.name.lexeme);
-                    chunk.AppendInstruction(OpCode.CONST, operand1: constantIndexForValue(1.0));
+                    chunk.AppendInstruction(OpCode.CONST, operand1: ConstantIndexForValue(1.0));
                     chunk.AppendInstruction(OpCode.SUB);
                     chunk.AppendInstruction(OpCode.STORE, operand1: expr.name.lexeme);
                 }
 
                 if (expr.prepostfixop == TokenType.PREFIX_INCREMENT)
                 {
-                    chunk.AppendInstruction(OpCode.CONST, operand1: constantIndexForValue(1.0));
+                    chunk.AppendInstruction(OpCode.CONST, operand1: ConstantIndexForValue(1.0));
                     chunk.AppendInstruction(OpCode.ADD);
                     chunk.AppendInstruction(OpCode.STORE, operand1: expr.name.lexeme);
                     chunk.AppendInstruction(OpCode.FETCH, operand1: expr.name.lexeme);
@@ -311,7 +315,7 @@ namespace SmolScript.Internals
 
                 if (expr.prepostfixop == TokenType.PREFIX_DECREMENT)
                 {
-                    chunk.AppendInstruction(OpCode.CONST, operand1: constantIndexForValue(1.0));
+                    chunk.AppendInstruction(OpCode.CONST, operand1: ConstantIndexForValue(1.0));
                     chunk.AppendInstruction(OpCode.SUB);
                     chunk.AppendInstruction(OpCode.STORE, operand1: expr.name.lexeme);
                     chunk.AppendInstruction(OpCode.FETCH, operand1: expr.name.lexeme);
@@ -420,7 +424,7 @@ namespace SmolScript.Internals
             }
             else
             {
-                chunk.AppendInstruction(OpCode.CONST, constantIndexForUndefined());
+                chunk.AppendInstruction(OpCode.CONST, ConstantIndexForUndefined());
             }
 
             chunk.AppendInstruction(OpCode.RETURN);
@@ -432,7 +436,7 @@ namespace SmolScript.Internals
         {
             var chunk = new List<ByteCodeInstruction>();
 
-            int notTrueLabel = reserveLabelId();
+            int notTrueLabel = ReserveLabelId();
 
             chunk.AppendChunk(stmt.testExpression.Accept(this));
             chunk.AppendInstruction(OpCode.JMPFALSE, notTrueLabel);
@@ -444,7 +448,7 @@ namespace SmolScript.Internals
             }
             else
             {
-                int skipElseLabel = reserveLabelId();
+                int skipElseLabel = ReserveLabelId();
 
                 chunk.AppendInstruction(OpCode.JMP, skipElseLabel);
                 chunk.AppendInstruction(OpCode.LABEL, notTrueLabel);
@@ -459,8 +463,8 @@ namespace SmolScript.Internals
         {
             var chunk = new List<ByteCodeInstruction>();
 
-            int notTrueLabel = reserveLabelId();
-            int endLabel = reserveLabelId();
+            int notTrueLabel = ReserveLabelId();
+            int endLabel = ReserveLabelId();
 
             chunk.AppendChunk(expr.evaluationExpression.Accept(this));
             chunk.AppendInstruction(OpCode.JMPFALSE, notTrueLabel);
@@ -486,8 +490,8 @@ namespace SmolScript.Internals
         {
             var chunk = new List<ByteCodeInstruction>();
 
-            int startOfLoop = reserveLabelId();
-            int endOfLoop = reserveLabelId();
+            int startOfLoop = ReserveLabelId();
+            int endOfLoop = ReserveLabelId();
 
             loopStack.Push(new WhileLoop() { startOfLoop = startOfLoop, endOfLoop = endOfLoop });
 
@@ -537,9 +541,9 @@ namespace SmolScript.Internals
         {
             var chunk = new List<ByteCodeInstruction>();
 
-            var exceptionLabel = reserveLabelId();
-            var finallyLabel = reserveLabelId();
-            var finallyWithExceptionLabel = reserveLabelId();
+            var exceptionLabel = ReserveLabelId();
+            var finallyLabel = ReserveLabelId();
+            var finallyWithExceptionLabel = ReserveLabelId();
 
             // This will create a try 'checkpoint' in the vm. If we hit an exception the
             // vm will rewind the stack back to this instruction and jump to the catch/finally.
@@ -634,10 +638,10 @@ namespace SmolScript.Internals
 
         public object? Visit(FunctionStatement stmt)
         {
-            var function_index = function_bodies.Count() + 1;
+            var function_index = _functionBodies.Count() + 1;
             var function_name = stmt.name?.lexeme! ?? $"$_anon_{function_index}";
 
-            function_table.Add(new SmolFunction(
+            _functionTable.Add(new SmolFunction(
                 global_function_name: function_name,
                 code_section: function_index,
                 arity: stmt.parameters.Count(),
@@ -651,12 +655,12 @@ namespace SmolScript.Internals
                 body.Add(new ByteCodeInstruction()
                 {
                     opcode = OpCode.CONST,
-                    operand1 = constantIndexForUndefined()
+                    operand1 = ConstantIndexForUndefined()
                 });
                 body.AppendInstruction(OpCode.RETURN);
             }
 
-            function_bodies.Add(body);
+            _functionBodies.Add(body);
 
             // We are declaring a function, we don't add anything to the byte stream at the current loc.
             // When we allow functions as expressions and assignments we'll need to do something
@@ -681,10 +685,10 @@ namespace SmolScript.Internals
 
             foreach (var fn in stmt.functions)
             {
-                var function_index = function_bodies.Count() + 1;
+                var function_index = _functionBodies.Count() + 1;
                 var function_name = $"@{stmt.className.lexeme}.{fn.name!.lexeme}";
 
-                function_table.Add(new SmolFunction(
+                _functionTable.Add(new SmolFunction(
                     global_function_name: function_name,
                     code_section: function_index,
                     arity: fn.parameters.Count(),
@@ -695,11 +699,11 @@ namespace SmolScript.Internals
 
                 if (!body.Any() || body.Last().opcode != OpCode.RETURN)
                 {
-                    body.AppendInstruction(OpCode.CONST, operand1: constantIndexForUndefined());
+                    body.AppendInstruction(OpCode.CONST, operand1: ConstantIndexForUndefined());
                     body.AppendInstruction(OpCode.RETURN);
                 }
 
-                function_bodies.Add(body);
+                _functionBodies.Add(body);
             }
 
             // We are declaring a function, we don't add anything to the byte stream at the current loc.
@@ -850,10 +854,10 @@ namespace SmolScript.Internals
 
         public object? Visit(FunctionExpression expr)
         {
-            var function_index = function_bodies.Count() + 1;
+            var function_index = _functionBodies.Count() + 1;
             var function_name = $"$_anon_{function_index}";
 
-            function_table.Add(new SmolFunction(
+            _functionTable.Add(new SmolFunction(
                 global_function_name: function_name,
                 code_section: function_index,
                 arity: expr.parameters.Count(),
@@ -864,11 +868,11 @@ namespace SmolScript.Internals
 
             if (!body.Any() || body.Last().opcode != OpCode.RETURN)
             {
-                body.AppendInstruction(OpCode.CONST, operand1: constantIndexForUndefined());
+                body.AppendInstruction(OpCode.CONST, operand1: ConstantIndexForUndefined());
                 body.AppendInstruction(OpCode.RETURN);
             }
 
-            function_bodies.Add(body);
+            _functionBodies.Add(body);
 
             // We are declaring a function expression, so the reference to the function needs
             // to go on the stack so some other code can grab and use it

@@ -12,16 +12,17 @@ public class ParserTests
     [TestMethod]
     public void TestMultiVarDeclarations()
     {
-        //var vm = SmolVM.Init("var a = 1;      var b = 2; var c = 2, d = 1;");
+        //var vm = SmolVM.Init("var a = 1, b = 2, c;");
 
-        //Assert.AreEqual(2, vm.GetGlobalVar<int>("c"));
-        //Assert.AreEqual(1, vm.GetGlobalVar<int>("d"));
+        //Assert.AreEqual(1, vm.GetGlobalVar<int>("a"));
+        //Assert.AreEqual(2, vm.GetGlobalVar<int>("b"));
+        //Assert.IsNull(vm.GetGlobalVar<int>("c"));
     }
-        
+
     [TestMethod]
     public void TestMeaninglessSemiColons()
     {
-        var vm = SmolVM.Init(@"var a = 1;;;
+        var vm = SmolVm.Init(@"var a = 1;;;
 var b = 2;
 ;var c = 0;
 ;");

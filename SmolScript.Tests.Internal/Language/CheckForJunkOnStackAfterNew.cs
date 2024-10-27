@@ -30,9 +30,9 @@ var c = new testClass1(1, 2, 3);
 ";
             var program = Compiler.Compile(source);
 
-            var vm = new SmolVM(program);
+            var vm = new SmolVm(program);
 
-            Console.WriteLine(((SmolVM)vm).Decompile());
+            Console.WriteLine(((SmolVm)vm).Decompile());
 
             vm.Run();
 

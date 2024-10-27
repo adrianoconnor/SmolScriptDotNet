@@ -9,7 +9,7 @@ public class Equality
     [TestMethod]
     public void SmolNumberEquality()
     {
-        var vm = SmolVM.Init("var a = 1; var b = 2; var c = 1;");
+        var vm = SmolVm.Init("var a = 1; var b = 2; var c = 1;");
 
         Assert.AreEqual(1, vm.GetGlobalVar<int>("a"));
         Assert.AreEqual(2, vm.GetGlobalVar<int>("b"));
@@ -19,9 +19,9 @@ public class Equality
         // they're defined in the stack) and actual type (which is how
         // they're often used internally) -- this let's us check that
         // comparison when using base types is ok
-        var a = ((SmolVM)vm).globalEnv.Get("a") as SmolNumber;
-        var b = ((SmolVM)vm).globalEnv.Get("b") as SmolNumber;
-        var c = ((SmolVM)vm).globalEnv.Get("c") as SmolVariableType;
+        var a = ((SmolVm)vm).globalEnv.Get("a") as SmolNumber;
+        var b = ((SmolVm)vm).globalEnv.Get("b") as SmolNumber;
+        var c = ((SmolVm)vm).globalEnv.Get("c") as SmolVariableType;
 
         Assert.IsInstanceOfType<SmolNumber>(a);
         Assert.IsInstanceOfType<SmolNumber>(b);
@@ -102,7 +102,7 @@ public class Equality
     [TestMethod]
     public void SmolBoolEquality()
     {
-        var vm = SmolVM.Init("var a = true; var b = false; var c = a == b; var d = true;");
+        var vm = SmolVm.Init("var a = true; var b = false; var c = a == b; var d = true;");
 
         Assert.IsTrue(vm.GetGlobalVar<bool>("a"));
         Assert.IsFalse(vm.GetGlobalVar<bool>("b"));
@@ -113,10 +113,10 @@ public class Equality
         // they're defined in the stack) and actual type (which is how
         // they're often used internally) -- this let's us check that
         // comparison when using base types is ok
-        var a = ((SmolVM)vm).globalEnv.Get("a") as SmolBool;
-        var b = ((SmolVM)vm).globalEnv.Get("b") as SmolBool;
-        var c = ((SmolVM)vm).globalEnv.Get("c") as SmolVariableType;
-        var d = ((SmolVM)vm).globalEnv.Get("d") as SmolVariableType;
+        var a = ((SmolVm)vm).globalEnv.Get("a") as SmolBool;
+        var b = ((SmolVm)vm).globalEnv.Get("b") as SmolBool;
+        var c = ((SmolVm)vm).globalEnv.Get("c") as SmolVariableType;
+        var d = ((SmolVm)vm).globalEnv.Get("d") as SmolVariableType;
 
         Assert.IsInstanceOfType<SmolBool>(a);
         Assert.IsInstanceOfType<SmolBool>(b);

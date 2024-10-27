@@ -6,7 +6,7 @@ namespace SmolScript.Internals.SmolVariableTypes
 {
     internal abstract class SmolVariableType : SmolStackType
     {
-        abstract internal object? GetValue();
+        internal abstract object? GetValue();
 
         internal string GetTypeName()
         {
@@ -76,8 +76,8 @@ namespace SmolScript.Internals.SmolVariableTypes
             {
                 // TODO: Need a Stringify helper method.
 
-                string aString = a.GetValue()!.ToString()!;
-                string bString = b.GetValue()!.ToString()!;
+                var aString = a.GetValue()!.ToString()!;
+                var bString = b.GetValue()!.ToString()!;
 
                 return new SmolString(aString + bString);
             }

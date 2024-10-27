@@ -1,4 +1,4 @@
-﻿using System.Reflection;
+using System.Reflection;
 using Newtonsoft.Json.Linq;
 using SmolScript;
 
@@ -12,7 +12,7 @@ public class Basics
     {
         var code = @"var obj = {one:1, two:'2', t:true, arr:[1, 2, 3]} // originally wanted to do JSON.parse('{val:1}') but that comes later...";
 
-        var vm = SmolVM.Compile(code);
+        var vm = SmolVm.Compile(code);
 
         vm.Run(); // this executes the code above -- declares a, sets to 1, declares a functiona and calls it
 

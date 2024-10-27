@@ -12,7 +12,7 @@
 
             Assert.ThrowsException<Exception>(() =>
             {
-                var program = SmolVM.Compile("var n = 'x'; var a = `test ${!!!}`;");
+                var program = SmolVm.Compile("var n = 'x'; var a = `test ${!!!}`;");
             });
         }
 
@@ -25,7 +25,7 @@
             var source = @"var a = 'test
 123';";
 
-            Assert.ThrowsException<Internals.ScannerError>(() => SmolVM.Compile(source));
+            Assert.ThrowsException<Exception>(() => SmolVm.Compile(source));
         }
     }
 }

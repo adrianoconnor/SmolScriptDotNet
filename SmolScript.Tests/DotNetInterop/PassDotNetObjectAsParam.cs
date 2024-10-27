@@ -63,7 +63,7 @@ function test(obj) {
     //result7 = obj.obj2.getPrivateValue();
 }";
 
-        var vm = SmolVM.Init(code);
+        var vm = SmolVm.Init(code);
 
         var obj = new TestPassObj();
 

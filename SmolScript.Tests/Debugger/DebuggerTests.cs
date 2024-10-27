@@ -18,7 +18,7 @@ function addOne(num) {
 }
 a = addOne(a);
 ";
-            var vm = SmolVM.Compile(source);
+            var vm = SmolVm.Compile(source);
 
             vm.Run();
 
