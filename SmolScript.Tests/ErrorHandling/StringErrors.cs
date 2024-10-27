@@ -1,4 +1,6 @@
-﻿namespace SmolScript.Tests.ErrorHandling
+﻿using SmolScript.Internals;
+
+namespace SmolScript.Tests.ErrorHandling
 {
     [TestClass]
     public class StringErrors
@@ -25,7 +27,7 @@
             var source = @"var a = 'test
 123';";
 
-            Assert.ThrowsException<Exception>(() => SmolVm.Compile(source));
+            Assert.ThrowsException<ScannerError>(() => SmolVm.Compile(source));
         }
     }
 }
