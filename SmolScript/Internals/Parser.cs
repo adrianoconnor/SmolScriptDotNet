@@ -954,7 +954,7 @@ namespace SmolScript.Internals
                 var right = Unary();
                 return new UnaryExpression(op, right);
             }
-
+            
             return Call();
         }
 
@@ -1122,18 +1122,11 @@ namespace SmolScript.Internals
 
             if (Match(TokenType.LEFT_BRACKET))
             {
-                if (IsInFatArrow(true))
-                {
-                    return FatArrowFunctionExpression(true);
-                }
-                else
-                {
-                    var expr = Expression();
-                    
-                    Consume(TokenType.RIGHT_BRACKET, "Expect ')' after expression.");
+                var expr = Expression();
                 
-                    return new GroupingExpression(expr);
-                }
+                Consume(TokenType.RIGHT_BRACKET, "Expect ')' after expression.");
+            
+                return new GroupingExpression(expr);
             }
             
             throw Error(Peek(), $"Parser did not expect to see '{Peek().lexeme}' on line {Peek().line}, column {Peek().col}, sorry");
@@ -1145,7 +1138,7 @@ namespace SmolScript.Internals
             
             if (!openBracketConsumed && Check(TokenType.LEFT_BRACKET))
             {
-                Consume(TokenType.LEFT_BRACKET, "Expected )");
+                Consume(TokenType.LEFT_BRACKET, "Expected (");
                 
                 openBracketConsumed = true;
             }
@@ -1191,6 +1184,7 @@ namespace SmolScript.Internals
                 // e.g., my_func((x) => x + 1, param2)
                 // In this case there's no ;, there's just an expression, but we know it's just one single
                 // expression so in theory no need to check for any terminator...?
+                
                 // Consume(TokenType.SEMICOLON, "Expected ;");
 
                 _ = _statementCallStack.Pop();
@@ -1238,7 +1232,7 @@ namespace SmolScript.Internals
             
             while (true)
             {
-                if (_tokens[index].followed_by_line_break) // => has to be on same line as ()
+                if (_tokens[index].followed_by_line_break && _tokens[index].type != TokenType.FAT_ARROW) // => has to be on same line as (...), but newline can come after =>
                 {
                     break;
                 }

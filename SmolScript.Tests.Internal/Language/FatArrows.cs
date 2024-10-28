@@ -134,4 +134,26 @@ var x = f(2);");
         
         Assert.AreEqual(9, vm.GetGlobalVar<int>("x"));
     }
+    
+    [TestMethod]
+    public void FatArrows0dValidNewLine()
+    {
+        var vm = SmolVm.Init(@"var f = n => 
+n * n;
+var x = f(3);");
+        
+        Assert.AreEqual(9, vm.GetGlobalVar<int>("x"));
+    }
+    
+    [TestMethod]
+    public void FatArrows0dInvalidNewLine()
+    {
+        Assert.ThrowsException<ParseError>(() =>
+        {
+            var vm = SmolVm.Init(@"var f = n
+=> n * n;
+var x = f(3);");
+        });
+    }
+
 }

@@ -186,8 +186,8 @@ namespace SmolScript.Internals
         {
             var chunk = new List<ByteCodeInstruction>();
 
-            int shortcutLabel = ReserveLabelId();
-            int testCompleteLabel = ReserveLabelId();
+            var shortcutLabel = ReserveLabelId();
+            var testCompleteLabel = ReserveLabelId();
 
             switch (expr.op.type)
             {
@@ -270,6 +270,23 @@ namespace SmolScript.Internals
 
                 case TokenType.MINUS:
 
+                    // This block looks to see if the minus sign is followed by a literal number. If it is,
+                    // we can create a constant for the negative number and load that instead of the more
+                    // generalised unary operator behaviour, which negates whatever expression might come 
+                    // after it in normal cirumstances.
+                    if (expr.right.GetType() == typeof(LiteralExpression))
+                    {
+                        var l = (LiteralExpression)expr.right;
+
+                        if (l.value.GetType() == typeof(SmolNumber))
+                        {
+                            var n = (SmolNumber)l.value;
+                            chunk.AppendInstruction(OpCode.CONST, operand1: ConstantIndexForValue(0-n.value));
+
+                            break;
+                        }
+                    }
+                    
                     chunk.AppendInstruction(OpCode.CONST, operand1: ConstantIndexForValue(0.0));
                     chunk.AppendChunk(expr.right.Accept(this));
                     chunk.AppendInstruction(OpCode.SUB);
@@ -480,20 +497,20 @@ namespace SmolScript.Internals
 
         private struct WhileLoop
         {
-            public int startOfLoop;
-            public int endOfLoop;
+            public int StartOfLoop;
+            public int EndOfLoop;
         }
 
-        private Stack<WhileLoop> loopStack = new Stack<WhileLoop>();
+        private Stack<WhileLoop> _loopStack = new Stack<WhileLoop>();
 
         public object? Visit(WhileStatement stmt)
         {
             var chunk = new List<ByteCodeInstruction>();
 
-            int startOfLoop = ReserveLabelId();
-            int endOfLoop = ReserveLabelId();
+            var startOfLoop = ReserveLabelId();
+            var endOfLoop = ReserveLabelId();
 
-            loopStack.Push(new WhileLoop() { startOfLoop = startOfLoop, endOfLoop = endOfLoop });
+            _loopStack.Push(new WhileLoop() { StartOfLoop = startOfLoop, EndOfLoop = endOfLoop });
 
             chunk.AppendInstruction(OpCode.LOOP_START);
             chunk.AppendInstruction(OpCode.LABEL, startOfLoop);
@@ -504,7 +521,7 @@ namespace SmolScript.Internals
             chunk.AppendInstruction(OpCode.LABEL, endOfLoop);
             chunk.AppendInstruction(OpCode.LOOP_END);
 
-            loopStack.Pop();
+            _loopStack.Pop();
 
             return chunk;
         }
@@ -514,7 +531,7 @@ namespace SmolScript.Internals
             return new ByteCodeInstruction()
             {
                 opcode = OpCode.LOOP_EXIT,
-                operand1 = loopStack.Peek().endOfLoop
+                operand1 = _loopStack.Peek().EndOfLoop
             };
         }
 
@@ -523,7 +540,7 @@ namespace SmolScript.Internals
             return new ByteCodeInstruction()
             {
                 opcode = OpCode.LOOP_EXIT,
-                operand1 = loopStack.Peek().startOfLoop
+                operand1 = _loopStack.Peek().StartOfLoop
             };
         }
 
