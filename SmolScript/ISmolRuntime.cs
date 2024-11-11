@@ -45,6 +45,7 @@ namespace SmolScript
         /// <param name="variableName">The name of the variable to get</param>
         /// <returns>The value of the variable. If the variable is not defined returns null for nullable types, and throws if not nullable</returns>
         T? GetGlobalVar<T>(string variableName);
+        List<T>? GetGlobalVarAsArray<T>(string variableName);
 
         void Call(string functionName, params object[] args);
         T? Call<T>(string functionName, params object[] args);

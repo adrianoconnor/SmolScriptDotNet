@@ -95,8 +95,8 @@ public class Equality
         Assert.IsTrue(a != b);
         Assert.IsFalse(a == b);
 
-        Assert.AreEqual(0.30000000000000004, d.value);
-        Assert.IsFalse(e.value);
+        Assert.AreEqual(0.30000000000000004, d.NumberValue);
+        Assert.IsFalse(e.BoolValue);
     }
 
     [TestMethod]

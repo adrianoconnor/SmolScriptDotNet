@@ -5,13 +5,13 @@ namespace SmolScript.Internals.Ast.Expressions
 {
     internal class FunctionExpression : Expression
     {
-        public readonly IList<Token> parameters;
-        public readonly BlockStatement functionBody;
+        public readonly IList<Token> Parameters;
+        public readonly BlockStatement FunctionBody;
 
         public FunctionExpression(IList<Token> parameters, BlockStatement functionBody)
         {
-            this.parameters = parameters;
-            this.functionBody = functionBody;
+            this.Parameters = parameters;
+            this.FunctionBody = functionBody;
         }
 
         public override object? Accept(IExpressionVisitor visitor)

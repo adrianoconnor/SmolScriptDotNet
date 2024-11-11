@@ -3,17 +3,17 @@ namespace SmolScript.Internals.SmolStackTypes
 {
     internal class SmolCallSiteSaveState : SmolStackType
     {
-        internal int code_section;
-        internal int PC;
-        internal Environment previous_env;
-        internal bool call_is_extern;
+        internal int CodeSection;
+        internal int Pc;
+        internal Environment PreviousEnv;
+        internal bool CallIsExtern;
 
-        internal SmolCallSiteSaveState(int code_section, int PC, Environment previous_env, bool call_is_extern)
+        internal SmolCallSiteSaveState(int codeSection, int pc, Environment previousEnv, bool callIsExtern)
         {
-            this.code_section = code_section;
-            this.PC = PC;
-            this.previous_env = previous_env;
-            this.call_is_extern = call_is_extern;
+            this.CodeSection = codeSection;
+            this.Pc = pc;
+            this.PreviousEnv = previousEnv;
+            this.CallIsExtern = callIsExtern;
         }
     }
 }

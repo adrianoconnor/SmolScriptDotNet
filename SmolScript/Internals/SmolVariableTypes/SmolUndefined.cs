@@ -15,7 +15,7 @@ namespace SmolScript.Internals.SmolVariableTypes
 
         public override string ToString()
         {
-            return $"(SmolUndefined)";
+            return $"[Undefined]";
         }
     }
 }

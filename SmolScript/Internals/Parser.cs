@@ -12,7 +12,7 @@ namespace SmolScript.Internals
         internal ParseError(Token token, string message) :
            base(message)
         {
-            this.LineNumber = token.line;
+            this.LineNumber = token.Line;
         }
 
         public ParseError(IList<ParseError>? errors, string message) :
@@ -109,7 +109,7 @@ namespace SmolScript.Internals
             {
                 try
                 {
-                    if (Peek().type == TokenType.SEMICOLON)
+                    if (Peek().Type == TokenType.SEMICOLON)
                     {
                         Consume(TokenType.SEMICOLON, "");
                     }
@@ -155,7 +155,7 @@ namespace SmolScript.Internals
         private bool Check(TokenType tokenType, int skip = 0)
         {
             if (ReachedEnd()) return false;
-            return Peek(skip).type == tokenType;
+            return Peek(skip).Type == tokenType;
         }
 
         private Token Peek(int skip = 0)
@@ -180,14 +180,14 @@ namespace SmolScript.Internals
             if (Check(tokenType)) return Advance();
 
             // If we expected a ; but got a newline, we just wave it through
-            if (tokenType == TokenType.SEMICOLON && _tokens[_current - 1].followed_by_line_break)
+            if (tokenType == TokenType.SEMICOLON && _tokens[_current - 1].IsFollowedByLineBreak)
             {
                 // We need to return a token, so we'll make a fake semicolon
                 return new Token(TokenType.SEMICOLON, "", "", -1, -1, -1, -1);
             }
 
             // If we expected a ; but got a }, we also wave that through
-            if (tokenType == TokenType.SEMICOLON && (this.Check(TokenType.RIGHT_BRACE) || this.Peek().type == TokenType.EOF))
+            if (tokenType == TokenType.SEMICOLON && (this.Check(TokenType.RIGHT_BRACE) || this.Peek().Type == TokenType.EOF))
             {
                 return new Token(TokenType.SEMICOLON, "", "", -1, -1, -1, -1);
             }
@@ -197,7 +197,7 @@ namespace SmolScript.Internals
 
         private ParseError Error(Token token, string errorMessage)
         {
-            return new ParseError(token, $"{errorMessage} (Line {token.line}, Col {token.col})");
+            return new ParseError(token, $"{errorMessage} (Line {token.Line}, Col {token.Col})");
         }
 
         private void Synchronize()
@@ -206,9 +206,9 @@ namespace SmolScript.Internals
 
             while (!ReachedEnd())
             {
-                if (Previous().type == TokenType.SEMICOLON) return;
+                if (Previous().Type == TokenType.SEMICOLON) return;
 
-                switch (Peek().type)
+                switch (Peek().Type)
                 {
                     case TokenType.CLASS:
                     case TokenType.FUNC:
@@ -230,7 +230,7 @@ namespace SmolScript.Internals
 
         private bool ReachedEnd()
         {
-            return Peek().type == TokenType.EOF;
+            return Peek().Type == TokenType.EOF;
         }
 
         private Statement Declaration()
@@ -272,9 +272,9 @@ namespace SmolScript.Internals
             {
                 do
                 {
-                    if (functionParams.Count() >= 127)
+                    if (functionParams.Count() >= 32_766)
                     {
-                        Error(Peek(), "Can't define a function with more than 127 parameters.");
+                        Error(Peek(), "Can't define a function with more than 32,766 parameters.");
                     }
 
                     functionParams.Add(Consume(TokenType.IDENTIFIER, "Expected parameter name"));
@@ -290,7 +290,7 @@ namespace SmolScript.Internals
 
             if (isNestedFunction) // Switch out the function statement for a var declaration if it's nested
             {
-                var skip = Consume(TokenType.SEMICOLON, "Expected either a value to be assigned or the end of the statement").start_pos == -1 ? 1 : 2;
+                var skip = Consume(TokenType.SEMICOLON, "Expected either a value to be assigned or the end of the statement").StartPosition == -1 ? 1 : 2;
                 var lastTokenIndex = _current - skip;
                 
                 return new VarStatement(functionName, new FunctionExpression(functionParams, functionBody), firstTokenIndex, lastTokenIndex);
@@ -314,7 +314,7 @@ namespace SmolScript.Internals
                 initializer = Expression();
             }
           
-            var skip = Consume(TokenType.SEMICOLON, "Expected either a value to be assigned or the end of the statement").start_pos == -1 ? 1 : 2;
+            var skip = Consume(TokenType.SEMICOLON, "Expected either a value to be assigned or the end of the statement").StartPosition == -1 ? 1 : 2;
             var lastTokenIndex = _current - skip;
 
             return new VarStatement(name, initializer, firstTokenIndex, lastTokenIndex);
@@ -364,7 +364,6 @@ namespace SmolScript.Internals
             if (Match(TokenType.CONTINUE)) return ContinueStatement();
             if (Match(TokenType.LEFT_BRACE)) return Block();
             if (Match(TokenType.DEBUGGER)) return DebuggerStatement();
-            //if (match(TokenType.CLASS)) return classDeclaration();
 
             return ExpressionStatement();
         }
@@ -431,7 +430,7 @@ namespace SmolScript.Internals
 
             while (!Check(TokenType.RIGHT_BRACE) && !ReachedEnd())
             {
-                if (Peek().type == TokenType.SEMICOLON)
+                if (Peek().Type == TokenType.SEMICOLON)
                 {
                     Consume(TokenType.SEMICOLON, "");
                 }
@@ -625,18 +624,18 @@ namespace SmolScript.Internals
 
                 if (expr.GetType() == typeof(VariableExpression))
                 {
-                    var name = ((VariableExpression)expr).name;
+                    var name = ((VariableExpression)expr).VariableName;
                     return new AssignExpression(name, value);
                 }
                 else if (expr.GetType() == typeof(GetExpression))
                 {
                     var getExpr = (GetExpression)expr;
-                    return new SetExpression(getExpr.obj, getExpr.name, value);
+                    return new SetExpression(getExpr.TargetObject, getExpr.AttributeName, value);
                 }
                 else if (expr.GetType() == typeof(IndexerGetExpression))
                 {
                     var getExpr = (IndexerGetExpression)expr;
-                    return new IndexerSetExpression(getExpr.obj, getExpr.indexerExpr, value);
+                    return new IndexerSetExpression(getExpr.TargetObject, getExpr.IndexerExpression, value);
                 }
 
                 throw Error(equals, "Invalid assignment target.");
@@ -646,22 +645,22 @@ namespace SmolScript.Internals
             {
                 var originalToken = Previous();
                 var value = Assignment();
-                var additionExpr = new BinaryExpression(expr, new Token(TokenType.PLUS, "+=", null, originalToken.line, originalToken.col, originalToken.start_pos, originalToken.end_pos), value);
+                var additionExpr = new BinaryExpression(expr, new Token(TokenType.PLUS, "+=", null, originalToken.Line, originalToken.Col, originalToken.StartPosition, originalToken.EndPosition), value);
 
                 if (expr.GetType() == typeof(VariableExpression))
                 {
-                    return new AssignExpression(((VariableExpression)expr).name, additionExpr);
+                    return new AssignExpression(((VariableExpression)expr).VariableName, additionExpr);
                 }
                 else if (expr.GetType() == typeof(GetExpression))
                 {
                     var getExpr = (GetExpression)expr;
 
-                    return new SetExpression(getExpr.obj, getExpr.name, additionExpr);
+                    return new SetExpression(getExpr.TargetObject, getExpr.AttributeName, additionExpr);
                 }
                 else if (expr.GetType() == typeof(IndexerGetExpression))
                 {
                     var getExpr = (IndexerGetExpression)expr;
-                    return new IndexerSetExpression(getExpr.obj, getExpr.indexerExpr, additionExpr);
+                    return new IndexerSetExpression(getExpr.TargetObject, getExpr.IndexerExpression, additionExpr);
                 }
 
                 throw Error(originalToken, "Invalid assignment target.");
@@ -671,22 +670,22 @@ namespace SmolScript.Internals
             {
                 var originalToken = Previous();
                 var value = Assignment();
-                var subtractExpr = new BinaryExpression(expr, new Token(TokenType.MINUS, "-=", null, originalToken.line, originalToken.col, originalToken.start_pos, originalToken.end_pos), value);
+                var subtractExpr = new BinaryExpression(expr, new Token(TokenType.MINUS, "-=", null, originalToken.Line, originalToken.Col, originalToken.StartPosition, originalToken.EndPosition), value);
 
                 if (expr.GetType() == typeof(VariableExpression))
                 {
-                    return new AssignExpression(((VariableExpression)expr).name, subtractExpr);
+                    return new AssignExpression(((VariableExpression)expr).VariableName, subtractExpr);
                 }
                 else if (expr.GetType() == typeof(GetExpression))
                 {
                     var getExpr = (GetExpression)expr;
 
-                    return new SetExpression(getExpr.obj, getExpr.name, subtractExpr);
+                    return new SetExpression(getExpr.TargetObject, getExpr.AttributeName, subtractExpr);
                 }
                 else if (expr.GetType() == typeof(IndexerGetExpression))
                 {
                     var getExpr = (IndexerGetExpression)expr;
-                    return new IndexerSetExpression(getExpr.obj, getExpr.indexerExpr, subtractExpr);
+                    return new IndexerSetExpression(getExpr.TargetObject, getExpr.IndexerExpression, subtractExpr);
                 }
 
                 throw Error(originalToken, "Invalid assignment target.");
@@ -696,21 +695,21 @@ namespace SmolScript.Internals
             {
                 var originalToken = Previous();
                 var value = Assignment();
-                var powExpr = new BinaryExpression(expr, new Token(TokenType.POW, "*=", null, originalToken.line, originalToken.col, originalToken.start_pos, originalToken.end_pos), value);
+                var powExpr = new BinaryExpression(expr, new Token(TokenType.POW, "*=", null, originalToken.Line, originalToken.Col, originalToken.StartPosition, originalToken.EndPosition), value);
 
                 if (expr.GetType() == typeof(VariableExpression))
                 {
-                    return new AssignExpression(((VariableExpression)expr).name, powExpr);
+                    return new AssignExpression(((VariableExpression)expr).VariableName, powExpr);
                 }
                 else if (expr.GetType() == typeof(GetExpression))
                 {
                     var getExpr = (GetExpression)expr;
-                    return new SetExpression(getExpr.obj, getExpr.name, powExpr);
+                    return new SetExpression(getExpr.TargetObject, getExpr.AttributeName, powExpr);
                 }
                 else if (expr.GetType() == typeof(IndexerGetExpression))
                 {
                     var getExpr = (IndexerGetExpression)expr;
-                    return new IndexerSetExpression(getExpr.obj, getExpr.indexerExpr, powExpr);
+                    return new IndexerSetExpression(getExpr.TargetObject, getExpr.IndexerExpression, powExpr);
                 }
 
                 throw Error(originalToken, "Invalid assignment target.");
@@ -720,22 +719,22 @@ namespace SmolScript.Internals
             {
                 var originalToken = Previous();
                 var value = Assignment();
-                var divExpr = new BinaryExpression(expr, new Token(TokenType.DIVIDE, "/=", null, originalToken.line, originalToken.col, originalToken.start_pos, originalToken.end_pos), value);
+                var divExpr = new BinaryExpression(expr, new Token(TokenType.DIVIDE, "/=", null, originalToken.Line, originalToken.Col, originalToken.StartPosition, originalToken.EndPosition), value);
 
                 if (expr.GetType() == typeof(VariableExpression))
                 {
-                    return new AssignExpression(((VariableExpression)expr).name, divExpr);
+                    return new AssignExpression(((VariableExpression)expr).VariableName, divExpr);
                 }
                 else if (expr.GetType() == typeof(GetExpression))
                 {
                     var getExpr = (GetExpression)expr;
 
-                    return new SetExpression(getExpr.obj, getExpr.name, divExpr);
+                    return new SetExpression(getExpr.TargetObject, getExpr.AttributeName, divExpr);
                 }
                 else if (expr.GetType() == typeof(IndexerGetExpression))
                 {
                     var getExpr = (IndexerGetExpression)expr;
-                    return new IndexerSetExpression(getExpr.obj, getExpr.indexerExpr, divExpr);
+                    return new IndexerSetExpression(getExpr.TargetObject, getExpr.IndexerExpression, divExpr);
                 }
 
                 throw Error(originalToken, "Invalid assignment target.");
@@ -745,22 +744,22 @@ namespace SmolScript.Internals
             {
                 var originalToken = Previous();
                 var value = Assignment();
-                var mulExpr = new BinaryExpression(expr, new Token(TokenType.MULTIPLY, "*=", null, originalToken.line, originalToken.col, originalToken.start_pos, originalToken.end_pos), value);
+                var mulExpr = new BinaryExpression(expr, new Token(TokenType.MULTIPLY, "*=", null, originalToken.Line, originalToken.Col, originalToken.StartPosition, originalToken.EndPosition), value);
 
                 if (expr.GetType() == typeof(VariableExpression))
                 {
-                    return new AssignExpression(((VariableExpression)expr).name, mulExpr);
+                    return new AssignExpression(((VariableExpression)expr).VariableName, mulExpr);
                 }
                 else if (expr.GetType() == typeof(GetExpression))
                 {
                     var getExpr = (GetExpression)expr;
 
-                    return new SetExpression(getExpr.obj, getExpr.name, mulExpr);
+                    return new SetExpression(getExpr.TargetObject, getExpr.AttributeName, mulExpr);
                 }
                 else if (expr.GetType() == typeof(IndexerGetExpression))
                 {
                     var getExpr = (IndexerGetExpression)expr;
-                    return new IndexerSetExpression(getExpr.obj, getExpr.indexerExpr, mulExpr);
+                    return new IndexerSetExpression(getExpr.TargetObject, getExpr.IndexerExpression, mulExpr);
                 }
 
                 throw Error(originalToken, "Invalid assignment target.");
@@ -770,22 +769,22 @@ namespace SmolScript.Internals
             {
                 var originalToken = Previous();
                 var value = Assignment();
-                var remainderExpr = new BinaryExpression(expr, new Token(TokenType.REMAINDER, "/=", null, originalToken.line, originalToken.col, originalToken.start_pos, originalToken.end_pos), value);
+                var remainderExpr = new BinaryExpression(expr, new Token(TokenType.REMAINDER, "/=", null, originalToken.Line, originalToken.Col, originalToken.StartPosition, originalToken.EndPosition), value);
 
                 if (expr.GetType() == typeof(VariableExpression))
                 {
-                    return new AssignExpression(((VariableExpression)expr).name, remainderExpr);
+                    return new AssignExpression(((VariableExpression)expr).VariableName, remainderExpr);
                 }
                 else if (expr.GetType() == typeof(GetExpression))
                 {
                     var getExpr = (GetExpression)expr;
 
-                    return new SetExpression(getExpr.obj, getExpr.name, remainderExpr);
+                    return new SetExpression(getExpr.TargetObject, getExpr.AttributeName, remainderExpr);
                 }
                 else if (expr.GetType() == typeof(IndexerGetExpression))
                 {
                     var getExpr = (IndexerGetExpression)expr;
-                    return new IndexerSetExpression(getExpr.obj, getExpr.indexerExpr, remainderExpr);
+                    return new IndexerSetExpression(getExpr.TargetObject, getExpr.IndexerExpression, remainderExpr);
                 }
 
                 throw Error(originalToken, "Invalid assignment target.");
@@ -796,7 +795,7 @@ namespace SmolScript.Internals
 
         private Expression FunctionExpression()
         {
-            if ((Peek().type == TokenType.LEFT_BRACKET || Peek().type == TokenType.IDENTIFIER) && IsInFatArrow(false))
+            if ((Peek().Type == TokenType.LEFT_BRACKET || Peek().Type == TokenType.IDENTIFIER) && IsInFatArrow(false))
             {
                 return FatArrowFunctionExpression(false);
             }
@@ -1013,19 +1012,12 @@ namespace SmolScript.Internals
 
             if (Match(TokenType.NUMBER))
             {
-                return new LiteralExpression(new SmolNumber((double)Previous().literal!));
+                return new LiteralExpression(new SmolNumber((double)Previous().Literal!));
             }
 
             if (Match(TokenType.STRING))
             {
-                if (IsInFatArrow(false))
-                {
-                    return null; // TODO: I thought we needed this but it seems we didn't... check the unit tests and remove it...
-                }
-                else
-                {
-                    return new LiteralExpression(new SmolString((string)Previous().literal!));
-                }
+                return new LiteralExpression(new SmolString((string)Previous().Literal!));
             }
 
             if (Match(TokenType.PREFIX_INCREMENT))
@@ -1081,7 +1073,7 @@ namespace SmolScript.Internals
             if (Match(TokenType.LEFT_SQUARE_BRACKET))
             {
                 var originalToken = Previous();
-                var className = new Token(TokenType.IDENTIFIER, "Array", null, originalToken.line, originalToken.col, originalToken.start_pos, originalToken.end_pos);
+                var className = new Token(TokenType.IDENTIFIER, "Array", null, originalToken.Line, originalToken.Col, originalToken.StartPosition, originalToken.EndPosition);
                 var args = new List<Expression>();
 
                 if (!Check(TokenType.RIGHT_SQUARE_BRACKET))
@@ -1097,7 +1089,7 @@ namespace SmolScript.Internals
             if (Match(TokenType.LEFT_BRACE))
             {
                 var originalToken = Previous();
-                var className = new Token(TokenType.IDENTIFIER, "Object", null, originalToken.line, originalToken.col, originalToken.start_pos, originalToken.end_pos);
+                var className = new Token(TokenType.IDENTIFIER, "Object", null, originalToken.Line, originalToken.Col, originalToken.StartPosition, originalToken.EndPosition);
 
                 var args = new List<Expression>();
 
@@ -1129,7 +1121,7 @@ namespace SmolScript.Internals
                 return new GroupingExpression(expr);
             }
             
-            throw Error(Peek(), $"Parser did not expect to see '{Peek().lexeme}' on line {Peek().line}, column {Peek().col}, sorry");
+            throw Error(Peek(), $"Parser did not expect to see '{Peek().Lexeme}' on line {Peek().Line}, column {Peek().Col}, sorry");
         }
 
         private FunctionExpression FatArrowFunctionExpression(bool openBracketConsumed = false)
@@ -1211,11 +1203,11 @@ namespace SmolScript.Internals
             
             if (!openBracketConsumed)
             {
-                if (!_tokens[_current].followed_by_line_break && _tokens[_current + 1].type == TokenType.FAT_ARROW)
+                if (!_tokens[_current].IsFollowedByLineBreak && _tokens[_current + 1].Type == TokenType.FAT_ARROW)
                 {
                     return true;
                 }
-                else if (_tokens[_current].type == TokenType.LEFT_BRACKET)
+                else if (_tokens[_current].Type == TokenType.LEFT_BRACKET)
                 {
                     index++; // pretend we consumed the left brack and next section can serve both needs
                 }
@@ -1232,34 +1224,34 @@ namespace SmolScript.Internals
             
             while (true)
             {
-                if (_tokens[index].followed_by_line_break && _tokens[index].type != TokenType.FAT_ARROW) // => has to be on same line as (...), but newline can come after =>
+                if (_tokens[index].IsFollowedByLineBreak && _tokens[index].Type != TokenType.FAT_ARROW) // => has to be on same line as (...), but newline can come after =>
                 {
                     break;
                 }
                 
                 var next = _tokens[index];
 
-                if (previous == TokenType.LEFT_BRACKET && next.type == TokenType.RIGHT_BRACKET)
+                if (previous == TokenType.LEFT_BRACKET && next.Type == TokenType.RIGHT_BRACKET)
                 {
                     // Valid, move on to the next token
                     index++;
                 }
-                else if (previous == TokenType.LEFT_BRACKET && next.type == TokenType.IDENTIFIER)
+                else if (previous == TokenType.LEFT_BRACKET && next.Type == TokenType.IDENTIFIER)
                 {
                     // Valid, move on to the next token
                     index++;
                 }
-                else if (previous == TokenType.IDENTIFIER && (next.type == TokenType.COMMA || next.type == TokenType.RIGHT_BRACKET))
+                else if (previous == TokenType.IDENTIFIER && (next.Type == TokenType.COMMA || next.Type == TokenType.RIGHT_BRACKET))
                 {
                     // Valid, move on to the next token
                     index++;
                 }
-                else if (previous == TokenType.COMMA && next.type == TokenType.IDENTIFIER)
+                else if (previous == TokenType.COMMA && next.Type == TokenType.IDENTIFIER)
                 {
                     // Valid, move on to the next token
                     index++;
                 }
-                else if (previous == TokenType.RIGHT_BRACKET && next.type == TokenType.FAT_ARROW)
+                else if (previous == TokenType.RIGHT_BRACKET && next.Type == TokenType.FAT_ARROW)
                 {
                     // Valid, we're definitely dealing with a fat arrow
                     return true;
@@ -1269,7 +1261,7 @@ namespace SmolScript.Internals
                     break;
                 }
 
-                previous = next.type;
+                previous = next.Type;
             }
 
             return false;

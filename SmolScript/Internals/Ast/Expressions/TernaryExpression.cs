@@ -4,15 +4,15 @@ namespace SmolScript.Internals.Ast.Expressions
 {
     internal class TernaryExpression : Expression
     {
-        public readonly Expression evaluationExpression;
-        public readonly Expression expressionIfTrue;
-        public readonly Expression expresisonIfFalse;
+        public readonly Expression EvaluationExpression;
+        public readonly Expression TrueValue;
+        public readonly Expression FalseValue;
 
-        public TernaryExpression(Expression evaluationExpression, Expression expressionIfTrue, Expression expresisonIfFalse)
+        public TernaryExpression(Expression evaluationExpression, Expression trueValue, Expression falseValue)
         {
-            this.evaluationExpression = evaluationExpression;
-            this.expressionIfTrue = expressionIfTrue;
-            this.expresisonIfFalse = expresisonIfFalse;
+            this.EvaluationExpression = evaluationExpression;
+            this.TrueValue = trueValue;
+            this.FalseValue = falseValue;
         }
 
         public override object? Accept(IExpressionVisitor visitor)

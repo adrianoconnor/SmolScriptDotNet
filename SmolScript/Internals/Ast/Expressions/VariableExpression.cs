@@ -4,13 +4,12 @@ namespace SmolScript.Internals.Ast.Expressions
 {
     internal class VariableExpression : Expression
     {
-        public readonly Token name;
-        public readonly TokenType? prepostfixop;
+        public readonly Token VariableName;
+        public readonly TokenType? prepostfixop; // TODO: This should probably be PrefixUnary or PostfixUnary
 
-        public VariableExpression(Token name, TokenType? prepostfixop = null)
+        public VariableExpression(Token variableName, TokenType? prepostfixop = null)
         {
-            this.name = name;
-
+            this.VariableName = variableName;
             this.prepostfixop = prepostfixop;
         }
 

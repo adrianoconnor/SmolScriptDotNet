@@ -16,7 +16,7 @@ public class ScannerTests
 
         var tokens = scanner.ScanTokens();
 
-        Assert.AreEqual(16, tokens[5].start_pos);
+        Assert.AreEqual(16, tokens[5].StartPosition);
 
         var parser = new Parser(tokens);
 

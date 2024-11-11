@@ -7,8 +7,7 @@ namespace SmolScript.Internals.SmolVariableTypes
     /// that are in the compiled bytecode).
     ///
     /// This is only used for Smol internal classes/types, it's not used for interop
-    /// with user code (for that we try and limit to simple lambdas and maybe later
-    /// also reflection for dynamic access to native passed objects, tbc).
+    /// with user code, that's handled with reflection.
     /// </summary>
     internal interface ISmolNativeCallable
     {

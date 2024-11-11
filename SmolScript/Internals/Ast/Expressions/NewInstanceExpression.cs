@@ -4,13 +4,13 @@ namespace SmolScript.Internals.Ast.Expressions
 {
     internal class NewInstanceExpression : Expression
     {
-        public readonly Token className;
-        public readonly IList<Expression> ctorArgs;
+        public readonly Token ClassName;
+        public readonly IList<Expression> ConstructorArgs;
 
-        public NewInstanceExpression(Token className, IList<Expression> ctorArgs)
+        public NewInstanceExpression(Token className, IList<Expression> constructorArgs)
         {
-            this.className = className;
-            this.ctorArgs = ctorArgs;
+            this.ClassName = className;
+            this.ConstructorArgs = constructorArgs;
         }
 
         public override object? Accept(IExpressionVisitor visitor)

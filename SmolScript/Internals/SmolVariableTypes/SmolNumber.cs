@@ -2,33 +2,33 @@
 {
     internal class SmolNumber : SmolVariableType
     {
-        internal readonly double value;
+        internal readonly double NumberValue;
 
-        internal SmolNumber(double value)
+        internal SmolNumber(double numberValue)
         {
-            this.value = value;
+            this.NumberValue = numberValue;
         }
 
         internal override object? GetValue()
         {
-            return this.value;
+            return this.NumberValue;
         }
 
         public override string ToString()
         {
-            return $"(SmolNumber) {value}";
+            return $"(Number) {NumberValue}";
         }
 
         public override int GetHashCode()
         {
-            return this.value.GetHashCode();
+            return this.NumberValue.GetHashCode();
         }
 
         public override bool Equals(object? obj)
         {
             if (this.GetType() == typeof(SmolNumber) && obj?.GetType() == typeof(SmolNumber))
             {
-                return ((SmolNumber)this).value.Equals(((SmolNumber)obj!).value);
+                return ((SmolNumber)this).NumberValue.Equals(((SmolNumber)obj!).NumberValue);
             }
             else
             {

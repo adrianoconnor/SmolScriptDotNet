@@ -5,23 +5,23 @@ namespace SmolScript.Internals.SmolVariableTypes
 {
     internal class SmolRegExp : SmolVariableType, ISmolNativeCallable
     {
-        internal readonly string pattern;
-        internal readonly Regex regex;
+        internal readonly string Pattern;
+        internal readonly Regex Regex;
 
         internal SmolRegExp(string pattern)
         {
-            this.pattern = pattern;
-            this.regex = new Regex(pattern);
+            this.Pattern = pattern;
+            this.Regex = new Regex(pattern);
         }
 
         internal override object? GetValue()
         {
-            return this.pattern;
+            return this.Pattern;
         }
 
         public override string ToString()
         {
-            return $"(SmolRegExp) {pattern}";
+            return $"(SmolRegExp) {Pattern}";
         }
 
         public SmolVariableType GetProp(string propName)
@@ -43,7 +43,7 @@ namespace SmolScript.Internals.SmolVariableTypes
             switch (funcName)
             {
                 case "test":
-                    return new SmolBool(this.regex.IsMatch(((SmolString)parameters[0]).value));
+                    return new SmolBool(this.Regex.IsMatch(((SmolString)parameters[0]).StringValue));
 
                 default:
                     throw new Exception($"{this.GetType()} cannot handle native function {funcName}");

@@ -4,11 +4,17 @@ namespace SmolScript.Internals.SmolVariableTypes
 {
     internal class SmolArray : SmolVariableType, ISmolNativeCallable
     {
-        internal readonly List<SmolVariableType> elements = new List<SmolVariableType>();
+        internal readonly List<SmolVariableType> Elements = new List<SmolVariableType>();
 
         internal SmolArray()
         {
         }
+
+        internal SmolArray(List<SmolVariableType> elements)
+        {
+            this.Elements = elements;
+        }
+
 
         internal override object? GetValue()
         {
@@ -17,7 +23,7 @@ namespace SmolScript.Internals.SmolVariableTypes
 
         public override string ToString()
         {
-            return $"(SmolArray) length={this.elements.Count}";
+            return $"(SmolArray) length={this.Elements.Count}";
         }
 
         public SmolVariableType GetProp(string propName)
@@ -25,13 +31,13 @@ namespace SmolScript.Internals.SmolVariableTypes
             switch (propName)
             {
                 case "length":
-                    return new SmolNumber(this.elements.Count);
+                    return new SmolNumber(this.Elements.Count);
 
                 default:
 
                     if (int.TryParse(propName, out int index))
                     {
-                        var result = this.elements[index];
+                        var result = this.Elements[index];
 
                         return result ?? new SmolUndefined();
                     }
@@ -47,12 +53,12 @@ namespace SmolScript.Internals.SmolVariableTypes
                 // If we have an array with 2 elements ([0] and [1]), and we want to set 
                 // The element at index [3], we need to insert undefined at [2]
 
-                while (index >= this.elements.Count())
+                while (index >= this.Elements.Count())
                 {
-                    elements.Add(new SmolUndefined());
+                    Elements.Add(new SmolUndefined());
                 }
 
-                this.elements[index] = value;
+                this.Elements[index] = value;
             }
             else
             {
@@ -65,13 +71,53 @@ namespace SmolScript.Internals.SmolVariableTypes
             switch (funcName)
             {
                 case "pop":
-                    var el = this.elements.Last();
-                    this.elements.RemoveAt(this.elements.Count() - 1);
+                    var el = this.Elements.Last();
+                    this.Elements.RemoveAt(this.Elements.Count() - 1);
                     return el;
 
                 case "push":
-                    this.elements.Add(parameters[0]);
+                    this.Elements.Add(parameters[0]);
                     return parameters[0];
+
+                case "slice":
+                {
+                    var first = 0;
+                    var last = this.Elements.Count;
+
+                    if (parameters.Count > 0)
+                    {
+                        var p1 = (int)Math.Truncate(((SmolNumber)parameters[0]).NumberValue);
+
+                        if (p1 < 0)
+                        {
+                            first = this.Elements.Count - Math.Abs(p1);
+                        }
+                        else
+                        {
+                            first = p1;
+                        }
+
+                        p1 = Math.Min(p1, this.Elements.Count - 1);
+                    }
+
+                    if (parameters.Count > 1)
+                    {
+                        var p2 = (int)Math.Truncate(((SmolNumber)parameters[1]).NumberValue);
+
+                        if (p2 < 0)
+                        {
+                            last = this.Elements.Count - Math.Abs(p2);
+                        }
+                        else
+                        {
+                            last = p2;
+                        }
+                    }
+                    
+                    // TODO: Clamp within bounds of array and also handle null etc.
+                    
+                    return new SmolArray(this.Elements.Slice(first, last - first));
+                }
 
                 default:
                     throw new Exception($"{this.GetTypeName()} cannot handle native function {funcName}");
@@ -88,7 +134,7 @@ namespace SmolScript.Internals.SmolVariableTypes
 
                     foreach (var p in parameters)
                     {
-                        array.elements.Add(p);
+                        array.Elements.Add(p);
                     }
 
                     return array;

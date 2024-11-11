@@ -2,21 +2,21 @@
 {
     internal class SmolBool : SmolVariableType
     {
-        internal readonly bool value;
+        internal readonly bool BoolValue;
 
-        internal SmolBool(bool value)
+        internal SmolBool(bool boolValue)
         {
-            this.value = value;
+            this.BoolValue = boolValue;
         }
 
         internal override object? GetValue()
         {
-            return this.value;
+            return this.BoolValue;
         }
 
         public override string ToString()
         {
-            return $"(SmolBool) {value}";
+            return $"(SmolBool) {BoolValue}";
         }
     }
 }

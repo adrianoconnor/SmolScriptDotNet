@@ -4,13 +4,13 @@ namespace SmolScript.Internals.Ast.Expressions
 {
     internal class UnaryExpression : Expression
     {
-        public readonly Token op;
-        public readonly Expression right;
+        public readonly Token Operator;
+        public readonly Expression RightExpression;
 
-        public UnaryExpression(Token op, Expression right)
+        public UnaryExpression(Token @operator, Expression rightExpression)
         {
-            this.op = op;
-            this.right = right;
+            this.Operator = @operator;
+            this.RightExpression = rightExpression;
         }
 
         public override object? Accept(IExpressionVisitor visitor)

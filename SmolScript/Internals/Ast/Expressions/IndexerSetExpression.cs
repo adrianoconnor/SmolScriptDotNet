@@ -4,15 +4,15 @@ namespace SmolScript.Internals.Ast.Expressions
 {
     internal class IndexerSetExpression : Expression
     {
-        public readonly Expression obj;
-        public readonly Expression indexerExpr;
-        public readonly Expression value;
+        public readonly Expression TargetObject;
+        public readonly Expression IndexerExpression;
+        public readonly Expression Value;
 
-        public IndexerSetExpression(Expression obj, Expression indexerExpr, Expression value)
+        public IndexerSetExpression(Expression targetObject, Expression indexerExpression, Expression value)
         {
-            this.obj = obj;
-            this.indexerExpr = indexerExpr;
-            this.value = value;
+            this.TargetObject = targetObject;
+            this.IndexerExpression = indexerExpression;
+            this.Value = value;
         }
 
         public override object? Accept(IExpressionVisitor visitor)

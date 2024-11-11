@@ -4,15 +4,15 @@ namespace SmolScript.Internals.Ast.Expressions
 {
     internal class LogicalExpression : Expression
     {
-        public readonly Expression left;
-        public readonly Token op;
-        public readonly Expression right;
+        public readonly Expression LeftExpression;
+        public readonly Token Operator;
+        public readonly Expression RightExpression;
 
-        public LogicalExpression(Expression left, Token op, Expression right)
+        public LogicalExpression(Expression leftExpression, Token @operator, Expression rightExpression)
         {
-            this.left = left;
-            this.op = op;
-            this.right = right;
+            this.LeftExpression = leftExpression;
+            this.Operator = @operator;
+            this.RightExpression = rightExpression;
         }
 
         public override object? Accept(IExpressionVisitor visitor)

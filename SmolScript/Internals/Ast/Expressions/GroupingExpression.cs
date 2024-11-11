@@ -2,11 +2,11 @@
 {
     internal class GroupingExpression : Expression
     {
-        public readonly Expression expr;
+        public readonly Expression GroupedExpression;
 
-        public GroupingExpression(Expression expr)
+        public GroupingExpression(Expression groupedExpression)
         {
-            this.expr = expr;
+            this.GroupedExpression = groupedExpression;
         }
 
         public override object? Accept(IExpressionVisitor visitor)

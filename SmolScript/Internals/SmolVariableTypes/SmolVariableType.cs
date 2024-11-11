@@ -67,8 +67,8 @@ namespace SmolScript.Internals.SmolVariableTypes
 
             if (a.GetType() == typeof(SmolNumber) && b.GetType() == typeof(SmolNumber))
             {
-                var left = ((SmolNumber)a).value;
-                var right = ((SmolNumber)b).value;
+                var left = ((SmolNumber)a).NumberValue;
+                var right = ((SmolNumber)b).NumberValue;
 
                 return new SmolNumber(left + right);
             }
@@ -248,11 +248,11 @@ namespace SmolScript.Internals.SmolVariableTypes
         {
             if (this.GetType() == typeof(SmolNumber) && obj?.GetType() == typeof(SmolNumber))
             {
-                return ((SmolNumber)this).value.Equals(((SmolNumber)obj!).value);
+                return ((SmolNumber)this).NumberValue.Equals(((SmolNumber)obj!).NumberValue);
             }
             else if (this.GetType() == typeof(SmolString))
             {
-                return ((SmolString)this).value == ((SmolString)obj!).value;
+                return ((SmolString)this).StringValue == ((SmolString)obj!).StringValue;
             }
             else if (this.GetType() == typeof(SmolUndefined))
             {
@@ -268,11 +268,11 @@ namespace SmolScript.Internals.SmolVariableTypes
         {
             if (this.GetType() == typeof(SmolNumber))
             {
-                return ((SmolNumber)this).value.GetHashCode();
+                return ((SmolNumber)this).NumberValue.GetHashCode();
             }
             if (this.GetType() == typeof(SmolString))
             {
-                return ((SmolString)this).value.GetHashCode();
+                return ((SmolString)this).StringValue.GetHashCode();
             }
             else
             {

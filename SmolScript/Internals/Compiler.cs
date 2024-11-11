@@ -113,10 +113,10 @@ namespace SmolScript.Internals
         {
             var chunk = new List<ByteCodeInstruction>();
 
-            chunk.AppendChunk(expr.left.Accept(this));
-            chunk.AppendChunk(expr.right.Accept(this));
+            chunk.AppendChunk(expr.LeftExpression.Accept(this));
+            chunk.AppendChunk(expr.RightExpression.Accept(this));
 
-            switch (expr.op.type)
+            switch (expr.BinaryOperator.Type)
             {
                 case TokenType.MINUS:
                     chunk.AppendInstruction(OpCode.SUB);
@@ -189,13 +189,13 @@ namespace SmolScript.Internals
             var shortcutLabel = ReserveLabelId();
             var testCompleteLabel = ReserveLabelId();
 
-            switch (expr.op.type)
+            switch (expr.Operator.Type)
             {
                 case TokenType.LOGICAL_AND:
 
-                    chunk.AppendChunk(expr.left.Accept(this));
+                    chunk.AppendChunk(expr.LeftExpression.Accept(this));
                     chunk.AppendInstruction(OpCode.JMPFALSE, operand1: shortcutLabel);
-                    chunk.AppendChunk(expr.right.Accept(this));
+                    chunk.AppendChunk(expr.RightExpression.Accept(this));
                     chunk.AppendInstruction(OpCode.JMP, operand1: testCompleteLabel);
                     chunk.AppendInstruction(OpCode.LABEL, operand1: shortcutLabel);
 
@@ -210,9 +210,9 @@ namespace SmolScript.Internals
 
                 case TokenType.LOGICAL_OR:
 
-                    chunk.AppendChunk(expr.left.Accept(this));
+                    chunk.AppendChunk(expr.LeftExpression.Accept(this));
                     chunk.AppendInstruction(OpCode.JMPTRUE, shortcutLabel);
-                    chunk.AppendChunk(expr.right.Accept(this));
+                    chunk.AppendChunk(expr.RightExpression.Accept(this));
                     chunk.AppendInstruction(OpCode.JMP, operand1: testCompleteLabel);
                     chunk.AppendInstruction(OpCode.LABEL, operand1: shortcutLabel);
                     chunk.AppendInstruction(OpCode.CONST, operand1: ConstantIndexForValue(true));
@@ -226,7 +226,7 @@ namespace SmolScript.Internals
 
         public object? Visit(GroupingExpression expr)
         {
-            return expr.expr.Accept(this);
+            return expr.GroupedExpression.Accept(this);
         }
 
         public object? Visit(LiteralExpression expr)
@@ -237,7 +237,7 @@ namespace SmolScript.Internals
             return new ByteCodeInstruction()
             {
                 opcode = OpCode.CONST,
-                operand1 = ConstantIndexForValue(expr.value)
+                operand1 = ConstantIndexForValue(expr.Value)
             };
         }
 
@@ -245,11 +245,11 @@ namespace SmolScript.Internals
         {
             var chunk = new List<ByteCodeInstruction>();
 
-            switch (expr.op.type)
+            switch (expr.Operator.Type)
             {
                 case TokenType.NOT:
                     {
-                        chunk.AppendChunk(expr.right.Accept(this));
+                        chunk.AppendChunk(expr.RightExpression.Accept(this));
 
                         int isTrueLabel = ReserveLabelId();
                         int endLabel = ReserveLabelId();
@@ -274,21 +274,21 @@ namespace SmolScript.Internals
                     // we can create a constant for the negative number and load that instead of the more
                     // generalised unary operator behaviour, which negates whatever expression might come 
                     // after it in normal cirumstances.
-                    if (expr.right.GetType() == typeof(LiteralExpression))
+                    if (expr.RightExpression.GetType() == typeof(LiteralExpression))
                     {
-                        var l = (LiteralExpression)expr.right;
+                        var l = (LiteralExpression)expr.RightExpression;
 
-                        if (l.value.GetType() == typeof(SmolNumber))
+                        if (l.Value.GetType() == typeof(SmolNumber))
                         {
-                            var n = (SmolNumber)l.value;
-                            chunk.AppendInstruction(OpCode.CONST, operand1: ConstantIndexForValue(0-n.value));
+                            var n = (SmolNumber)l.Value;
+                            chunk.AppendInstruction(OpCode.CONST, operand1: ConstantIndexForValue(0-n.NumberValue));
 
                             break;
                         }
                     }
                     
                     chunk.AppendInstruction(OpCode.CONST, operand1: ConstantIndexForValue(0.0));
-                    chunk.AppendChunk(expr.right.Accept(this));
+                    chunk.AppendChunk(expr.RightExpression.Accept(this));
                     chunk.AppendInstruction(OpCode.SUB);
 
                     break;
@@ -302,40 +302,40 @@ namespace SmolScript.Internals
         {
             var chunk = new List<ByteCodeInstruction>();
 
-            chunk.AppendInstruction(OpCode.FETCH, operand1: expr.name.lexeme);
+            chunk.AppendInstruction(OpCode.FETCH, operand1: expr.VariableName.Lexeme);
 
             if (expr.prepostfixop != null)
             {
                 if (expr.prepostfixop == TokenType.POSTFIX_INCREMENT)
                 {
-                    chunk.AppendInstruction(OpCode.FETCH, operand1: expr.name.lexeme);
+                    chunk.AppendInstruction(OpCode.FETCH, operand1: expr.VariableName.Lexeme);
                     chunk.AppendInstruction(OpCode.CONST, operand1: ConstantIndexForValue(1.0));
                     chunk.AppendInstruction(OpCode.ADD);
-                    chunk.AppendInstruction(OpCode.STORE, operand1: expr.name.lexeme);
+                    chunk.AppendInstruction(OpCode.STORE, operand1: expr.VariableName.Lexeme);
                 }
 
                 if (expr.prepostfixop == TokenType.POSTFIX_DECREMENT)
                 {
-                    chunk.AppendInstruction(OpCode.FETCH, operand1: expr.name.lexeme);
+                    chunk.AppendInstruction(OpCode.FETCH, operand1: expr.VariableName.Lexeme);
                     chunk.AppendInstruction(OpCode.CONST, operand1: ConstantIndexForValue(1.0));
                     chunk.AppendInstruction(OpCode.SUB);
-                    chunk.AppendInstruction(OpCode.STORE, operand1: expr.name.lexeme);
+                    chunk.AppendInstruction(OpCode.STORE, operand1: expr.VariableName.Lexeme);
                 }
 
                 if (expr.prepostfixop == TokenType.PREFIX_INCREMENT)
                 {
                     chunk.AppendInstruction(OpCode.CONST, operand1: ConstantIndexForValue(1.0));
                     chunk.AppendInstruction(OpCode.ADD);
-                    chunk.AppendInstruction(OpCode.STORE, operand1: expr.name.lexeme);
-                    chunk.AppendInstruction(OpCode.FETCH, operand1: expr.name.lexeme);
+                    chunk.AppendInstruction(OpCode.STORE, operand1: expr.VariableName.Lexeme);
+                    chunk.AppendInstruction(OpCode.FETCH, operand1: expr.VariableName.Lexeme);
                 }
 
                 if (expr.prepostfixop == TokenType.PREFIX_DECREMENT)
                 {
                     chunk.AppendInstruction(OpCode.CONST, operand1: ConstantIndexForValue(1.0));
                     chunk.AppendInstruction(OpCode.SUB);
-                    chunk.AppendInstruction(OpCode.STORE, operand1: expr.name.lexeme);
-                    chunk.AppendInstruction(OpCode.FETCH, operand1: expr.name.lexeme);
+                    chunk.AppendInstruction(OpCode.STORE, operand1: expr.VariableName.Lexeme);
+                    chunk.AppendInstruction(OpCode.FETCH, operand1: expr.VariableName.Lexeme);
                 }
             }
 
@@ -346,13 +346,13 @@ namespace SmolScript.Internals
         {
             var chunk = new List<ByteCodeInstruction>();
 
-            chunk.AppendChunk(expr.value.Accept(this));
+            chunk.AppendChunk(expr.ValueExpression.Accept(this));
 
-            chunk.AppendInstruction(OpCode.STORE, operand1: expr.name.lexeme);
+            chunk.AppendInstruction(OpCode.STORE, operand1: expr.VariableName.Lexeme);
 
             // This is so inefficient
 
-            chunk.AppendInstruction(OpCode.FETCH, operand1: expr.name.lexeme);
+            chunk.AppendInstruction(OpCode.FETCH, operand1: expr.VariableName.Lexeme);
 
             return chunk;
         }
@@ -363,13 +363,13 @@ namespace SmolScript.Internals
 
             // Evalulate the arguments from left to right and pop them on the stack.
 
-            foreach (var arg in expr.args.Reverse())
+            foreach (var arg in expr.Arguments.Reverse())
             {
                 chunk.AppendChunk(((Expression)arg!).Accept(this));
             }
 
-            chunk.AppendChunk(expr.callee.Accept(this)); // Load the function name onto the stack
-            chunk.AppendInstruction(OpCode.CALL, operand1: expr.args.Count, operand2: expr.useObjectRef);
+            chunk.AppendChunk(expr.Callee.Accept(this)); // Load the function name onto the stack
+            chunk.AppendInstruction(OpCode.CALL, operand1: expr.Arguments.Count, operand2: expr.UseFetchedObjectEnvironment);
 
             return chunk;
         }
@@ -378,12 +378,12 @@ namespace SmolScript.Internals
         {
             var chunk = new List<ByteCodeInstruction>();
 
-            chunk.AppendInstruction(OpCode.DECLARE, operand1: stmt.name.lexeme);
+            chunk.AppendInstruction(OpCode.DECLARE, operand1: stmt.name.Lexeme);
 
             if (stmt.initializerExpression != null)
             {                
                 chunk.AppendChunk(stmt.initializerExpression.Accept(this));
-                chunk.AppendInstruction(OpCode.STORE, operand1: stmt.name.lexeme);
+                chunk.AppendInstruction(OpCode.STORE, operand1: stmt.name.Lexeme);
             }
 
             chunk.MapTokens(stmt.firstTokenIndex, stmt.lastTokenIndex);
@@ -483,12 +483,12 @@ namespace SmolScript.Internals
             var notTrueLabel = ReserveLabelId();
             var endLabel = ReserveLabelId();
 
-            chunk.AppendChunk(expr.evaluationExpression.Accept(this));
+            chunk.AppendChunk(expr.EvaluationExpression.Accept(this));
             chunk.AppendInstruction(OpCode.JMPFALSE, notTrueLabel);
-            chunk.AppendChunk(expr.expressionIfTrue.Accept(this));
+            chunk.AppendChunk(expr.TrueValue.Accept(this));
             chunk.AppendInstruction(OpCode.JMP, endLabel);
             chunk.AppendInstruction(OpCode.LABEL, notTrueLabel);
-            chunk.AppendChunk(expr.expresisonIfFalse.Accept(this));
+            chunk.AppendChunk(expr.FalseValue.Accept(this));
             chunk.AppendInstruction(OpCode.LABEL, endLabel);
 
             return chunk;
@@ -595,8 +595,8 @@ namespace SmolScript.Internals
 
                     // Top of stack will be exception so store it in variable name
 
-                    chunk.AppendInstruction(OpCode.DECLARE, operand1: stmt.exceptionVariableName.lexeme);
-                    chunk.AppendInstruction(OpCode.STORE, operand1: stmt.exceptionVariableName.lexeme);
+                    chunk.AppendInstruction(OpCode.DECLARE, operand1: stmt.exceptionVariableName.Lexeme);
+                    chunk.AppendInstruction(OpCode.STORE, operand1: stmt.exceptionVariableName.Lexeme);
                 }
                 else
                 {
@@ -656,13 +656,13 @@ namespace SmolScript.Internals
         public object? Visit(FunctionStatement stmt)
         {
             var functionIndex = _functionBodies.Count() + 1;
-            var functionName = stmt.name?.lexeme! ?? $"$_anon_{functionIndex}";
+            var functionName = stmt.name?.Lexeme! ?? $"$_anon_{functionIndex}";
 
             _functionTable.Add(new SmolFunction(
                 globalFunctionName: functionName,
                 codeSection: functionIndex,
                 arity: stmt.parameters.Count(),
-                paramVariableNames: stmt.parameters.Select(p => p.lexeme).ToList()
+                paramVariableNames: stmt.parameters.Select(p => p.Lexeme).ToList()
             ));
 
             // Reserve the function body so if we're 
@@ -706,13 +706,13 @@ namespace SmolScript.Internals
             foreach (var fn in stmt.functions)
             {
                 var functionIndex = _functionBodies.Count() + 1;
-                var functionName = $"@{stmt.className.lexeme}.{fn.name!.lexeme}";
+                var functionName = $"@{stmt.className.Lexeme}.{fn.name!.Lexeme}";
 
                 _functionTable.Add(new SmolFunction(
                     globalFunctionName: functionName,
                     codeSection: functionIndex,
                     arity: fn.parameters.Count(),
-                    paramVariableNames: fn.parameters.Select(p => p.lexeme).ToList()
+                    paramVariableNames: fn.parameters.Select(p => p.Lexeme).ToList()
                 ));
 
                 var body = (List<ByteCodeInstruction>)fn.functionBody.Accept(this)!;
@@ -739,7 +739,7 @@ namespace SmolScript.Internals
         {
             var chunk = new List<ByteCodeInstruction>();
 
-            var className = expr.className.lexeme;
+            var className = expr.ClassName.Lexeme;
 
             // We need to tell the VM that we want to create an instance of a class.
             // It will need its own environment, and the instance info needs to be on the stack
@@ -749,12 +749,12 @@ namespace SmolScript.Internals
 
             if (className != "Object")
             {
-                foreach (Expression arg in expr.ctorArgs.Reverse())
+                foreach (Expression arg in expr.ConstructorArgs.Reverse())
                 {
                     chunk.AppendChunk(arg.Accept(this));
                 }
 
-                chunk.AppendInstruction(OpCode.DUPLICATE_VALUE, operand1: expr.ctorArgs.Count); // We need two copies of that ref
+                chunk.AppendInstruction(OpCode.DUPLICATE_VALUE, operand1: expr.ConstructorArgs.Count); // We need two copies of that ref
             }
             else
             {
@@ -767,20 +767,20 @@ namespace SmolScript.Internals
             chunk.AppendChunk(new ByteCodeInstruction()
             {
                 opcode = OpCode.FETCH,
-                operand1 = $"@{expr.className.lexeme}.constructor",
+                operand1 = $"@{expr.ClassName.Lexeme}.constructor",
                 operand2 = true
             });
 
             if (className == "Object")
             {
-                foreach (Expression arg in expr.ctorArgs.Reverse())
+                foreach (Expression arg in expr.ConstructorArgs.Reverse())
                 {
                     chunk.AppendChunk(arg.Accept(this));
                 }
             }
 
             chunk.AppendInstruction(OpCode.CALL,
-                operand1: expr.ctorArgs.Count,
+                operand1: expr.ConstructorArgs.Count,
                 operand2: true // means use instance that's on stack -- might not use this in the end because I think we should be able to tell from class name it's an instance call...
             );
 
@@ -793,8 +793,8 @@ namespace SmolScript.Internals
         {
             var chunk = new List<ByteCodeInstruction>();
 
-            chunk.AppendChunk(expr.obj.Accept(this));
-            chunk.AppendInstruction(OpCode.FETCH, operand1: expr.name.lexeme, operand2: true);
+            chunk.AppendChunk(expr.TargetObject.Accept(this));
+            chunk.AppendInstruction(OpCode.FETCH, operand1: expr.AttributeName.Lexeme, operand2: true);
 
             // Who knows if this will work... :)
 
@@ -805,8 +805,8 @@ namespace SmolScript.Internals
         {
             var chunk = new List<ByteCodeInstruction>();
 
-            chunk.AppendChunk(expr.obj.Accept(this));
-            chunk.AppendChunk(expr.indexerExpr.Accept(this));
+            chunk.AppendChunk(expr.TargetObject.Accept(this));
+            chunk.AppendChunk(expr.IndexerExpression.Accept(this));
 
             // Now on the stack we have an expression result which is
             // the index value we want to get, so we have a special
@@ -824,17 +824,17 @@ namespace SmolScript.Internals
         {
             var chunk = new List<ByteCodeInstruction>();
 
-            chunk.AppendChunk(expr.obj.Accept(this));
+            chunk.AppendChunk(expr.TargetObject.Accept(this));
 
-            chunk.AppendChunk(expr.value.Accept(this));
+            chunk.AppendChunk(expr.Value.Accept(this));
 
-            chunk.AppendInstruction(OpCode.STORE, operand1: expr.name.lexeme, operand2: true); // true means object reference on stack
+            chunk.AppendInstruction(OpCode.STORE, operand1: expr.AttributeName.Lexeme, operand2: true); // true means object reference on stack
 
             // This is so inefficient, but we need to read the saved value back onto the stack
 
-            chunk.AppendChunk(expr.obj.Accept(this));
+            chunk.AppendChunk(expr.TargetObject.Accept(this));
 
-            chunk.AppendInstruction(OpCode.FETCH, operand1: expr.name.lexeme, operand2: true);
+            chunk.AppendInstruction(OpCode.FETCH, operand1: expr.AttributeName.Lexeme, operand2: true);
 
             return chunk;
         }
@@ -844,8 +844,8 @@ namespace SmolScript.Internals
             var chunk = new List<ByteCodeInstruction>();
 
             chunk.AppendInstruction(OpCode.DUPLICATE_VALUE, operand1: 2);
-            chunk.AppendChunk(expr.value.Accept(this));
-            chunk.AppendInstruction(OpCode.STORE, expr.name.lexeme, true); // true means object reference on stack
+            chunk.AppendChunk(expr.Value.Accept(this));
+            chunk.AppendInstruction(OpCode.STORE, expr.ObjectName.Lexeme, true); // true means object reference on stack
 
             // We don't reload the value onto the stack for these...
 
@@ -856,17 +856,17 @@ namespace SmolScript.Internals
         {
             var chunk = new List<ByteCodeInstruction>();
 
-            chunk.AppendChunk(expr.obj.Accept(this));
-            chunk.AppendChunk(expr.value.Accept(this));
-            chunk.AppendChunk(expr.indexerExpr.Accept(this));
+            chunk.AppendChunk(expr.TargetObject.Accept(this));
+            chunk.AppendChunk(expr.Value.Accept(this));
+            chunk.AppendChunk(expr.IndexerExpression.Accept(this));
             chunk.AppendInstruction(OpCode.STORE, "@IndexerSet", true); // true means object reference on stack
 
             // This is so inefficient, but we need to read the saved value back onto the stack
 
-            chunk.AppendChunk(expr.obj.Accept(this));
+            chunk.AppendChunk(expr.TargetObject.Accept(this));
 
             // TODO: This won't even work for indexer++ etc.
-            chunk.AppendChunk(expr.indexerExpr.Accept(this));
+            chunk.AppendChunk(expr.IndexerExpression.Accept(this));
             chunk.AppendInstruction(OpCode.FETCH, "@IndexerGet", true);
 
             return chunk;
@@ -880,11 +880,11 @@ namespace SmolScript.Internals
             _functionTable.Add(new SmolFunction(
                 globalFunctionName: functionName,
                 codeSection: functionIndex,
-                arity: expr.parameters.Count(),
-                paramVariableNames: expr.parameters.Select(p => p.lexeme).ToList()
+                arity: expr.Parameters.Count(),
+                paramVariableNames: expr.Parameters.Select(p => p.Lexeme).ToList()
             ));
 
-            var body = (List<ByteCodeInstruction>)expr.functionBody.Accept(this)!;
+            var body = (List<ByteCodeInstruction>)expr.FunctionBody.Accept(this)!;
 
             if (!body.Any() || body.Last().opcode != OpCode.RETURN)
             {

@@ -37,48 +37,48 @@ namespace SmolScript.Internals.Ast
 
         public object? Visit(BinaryExpression expr)
         {
-            var s = $"({expr.op.lexeme} {expr.left.Accept(this)} {expr.right.Accept(this)})";
+            var s = $"({expr.BinaryOperator.Lexeme} {expr.LeftExpression.Accept(this)} {expr.RightExpression.Accept(this)})";
 
             return s;
         }
 
         public object? Visit(LogicalExpression expr)
         {
-            var s = $"({expr.op.lexeme} {expr.left.Accept(this)} {expr.right.Accept(this)})";
+            var s = $"({expr.Operator.Lexeme} {expr.LeftExpression.Accept(this)} {expr.RightExpression.Accept(this)})";
 
             return s;
         }
 
         public object? Visit(GroupingExpression expr)
         {
-            var s = $"(group {expr.expr.Accept(this)})";
+            var s = $"(group {expr.GroupedExpression.Accept(this)})";
 
             return s;
         }
 
         public object? Visit(LiteralExpression expr)
         {
-            return $"{(expr.value == null ? "nil" : expr.value.ToString())}";
+            return $"{(expr.Value == null ? "nil" : expr.Value.ToString())}";
         }
 
         public object? Visit(UnaryExpression expr)
         {
-            return $"({expr.op.lexeme} {expr.right.Accept(this)})";
+            return $"({expr.Operator.Lexeme} {expr.RightExpression.Accept(this)})";
         }
 
         public object? Visit(VariableExpression expr)
         {
-            return $"(var {expr.name})";
+            return $"(var {expr.VariableName})";
         }
 
         public object? Visit(AssignExpression expr)
         {
-            return $"(assign {expr.name.lexeme} {expr.value.Accept(this)})";
+            return $"(assign {expr.VariableName.Lexeme} {expr.ValueExpression.Accept(this)})";
         }
 
         public object? Visit(CallExpression expr)
         {
-            return $"(call {expr.callee.Accept(this)} args[{expr.args.Count}])";
+            return $"(call {expr.Callee.Accept(this)} args[{expr.Arguments.Count}])";
         }
 
         public object? Visit(VarStatement stmt)
@@ -87,7 +87,7 @@ namespace SmolScript.Internals.Ast
 
             if (stmt.initializerExpression != null)
             {
-                var output = $"[declare var {stmt.name.lexeme} with initial value]";
+                var output = $"[declare var {stmt.name.Lexeme} with initial value]";
                 output += System.Environment.NewLine;
                 output += $"initializer: {stmt.initializerExpression.Accept(this)}";
                 output += System.Environment.NewLine;
@@ -98,7 +98,7 @@ namespace SmolScript.Internals.Ast
             }
             else
             {
-                return $"[declare var {stmt.name.lexeme} (undefined) /]";
+                return $"[declare var {stmt.name.Lexeme} (undefined) /]";
             }
         }
 
@@ -208,14 +208,14 @@ namespace SmolScript.Internals.Ast
         {
             var s = new StringBuilder();
 
-            s.AppendLine($"[ternary {expr.evaluationExpression.Accept(this)}]");
+            s.AppendLine($"[ternary {expr.EvaluationExpression.Accept(this)}]");
 
             s.AppendLine($"[true]");
-            s.Append($"{expr.expressionIfTrue.Accept(this)}");
+            s.Append($"{expr.TrueValue.Accept(this)}");
             s.AppendLine($"[/true]");
 
             s.AppendLine($"[false]");
-            s.Append($"{expr.expresisonIfFalse.Accept(this)}");
+            s.Append($"{expr.FalseValue.Accept(this)}");
             s.AppendLine($"[/false]");
 
             s.AppendLine("[end ternary]");
@@ -240,7 +240,7 @@ namespace SmolScript.Internals.Ast
         {
             var s = new StringBuilder();
 
-            s.AppendLine($"[declare function {stmt.name?.lexeme ?? ""} ()]");
+            s.AppendLine($"[declare function {stmt.name?.Lexeme ?? ""} ()]");
 
             s.Append($"{stmt.functionBody.Accept(this)}");
 
@@ -253,7 +253,7 @@ namespace SmolScript.Internals.Ast
         {
             var s = new StringBuilder();
 
-            s.AppendLine($"[declare class {stmt.className.lexeme} ()]");
+            s.AppendLine($"[declare class {stmt.className.Lexeme} ()]");
 
             //s.Append($"{stmt.constructor?.Accept(this) ?? "no ctor"}");
 
@@ -269,7 +269,7 @@ namespace SmolScript.Internals.Ast
         {
             var s = new StringBuilder();
 
-            s.AppendLine($"[new instance of {expr.className.lexeme} ()]");
+            s.AppendLine($"[new instance of {expr.ClassName.Lexeme} ()]");
 
             return s.ToString();
         }
@@ -288,7 +288,7 @@ namespace SmolScript.Internals.Ast
         {
             var s = new StringBuilder();
 
-            s.AppendLine($"[getter obj={expr.obj.Accept(this)}, property name={expr.name}]");
+            s.AppendLine($"[getter obj={expr.TargetObject.Accept(this)}, property name={expr.AttributeName}]");
 
             return s.ToString();
         }
@@ -297,7 +297,7 @@ namespace SmolScript.Internals.Ast
         {
             var s = new StringBuilder();
 
-            s.AppendLine($"[setter obj={expr.obj.Accept(this)}, property name={expr.name} value={expr.value.Accept(this)}]");
+            s.AppendLine($"[setter obj={expr.TargetObject.Accept(this)}, property name={expr.AttributeName} value={expr.Value.Accept(this)}]");
 
             return s.ToString();
         }
@@ -306,7 +306,7 @@ namespace SmolScript.Internals.Ast
         {
             var s = new StringBuilder();
 
-            s.AppendLine($"[initializer property name={expr.name} value={expr.value.Accept(this)}]");
+            s.AppendLine($"[initializer property name={expr.ObjectName} value={expr.Value.Accept(this)}]");
 
             return s.ToString();
         }
@@ -316,7 +316,7 @@ namespace SmolScript.Internals.Ast
         {
             var s = new StringBuilder();
 
-            s.AppendLine($"[indexGetter obj={expr.obj.Accept(this)}, indexer Expr={expr.indexerExpr.Accept(this)}]");
+            s.AppendLine($"[indexGetter obj={expr.TargetObject.Accept(this)}, indexer Expr={expr.IndexerExpression.Accept(this)}]");
 
             return s.ToString();
         }
@@ -325,7 +325,7 @@ namespace SmolScript.Internals.Ast
         {
             var s = new StringBuilder();
 
-            s.AppendLine($"[indexSetter obj={expr.obj.Accept(this)}, indexer Expr={expr.indexerExpr.Accept(this)} value={expr.value.Accept(this)}]");
+            s.AppendLine($"[indexSetter obj={expr.TargetObject.Accept(this)}, indexer Expr={expr.IndexerExpression.Accept(this)} value={expr.Value.Accept(this)}]");
 
             return s.ToString();
         }

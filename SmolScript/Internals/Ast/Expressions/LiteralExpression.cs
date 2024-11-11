@@ -4,11 +4,11 @@ namespace SmolScript.Internals.Ast.Expressions
 {
     internal class LiteralExpression : Expression
     {
-        public readonly SmolVariableType value;
+        public readonly SmolVariableType Value;
 
         public LiteralExpression(SmolVariableType value)
         {
-            this.value = value;
+            this.Value = value;
         }
 
         public override object? Accept(IExpressionVisitor visitor)

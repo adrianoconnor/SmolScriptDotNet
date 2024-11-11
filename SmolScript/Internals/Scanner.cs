@@ -4,13 +4,13 @@ namespace SmolScript.Internals
 {
     public class ScannerError : Exception
     {
-        public int line { get; set; }
-        public string message { get; set; }
+        public int LineNumber { get; set; }
+        public string Message { get; set; }
 
-        public ScannerError(int line, string message)
+        public ScannerError(int lineNumber, string message)
         {
-            this.line = line;
-            this.message = message;
+            this.LineNumber = lineNumber;
+            this.Message = message;
         }
     }
 
@@ -97,7 +97,7 @@ namespace SmolScript.Internals
                 case '-':
                     if (MatchNext('-'))
                     {
-                        if (_tokens.LastOrDefault()?.type == TokenType.IDENTIFIER && _tokens.LastOrDefault()?.followed_by_line_break == false)
+                        if (_tokens.LastOrDefault()?.Type == TokenType.IDENTIFIER && _tokens.LastOrDefault()?.IsFollowedByLineBreak == false)
                         {
                             AddToken(TokenType.POSTFIX_DECREMENT);
                         }
@@ -118,7 +118,7 @@ namespace SmolScript.Internals
                 case '+':
                     if (MatchNext('+'))
                     {
-                        if (_tokens.LastOrDefault()?.type == TokenType.IDENTIFIER && _tokens.LastOrDefault()?.followed_by_line_break == false)
+                        if (_tokens.LastOrDefault()?.Type == TokenType.IDENTIFIER && _tokens.LastOrDefault()?.IsFollowedByLineBreak == false)
                         {
                             AddToken(TokenType.POSTFIX_INCREMENT);
                         }
@@ -286,7 +286,7 @@ namespace SmolScript.Internals
 
                     if (_tokens.Any())
                     {
-                        _tokens[_tokens.Count()- 1].followed_by_line_break = true;
+                        _tokens[_tokens.Count()- 1].IsFollowedByLineBreak = true;
                     }
 
                     break;
@@ -541,7 +541,7 @@ namespace SmolScript.Internals
 
                             foreach (var t in embeddedTokens)
                             {
-                                if (t.type == TokenType.EOF)
+                                if (t.Type == TokenType.EOF)
                                 {
                                     break;
                                 }

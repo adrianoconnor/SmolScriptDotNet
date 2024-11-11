@@ -5,21 +5,21 @@ namespace SmolScript.Internals.SmolVariableTypes
 {
     internal class SmolString : SmolVariableType, ISmolNativeCallable
     {
-        internal readonly string value;
+        internal readonly string StringValue;
 
-        internal SmolString(string value)
+        internal SmolString(string stringValue)
         {
-            this.value = value;
+            this.StringValue = stringValue;
         }
 
         internal override object? GetValue()
         {
-            return this.value;
+            return this.StringValue;
         }
 
         public override string ToString()
         {
-            return $"(SmolString) {value}";
+            return $"(SmolString) {StringValue}";
         }
 
         public SmolVariableType GetProp(string propName)
@@ -27,7 +27,7 @@ namespace SmolScript.Internals.SmolVariableTypes
             switch (propName)
             {
                 case "length":
-                    return new SmolNumber(this.value.Length);
+                    return new SmolNumber(this.StringValue.Length);
 
                 default:
                     throw new Exception($"{this.GetType()} cannot handle native property {propName}");
@@ -45,15 +45,15 @@ namespace SmolScript.Internals.SmolVariableTypes
             {
                 case "indexOf":
                     {
-                        var p1 = ((SmolString)parameters[0]).value;
+                        var p1 = ((SmolString)parameters[0]).StringValue;
 
-                        return new SmolNumber(this.value.IndexOf(p1));
+                        return new SmolNumber(this.StringValue.IndexOf(p1));
                     }
                 case "search":
                     {
                         var regex = (SmolRegExp)parameters.First();
 
-                        return new SmolNumber(regex.regex.Match(this.value).Index);
+                        return new SmolNumber(regex.Regex.Match(this.StringValue).Index);
                     }
                 case "substring":
                     {
@@ -61,13 +61,13 @@ namespace SmolScript.Internals.SmolVariableTypes
 
                         if (parameters.Count == 1)
                         {
-                            return new SmolString(this.value.Substring(Convert.ToInt32(p1.value)));
+                            return new SmolString(this.StringValue.Substring(Convert.ToInt32(p1.NumberValue)));
                         }
                         else
                         {
                             var p2 = (SmolNumber)parameters[1];
 
-                            return new SmolString(this.value.Substring(Convert.ToInt32(p1.value), Convert.ToInt32(p2.value)));
+                            return new SmolString(this.StringValue.Substring(Convert.ToInt32(p1.NumberValue), Convert.ToInt32(p2.NumberValue)));
                         }
                     }
                 default:

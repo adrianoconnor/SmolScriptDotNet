@@ -4,15 +4,15 @@ namespace SmolScript.Internals.Ast.Expressions
 {
     internal class BinaryExpression : Expression
     {
-        public readonly Expression left;
-        public readonly Token op;
-        public readonly Expression right;
+        public readonly Expression LeftExpression;
+        public readonly Token BinaryOperator;
+        public readonly Expression RightExpression;
 
-        public BinaryExpression(Expression left, Token op, Expression right)
+        public BinaryExpression(Expression leftExpression, Token binaryOperator, Expression rightExpression)
         {
-            this.left = left;
-            this.op = op;
-            this.right = right;
+            this.LeftExpression = leftExpression;
+            this.BinaryOperator = binaryOperator;
+            this.RightExpression = rightExpression;
         }
 
         public override object? Accept(IExpressionVisitor visitor)

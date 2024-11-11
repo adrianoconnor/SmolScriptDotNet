@@ -4,13 +4,13 @@ namespace SmolScript.Internals.Ast.Expressions
 {
     internal class AssignExpression : Expression
     {
-        public readonly Token name;
-        public readonly Expression value;
-
-        public AssignExpression(Token name, Expression value)
+        public readonly Token VariableName;
+        public readonly Expression ValueExpression;
+        
+        public AssignExpression(Token variableName, Expression valueExpression)
         {
-            this.name = name;
-            this.value = value;
+            this.VariableName = variableName;
+            this.ValueExpression = valueExpression;
         }
 
         public override object? Accept(IExpressionVisitor visitor)

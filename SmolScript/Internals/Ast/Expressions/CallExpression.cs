@@ -4,15 +4,15 @@ namespace SmolScript.Internals.Ast.Expressions
 {
     internal class CallExpression : Expression
     {
-        public readonly Expression callee;
-        public readonly IList<Expression> args;
-        public readonly bool useObjectRef;
+        public readonly Expression Callee;
+        public readonly IList<Expression> Arguments;
+        public readonly bool UseFetchedObjectEnvironment;
 
-        public CallExpression(Expression callee, IList<Expression> args, bool useObjectRef = false)
+        public CallExpression(Expression callee, IList<Expression> arguments, bool useFetchedObjectEnvironment = false)
         {
-            this.callee = callee;
-            this.args = args;
-            this.useObjectRef = useObjectRef;
+            this.Callee = callee;
+            this.Arguments = arguments;
+            this.UseFetchedObjectEnvironment = useFetchedObjectEnvironment;
         }
 
         public override object? Accept(IExpressionVisitor visitor)

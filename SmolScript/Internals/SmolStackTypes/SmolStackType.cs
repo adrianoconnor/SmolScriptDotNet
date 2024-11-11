@@ -8,7 +8,7 @@ namespace SmolScript.Internals.SmolStackTypes
     /// function definitions, class instances etc. Also, there's nothing in
     /// the VM right now that's a .net value type -- everything gets boxed.
     /// </summary>
-    abstract internal class SmolStackType
+    internal abstract class SmolStackType
     {
     }
 }

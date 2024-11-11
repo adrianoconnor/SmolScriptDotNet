@@ -11,7 +11,7 @@ namespace SmolScript.Tests.Internal.Debugger
             var pending_instr_first_token = vm.Program.Tokens[pending_instr.token_map_start_index!.Value];
             var pending_instr_last_token = vm.Program.Tokens[pending_instr.token_map_end_index!.Value];
 
-            return vm.Program.Source.Substring(pending_instr_first_token.start_pos, pending_instr_last_token.end_pos - pending_instr_first_token.start_pos);
+            return vm.Program.Source.Substring(pending_instr_first_token.StartPosition, pending_instr_last_token.EndPosition - pending_instr_first_token.StartPosition);
 
         }
 

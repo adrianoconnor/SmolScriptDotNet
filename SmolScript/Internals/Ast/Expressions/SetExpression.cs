@@ -4,15 +4,15 @@ namespace SmolScript.Internals.Ast.Expressions
 {
     internal class SetExpression : Expression
     {
-        public readonly Expression obj;
-        public readonly Token name;
-        public readonly Expression value;
+        public readonly Expression TargetObject;
+        public readonly Token AttributeName;
+        public readonly Expression Value;
 
-        public SetExpression(Expression obj, Token name, Expression value)
+        public SetExpression(Expression targetObject, Token attributeName, Expression value)
         {
-            this.obj = obj;
-            this.name = name;
-            this.value = value;
+            this.TargetObject = targetObject;
+            this.AttributeName = attributeName;
+            this.Value = value;
         }
 
         public override object? Accept(IExpressionVisitor visitor)

@@ -125,6 +125,25 @@ namespace SmolScript
 
             return (T)Convert.ChangeType(v.GetValue()!, typeof(T));
         }
+        
+        public List<T>? GetGlobalVarAsArray<T>(string variableName)
+        {
+            var v = (SmolVariableType)globalEnv.Get(variableName)!;
+            
+            if (v.GetType() == typeof(SmolArray))
+            {
+                var resultArray = new List<T>();
+
+                foreach (var el in ((SmolArray)v).Elements)
+                {
+                    resultArray.Add((T)Convert.ChangeType(el.GetValue(), typeof(T)));
+                }
+
+                return resultArray;
+            }
+
+            throw new InvalidCastException();
+        }
 
         public void Call(string functionName, params object[] args)
         {
@@ -150,10 +169,10 @@ namespace SmolScript
             // Store the current state. This doesn't matter too much, because it shouldn't really
             // be runnable after we're done, but it doesn't hurt to do this.
             var state = new SmolCallSiteSaveState(
-                code_section: this.code_section,
-                PC: this.PC,
-                previous_env: this.environment,
-                call_is_extern: true
+                codeSection: this.code_section,
+                pc: this.PC,
+                previousEnv: this.environment,
+                callIsExtern: true
             );
 
             // Create an environment for the function
@@ -463,10 +482,10 @@ namespace SmolScript
                                 // Store our current program/vm state so we can restor
 
                                 var state = new SmolCallSiteSaveState(
-                                    code_section: this.code_section,
-                                    PC: this.PC,
-                                    previous_env: this.environment,
-                                    call_is_extern: false
+                                    codeSection: this.code_section,
+                                    pc: this.PC,
+                                    previousEnv: this.environment,
+                                    callIsExtern: false
                                 );
 
                                 // Switch the active env in the vm over to the one we prepared for the call
@@ -651,14 +670,14 @@ namespace SmolScript
 
                             var savedCallState = (SmolCallSiteSaveState)_savedCallState;
 
-                            this.environment = savedCallState.previous_env;
-                            this.PC = savedCallState.PC;
-                            this.code_section = savedCallState.code_section;
+                            this.environment = savedCallState.PreviousEnv;
+                            this.PC = savedCallState.Pc;
+                            this.code_section = savedCallState.CodeSection;
 
                             // Return value needs to go back on the stack
                             stack.Push(returnValue);
 
-                            if (savedCallState.call_is_extern)
+                            if (savedCallState.CallIsExtern)
                             {
                                 // Not sure what to do about return value here
 
@@ -951,7 +970,7 @@ namespace SmolScript
                         case OpCode.LOOP_START:
 
                             stack.Push(new SmolLoopMarker(
-                                current_env: this.environment
+                                currentEnv: this.environment
                             ));
 
                             break;
@@ -969,7 +988,7 @@ namespace SmolScript
 
                                 if (next.GetType() == typeof(SmolLoopMarker))
                                 {
-                                    this.environment = ((SmolLoopMarker)next).current_env;
+                                    this.environment = ((SmolLoopMarker)next).CurrentEnv;
 
                                     stack.Push(next); // The loop marker needs to be left on the stack, it will eventually be removed by a LOOP_END
 
