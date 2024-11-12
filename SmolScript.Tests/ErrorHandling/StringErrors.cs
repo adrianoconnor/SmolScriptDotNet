@@ -8,14 +8,13 @@ namespace SmolScript.Tests.ErrorHandling
         [TestMethod]
         public void InvalidStringFromBackticks()
         {
-            Assert.Inconclusive(); // Need to refactor exceptions -- right now they're internal
-
-            // TODO: We really need to test the error handling to make sure we get a good error
-
-            Assert.ThrowsException<Exception>(() =>
+            var ex = Assert.ThrowsException<SmolCompilerError>(() =>
             {
                 var program = SmolVm.Compile("var n = 'x'; var a = `test ${!!!}`;");
             });
+            
+            Assert.AreEqual("Encounted one or more errors while parsing", ex.Message);
+            Assert.AreEqual("Parser did not expect to see '`test ${!!!}' here (Line 1, Col 22)", ex.ParserErrors.FirstOrDefault().Message);
         }
 
 
@@ -26,8 +25,10 @@ namespace SmolScript.Tests.ErrorHandling
 
             var source = @"var a = 'test
 123';";
-
-            Assert.ThrowsException<ScannerError>(() => SmolVm.Compile(source));
+            var ex = Assert.ThrowsException<ScannerError>(() => SmolVm.Compile(source));
+            
+            Assert.AreEqual("Unexpected Line break in string", ex.Message);
+            Assert.AreEqual(2, ex.LineNumber);
         }
     }
 }

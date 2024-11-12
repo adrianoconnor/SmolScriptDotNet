@@ -236,8 +236,8 @@ namespace SmolScript.Internals
 
             return new ByteCodeInstruction()
             {
-                opcode = OpCode.CONST,
-                operand1 = ConstantIndexForValue(expr.Value)
+                OpCode = OpCode.CONST,
+                Operand1 = ConstantIndexForValue(expr.Value)
             };
         }
 
@@ -378,15 +378,15 @@ namespace SmolScript.Internals
         {
             var chunk = new List<ByteCodeInstruction>();
 
-            chunk.AppendInstruction(OpCode.DECLARE, operand1: stmt.name.Lexeme);
+            chunk.AppendInstruction(OpCode.DECLARE, operand1: stmt.VariableName.Lexeme);
 
-            if (stmt.initializerExpression != null)
+            if (stmt.InitialValueExpression != null)
             {                
-                chunk.AppendChunk(stmt.initializerExpression.Accept(this));
-                chunk.AppendInstruction(OpCode.STORE, operand1: stmt.name.Lexeme);
+                chunk.AppendChunk(stmt.InitialValueExpression.Accept(this));
+                chunk.AppendInstruction(OpCode.STORE, operand1: stmt.VariableName.Lexeme);
             }
 
-            chunk.MapTokens(stmt.firstTokenIndex, stmt.lastTokenIndex);
+            chunk.MapTokens(stmt.FirstTokenIndex, stmt.LastTokenIndex);
 
             return chunk;
         }
@@ -395,7 +395,7 @@ namespace SmolScript.Internals
         {
             var chunk = new List<ByteCodeInstruction>();
 
-            chunk.AppendChunk(stmt.expression.Accept(this));
+            chunk.AppendChunk(stmt.Expression.Accept(this));
             chunk.AppendInstruction(OpCode.POP_AND_DISCARD);
 
             return chunk;
@@ -407,7 +407,7 @@ namespace SmolScript.Internals
 
             chunk.AppendInstruction(OpCode.ENTER_SCOPE);
 
-            foreach (var blockStmt in stmt.statements)
+            foreach (var blockStmt in stmt.Statements)
             {
                 var c = blockStmt.Accept(this);
                 var x = chunk.First();
@@ -421,23 +421,13 @@ namespace SmolScript.Internals
             return chunk;
         }
 
-        public object? Visit(PrintStatement stmt)
-        {
-            var chunk = new List<ByteCodeInstruction>();
-
-            chunk.AppendChunk(stmt.expression.Accept(this));
-            chunk.AppendInstruction(OpCode.PRINT);
-
-            return chunk;
-        }
-
         public object? Visit(ReturnStatement stmt)
         {
             var chunk = new List<ByteCodeInstruction>();
 
-            if (stmt.expression != null)
+            if (stmt.ReturnValueExpression != null)
             {
-                chunk.AppendChunk(stmt.expression.Accept(this));
+                chunk.AppendChunk(stmt.ReturnValueExpression.Accept(this));
             }
             else
             {
@@ -455,11 +445,11 @@ namespace SmolScript.Internals
 
             int notTrueLabel = ReserveLabelId();
 
-            chunk.AppendChunk(stmt.testExpression.Accept(this));
+            chunk.AppendChunk(stmt.TestExpression.Accept(this));
             chunk.AppendInstruction(OpCode.JMPFALSE, notTrueLabel);
-            chunk.AppendChunk(stmt.thenStatement.Accept(this));
+            chunk.AppendChunk(stmt.StatementWhenTrue.Accept(this));
 
-            if (stmt.elseStatement == null)
+            if (stmt.ElseStatement == null)
             {
                 chunk.AppendInstruction(OpCode.LABEL, notTrueLabel);
             }
@@ -469,7 +459,7 @@ namespace SmolScript.Internals
 
                 chunk.AppendInstruction(OpCode.JMP, skipElseLabel);
                 chunk.AppendInstruction(OpCode.LABEL, notTrueLabel);
-                chunk.AppendChunk(stmt.elseStatement!.Accept(this));
+                chunk.AppendChunk(stmt.ElseStatement!.Accept(this));
                 chunk.AppendInstruction(OpCode.LABEL, skipElseLabel);
             }
 
@@ -514,9 +504,9 @@ namespace SmolScript.Internals
 
             chunk.AppendInstruction(OpCode.LOOP_START);
             chunk.AppendInstruction(OpCode.LABEL, startOfLoop);
-            chunk.AppendChunk(stmt.whileCondition.Accept(this));
+            chunk.AppendChunk(stmt.WhileCondition.Accept(this));
             chunk.AppendInstruction(OpCode.JMPFALSE, endOfLoop);
-            chunk.AppendChunk(stmt.executeStatement.Accept(this));
+            chunk.AppendChunk(stmt.ExecuteStatement.Accept(this));
             chunk.AppendInstruction(OpCode.JMP, startOfLoop);
             chunk.AppendInstruction(OpCode.LABEL, endOfLoop);
             chunk.AppendInstruction(OpCode.LOOP_END);
@@ -530,8 +520,8 @@ namespace SmolScript.Internals
         {
             return new ByteCodeInstruction()
             {
-                opcode = OpCode.LOOP_EXIT,
-                operand1 = _loopStack.Peek().EndOfLoop
+                OpCode = OpCode.LOOP_EXIT,
+                Operand1 = _loopStack.Peek().EndOfLoop
             };
         }
 
@@ -539,8 +529,8 @@ namespace SmolScript.Internals
         {
             return new ByteCodeInstruction()
             {
-                opcode = OpCode.LOOP_EXIT,
-                operand1 = _loopStack.Peek().StartOfLoop
+                OpCode = OpCode.LOOP_EXIT,
+                Operand1 = _loopStack.Peek().StartOfLoop
             };
         }
 
@@ -548,7 +538,7 @@ namespace SmolScript.Internals
         {
             var chunk = new List<ByteCodeInstruction>();
 
-            chunk.AppendChunk(stmt.expression.Accept(this));
+            chunk.AppendChunk(stmt.ThrownValueExpression.Accept(this));
             chunk.AppendInstruction(OpCode.THROW);
 
             return chunk;
@@ -569,7 +559,7 @@ namespace SmolScript.Internals
             // If an exception happens inside the body, it will rewind the stack to the try that just went on
             // and that tells us where to jump to
 
-            chunk.AppendChunk(this.Visit(stmt.tryBody));
+            chunk.AppendChunk(this.Visit(stmt.TryBlock));
 
             // If there was no exception, we need to get rid of that try checkpoint that's on the stack, we aren't
             // going back there even if there's an exception in the finally
@@ -587,16 +577,16 @@ namespace SmolScript.Internals
 
             chunk.AppendInstruction(OpCode.TRY, operand1: finallyWithExceptionLabel, operand2: true); // True means keep the exception at the top of the stack
 
-            if (stmt.catchBody != null)
+            if (stmt.CatchBlock != null)
             {
-                if (stmt.exceptionVariableName != null)
+                if (stmt.CatchBlockErrorVariableName != null)
                 {
                     chunk.AppendInstruction(OpCode.ENTER_SCOPE);
 
                     // Top of stack will be exception so store it in variable name
 
-                    chunk.AppendInstruction(OpCode.DECLARE, operand1: stmt.exceptionVariableName.Lexeme);
-                    chunk.AppendInstruction(OpCode.STORE, operand1: stmt.exceptionVariableName.Lexeme);
+                    chunk.AppendInstruction(OpCode.DECLARE, operand1: stmt.CatchBlockErrorVariableName.Lexeme);
+                    chunk.AppendInstruction(OpCode.STORE, operand1: stmt.CatchBlockErrorVariableName.Lexeme);
                 }
                 else
                 {
@@ -604,9 +594,9 @@ namespace SmolScript.Internals
                     chunk.AppendInstruction(OpCode.POP_AND_DISCARD);
                 }
 
-                chunk.AppendChunk(this.Visit(stmt.catchBody!)); // Might be a throw inside here...
+                chunk.AppendChunk(this.Visit(stmt.CatchBlock!)); // Might be a throw inside here...
 
-                if (stmt.exceptionVariableName != null)
+                if (stmt.CatchBlockErrorVariableName != null)
                 {
                     chunk.AppendInstruction(OpCode.LEAVE_SCOPE);
                 }
@@ -630,9 +620,9 @@ namespace SmolScript.Internals
             // When we throw this time the try checkpoint has been removed so we'll bubble down the stack to the next
             // try checkpoint (if there is one -- and panic if not)
 
-            if (stmt.finallyBody != null)
+            if (stmt.FinallyBlock != null)
             {
-                chunk.AppendChunk(this.Visit(stmt.finallyBody));
+                chunk.AppendChunk(this.Visit(stmt.FinallyBlock));
 
                 // Instruction to check for unthrown exception and throw it
             }
@@ -640,9 +630,9 @@ namespace SmolScript.Internals
             chunk.AppendInstruction(OpCode.THROW);
             chunk.AppendInstruction(OpCode.LABEL, finallyLabel);
 
-            if (stmt.finallyBody != null)
+            if (stmt.FinallyBlock != null)
             {
-                chunk.AppendChunk(this.Visit(stmt.finallyBody));
+                chunk.AppendChunk(this.Visit(stmt.FinallyBlock));
 
                 // Instruction to check for unthrown exception and throw it
             }
@@ -656,26 +646,26 @@ namespace SmolScript.Internals
         public object? Visit(FunctionStatement stmt)
         {
             var functionIndex = _functionBodies.Count() + 1;
-            var functionName = stmt.name?.Lexeme! ?? $"$_anon_{functionIndex}";
+            var functionName = stmt.FunctionName?.Lexeme! ?? $"$_anon_{functionIndex}";
 
             _functionTable.Add(new SmolFunction(
                 globalFunctionName: functionName,
                 codeSection: functionIndex,
-                arity: stmt.parameters.Count(),
-                paramVariableNames: stmt.parameters.Select(p => p.Lexeme).ToList()
+                arity: stmt.ParameterList.Count(),
+                paramVariableNames: stmt.ParameterList.Select(p => p.Lexeme).ToList()
             ));
 
             // Reserve the function body so if we're 
             _functionBodies.Add(new List<ByteCodeInstruction>());
             
-            var body = (List<ByteCodeInstruction>)stmt.functionBody.Accept(this)!;
+            var body = (List<ByteCodeInstruction>)stmt.FunctionBody.Accept(this)!;
 
-            if (!body.Any() || body.Last().opcode != OpCode.RETURN)
+            if (!body.Any() || body.Last().OpCode != OpCode.RETURN)
             {
                 body.Add(new ByteCodeInstruction()
                 {
-                    opcode = OpCode.CONST,
-                    operand1 = ConstantIndexForUndefined()
+                    OpCode = OpCode.CONST,
+                    Operand1 = ConstantIndexForUndefined()
                 });
                 body.AppendInstruction(OpCode.RETURN);
             }
@@ -687,7 +677,7 @@ namespace SmolScript.Internals
             // here, I guess something more like load constant but for functions
             return new ByteCodeInstruction()
             {
-                opcode = OpCode.NOP
+                OpCode = OpCode.NOP
             };
         }
 
@@ -695,7 +685,7 @@ namespace SmolScript.Internals
         {
             return new ByteCodeInstruction()
             {
-                opcode = OpCode.DEBUGGER
+                OpCode = OpCode.DEBUGGER
             };
         }
 
@@ -703,21 +693,21 @@ namespace SmolScript.Internals
         {
             //this.class_table.Add(stmt.className.lexeme, stmt.superclassName?.lexeme);
 
-            foreach (var fn in stmt.functions)
+            foreach (var fn in stmt.Functions)
             {
                 var functionIndex = _functionBodies.Count() + 1;
-                var functionName = $"@{stmt.className.Lexeme}.{fn.name!.Lexeme}";
+                var functionName = $"@{stmt.ClassName.Lexeme}.{fn.FunctionName!.Lexeme}";
 
                 _functionTable.Add(new SmolFunction(
                     globalFunctionName: functionName,
                     codeSection: functionIndex,
-                    arity: fn.parameters.Count(),
-                    paramVariableNames: fn.parameters.Select(p => p.Lexeme).ToList()
+                    arity: fn.ParameterList.Count(),
+                    paramVariableNames: fn.ParameterList.Select(p => p.Lexeme).ToList()
                 ));
 
-                var body = (List<ByteCodeInstruction>)fn.functionBody.Accept(this)!;
+                var body = (List<ByteCodeInstruction>)fn.FunctionBody.Accept(this)!;
 
-                if (!body.Any() || body.Last().opcode != OpCode.RETURN)
+                if (!body.Any() || body.Last().OpCode != OpCode.RETURN)
                 {
                     body.AppendInstruction(OpCode.CONST, operand1: ConstantIndexForUndefined());
                     body.AppendInstruction(OpCode.RETURN);
@@ -731,7 +721,7 @@ namespace SmolScript.Internals
             // here, I guess something more like load constant but for functions
             return new ByteCodeInstruction()
             {
-                opcode = OpCode.NOP
+                OpCode = OpCode.NOP
             };
         }
 
@@ -766,9 +756,9 @@ namespace SmolScript.Internals
 
             chunk.AppendChunk(new ByteCodeInstruction()
             {
-                opcode = OpCode.FETCH,
-                operand1 = $"@{expr.ClassName.Lexeme}.constructor",
-                operand2 = true
+                OpCode = OpCode.FETCH,
+                Operand1 = $"@{expr.ClassName.Lexeme}.constructor",
+                Operand2 = true
             });
 
             if (className == "Object")
@@ -886,7 +876,7 @@ namespace SmolScript.Internals
 
             var body = (List<ByteCodeInstruction>)expr.FunctionBody.Accept(this)!;
 
-            if (!body.Any() || body.Last().opcode != OpCode.RETURN)
+            if (!body.Any() || body.Last().OpCode != OpCode.RETURN)
             {
                 body.AppendInstruction(OpCode.CONST, operand1: ConstantIndexForUndefined());
                 body.AppendInstruction(OpCode.RETURN);
@@ -898,8 +888,8 @@ namespace SmolScript.Internals
             // to go on the stack so some other code can grab and use it
             return (new ByteCodeInstruction()
             {
-                opcode = OpCode.FETCH,
-                operand1 = functionName
+                OpCode = OpCode.FETCH,
+                Operand1 = functionName
             });
         }
     }

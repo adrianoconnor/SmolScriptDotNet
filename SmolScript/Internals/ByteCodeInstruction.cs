@@ -6,31 +6,31 @@ namespace SmolScript.Internals
     {
         // These are the classic bytecode-style values, though we're just storing them
         // as fields on an object
-        public OpCode opcode { get; set; }
+        public OpCode OpCode { get; set; }
 
-        public object? operand1;
-        public object? operand2;
+        public object? Operand1;
+        public object? Operand2;
 
         // This flag tells us that we're at the end of a single Statement, so this is where
         // the debugger would naturally step to if we're stepping through our program
         public bool? IsStatementStartpoint;
 
         // These attributes are used for mapping back to the original source code
-        public int? token_map_start_index;
-        public int? token_map_end_index;
+        public int? TokenMapStartIndex;
+        public int? TokenMapEndIndex;
 
         public override string ToString()
         {
-            var str = $"{this.opcode.ToString().PadRight(13)}";
+            var str = $"{this.OpCode.ToString().PadRight(13)}";
 
-            if (this.operand1 != null)
+            if (this.Operand1 != null)
             {
-                str += $" [op1: {this.operand1}]";
+                str += $" [op1: {this.Operand1}]";
             }
 
-            if (this.operand2 != null)
+            if (this.Operand2 != null)
             {
-                str += $" [op2: {this.operand2}]";
+                str += $" [op2: {this.Operand2}]";
             }
 
             str += "";
@@ -66,9 +66,9 @@ namespace SmolScript.Internals
         {
             chunk.Add(new ByteCodeInstruction()
             {
-                opcode = opcode,
-                operand1 = operand1,
-                operand2 = operand2
+                OpCode = opcode,
+                Operand1 = operand1,
+                Operand2 = operand2
             });
         }
 
@@ -76,10 +76,10 @@ namespace SmolScript.Internals
         {
             foreach(var instr in chunk)
             {
-                if (instr.token_map_start_index == null)
+                if (instr.TokenMapStartIndex == null)
                 {
-                    instr.token_map_start_index = firstTokenIndex!.Value;
-                    instr.token_map_end_index = lastTokenIndex.HasValue ? lastTokenIndex.Value : firstTokenIndex;
+                    instr.TokenMapStartIndex = firstTokenIndex!.Value;
+                    instr.TokenMapEndIndex = lastTokenIndex.HasValue ? lastTokenIndex.Value : firstTokenIndex;
                 }
             }
         }

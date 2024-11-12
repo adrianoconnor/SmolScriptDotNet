@@ -4,15 +4,15 @@ namespace SmolScript.Internals.Ast.Statements
 {
     internal class IfStatement : Statement
     {
-        public readonly Expression testExpression;
-        public readonly Statement thenStatement;
-        public readonly Statement? elseStatement;
+        public readonly Expression TestExpression;
+        public readonly Statement StatementWhenTrue;
+        public readonly Statement? ElseStatement;
 
-        public IfStatement(Expression testExpression, Statement thenStatement, Statement? elseStatement)
+        public IfStatement(Expression testExpression, Statement statementWhenTrue, Statement? elseStatement)
         {
-            this.testExpression = testExpression;
-            this.thenStatement = thenStatement;
-            this.elseStatement = elseStatement;
+            this.TestExpression = testExpression;
+            this.StatementWhenTrue = statementWhenTrue;
+            this.ElseStatement = elseStatement;
         }
 
         public override object? Accept(IStatementVisitor visitor)

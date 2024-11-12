@@ -4,13 +4,13 @@ namespace SmolScript.Internals.Ast.Statements
 {
     internal class WhileStatement : Statement
     {
-        public readonly Expression whileCondition;
-        public readonly Statement executeStatement;
+        public readonly Expression WhileCondition;
+        public readonly Statement ExecuteStatement;
 
         public WhileStatement(Expression whileCondition, Statement executeStatement)
         {
-            this.whileCondition = whileCondition;
-            this.executeStatement = executeStatement;
+            this.WhileCondition = whileCondition;
+            this.ExecuteStatement = executeStatement;
         }
 
         public override object? Accept(IStatementVisitor visitor)

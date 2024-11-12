@@ -5,25 +5,25 @@ namespace SmolScript.Internals.Ast.Statements
 {
     internal class VarStatement : Statement
     {
-        public readonly Token name;
-        public readonly Expression? initializerExpression;
+        public readonly Token VariableName;
+        public readonly Expression? InitialValueExpression;
 
-        public VarStatement(Token name, Expression? initializerExpression, int? firstTokenIndex = null, int? lastTokenIndex = null)
+        // The tokens that span the var declaration and initalization (if applicable)
+        public int? FirstTokenIndex;
+        public int? LastTokenIndex;
+        
+        public VarStatement(Token variableName, Expression? initialValueExpression, int? firstTokenIndex = null, int? lastTokenIndex = null)
         {
-            this.name = name;
-            this.initializerExpression = initializerExpression;
-            this.firstTokenIndex = firstTokenIndex;
-            this.lastTokenIndex = lastTokenIndex;
+            this.VariableName = variableName;
+            this.InitialValueExpression = initialValueExpression;
+            this.FirstTokenIndex = firstTokenIndex;
+            this.LastTokenIndex = lastTokenIndex;
         }
 
         public override object? Accept(IStatementVisitor visitor)
         {
             return visitor.Visit(this);
         }
-
-        // The tokens that span the var declaration and initalization (if applicable)
-        public int? firstTokenIndex;
-        public int? lastTokenIndex;
     }
 }
 

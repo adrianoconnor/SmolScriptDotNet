@@ -43,11 +43,9 @@ namespace SmolScript.Internals
             { "if", TokenType.IF },
             { "null", TokenType.NULL },
             { "new", TokenType.NEW },
-            { "print", TokenType.PRINT },
             { "return", TokenType.RETURN },
             { "super", TokenType.SUPER },
             { "switch", TokenType.SWITCH },
-            //{ "this", TokenType.THIS },
             { "true", TokenType.TRUE },
             { "var", TokenType.VAR },
             { "let", TokenType.VAR },
@@ -73,7 +71,7 @@ namespace SmolScript.Internals
                 ScanToken();
             }
 
-            _tokens.Add(new Token(TokenType.EOF, "", null, _currentLine, _currentPos, _currentPos, _currentPos));
+            _tokens.Add(new Token(TokenType.EOF, "", null, _currentLine, _currentPos - _currentLineStartIndex, _currentPos, _currentPos));
 
             return _tokens;
         }
@@ -283,6 +281,7 @@ namespace SmolScript.Internals
                 case '\n':
 
                     _currentLine++;
+                    _currentLineStartIndex = _currentPos;
 
                     if (_tokens.Any())
                     {
@@ -331,7 +330,7 @@ namespace SmolScript.Internals
         {
             var lexeme = _source.Substring(_startOfToken, _currentPos - _startOfToken);
 
-            _tokens.Add(new Token(tokenType, lexeme, literal, _currentLine, _previous - _currentLineStartIndex, _previous, _currentPos));
+            _tokens.Add(new Token(tokenType, lexeme, literal, _currentLine, _startOfToken - _currentLineStartIndex + 1, _previous, _currentPos));
 
             _previous = _currentPos;
         }

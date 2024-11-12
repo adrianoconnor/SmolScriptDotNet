@@ -4,16 +4,16 @@ namespace SmolScript.Internals.SmolStackTypes
     internal class SmolCallSiteSaveState : SmolStackType
     {
         internal int CodeSection;
-        internal int Pc;
-        internal Environment PreviousEnv;
-        internal bool CallIsExtern;
+        internal int InstructionPointer;
+        internal Environment Environment;
+        internal bool CallIsExternal;
 
-        internal SmolCallSiteSaveState(int codeSection, int pc, Environment previousEnv, bool callIsExtern)
+        internal SmolCallSiteSaveState(int codeSection, int instructionPointer, Environment environment, bool callIsExternal)
         {
             this.CodeSection = codeSection;
-            this.Pc = pc;
-            this.PreviousEnv = previousEnv;
-            this.CallIsExtern = callIsExtern;
+            this.InstructionPointer = instructionPointer;
+            this.Environment = environment;
+            this.CallIsExternal = callIsExternal;
         }
     }
 }

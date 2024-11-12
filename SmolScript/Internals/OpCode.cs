@@ -64,9 +64,7 @@
         LOOP_END,
 
         CREATE_OBJECT,
-
-
-        PRINT,
+        
         DEBUGGER,
 
         EOF

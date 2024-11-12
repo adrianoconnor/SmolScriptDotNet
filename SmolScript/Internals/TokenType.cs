@@ -74,7 +74,6 @@ namespace SmolScript.Internals
         IF,
         NEW,
         NULL,
-        PRINT,
         RETURN,
         SUPER,
         SWITCH,

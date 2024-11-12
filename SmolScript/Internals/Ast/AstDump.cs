@@ -85,11 +85,11 @@ namespace SmolScript.Internals.Ast
         {
             Enter();
 
-            if (stmt.initializerExpression != null)
+            if (stmt.InitialValueExpression != null)
             {
-                var output = $"[declare var {stmt.name.Lexeme} with initial value]";
+                var output = $"[declare var {stmt.VariableName.Lexeme} with initial value]";
                 output += System.Environment.NewLine;
-                output += $"initializer: {stmt.initializerExpression.Accept(this)}";
+                output += $"initializer: {stmt.InitialValueExpression.Accept(this)}";
                 output += System.Environment.NewLine;
                 output += "[/declare var]";
 
@@ -98,13 +98,13 @@ namespace SmolScript.Internals.Ast
             }
             else
             {
-                return $"[declare var {stmt.name.Lexeme} (undefined) /]";
+                return $"[declare var {stmt.VariableName.Lexeme} (undefined) /]";
             }
         }
 
         public object? Visit(ExpressionStatement stmt)
         {
-            return $"[expr {stmt.expression.Accept(this)}]";
+            return $"[expr {stmt.Expression.Accept(this)}]";
         }
 
         public object? Visit(BlockStatement stmt)
@@ -113,7 +113,7 @@ namespace SmolScript.Internals.Ast
 
             s.AppendLine("[block begin]");
 
-            foreach (var blockStmt in stmt.statements)
+            foreach (var blockStmt in stmt.Statements)
             {
                 s.AppendLine(blockStmt.Accept(this) as string);
             }
@@ -123,11 +123,6 @@ namespace SmolScript.Internals.Ast
             return s.ToString();
         }
 
-        public object? Visit(PrintStatement stmt)
-        {
-            return $"[print {stmt.expression.Accept(this)}]";
-        }
-
         public object? Visit(DebuggerStatement stmt)
         {
             return $"[debugger]]";
@@ -135,7 +130,7 @@ namespace SmolScript.Internals.Ast
 
         public object? Visit(ReturnStatement stmt)
         {
-            return $"[return {stmt.expression.Accept(this)}]";
+            return $"[return {stmt.ReturnValueExpression.Accept(this)}]";
         }
 
         public object? Visit(BreakStatement stmt)
@@ -152,16 +147,16 @@ namespace SmolScript.Internals.Ast
         {
             var s = new StringBuilder();
 
-            s.AppendLine($"[if {stmt.testExpression.Accept(this)}]");
+            s.AppendLine($"[if {stmt.TestExpression.Accept(this)}]");
 
             s.AppendLine($"[then]");
-            s.Append($"{stmt.thenStatement.Accept(this)}");
+            s.Append($"{stmt.StatementWhenTrue.Accept(this)}");
             s.AppendLine($"[/then]");
 
-            if (stmt.elseStatement != null)
+            if (stmt.ElseStatement != null)
             {
                 s.AppendLine($"[else]");
-                s.Append($"{stmt.elseStatement!.Accept(this)}");
+                s.Append($"{stmt.ElseStatement!.Accept(this)}");
                 s.AppendLine($"[/else]");
             }
 
@@ -172,9 +167,9 @@ namespace SmolScript.Internals.Ast
 
         public object? Visit(ThrowStatement stmt)
         {
-            if (stmt.expression != null)
+            if (stmt.ThrownValueExpression != null)
             {
-                return $"[throw {stmt.expression!.Accept(this)}]";
+                return $"[throw {stmt.ThrownValueExpression!.Accept(this)}]";
             }
             else
             {
@@ -227,9 +222,9 @@ namespace SmolScript.Internals.Ast
         {
             var s = new StringBuilder();
 
-            s.AppendLine($"[while {stmt.whileCondition.Accept(this)}]");
+            s.AppendLine($"[while {stmt.WhileCondition.Accept(this)}]");
 
-            s.Append($"{stmt.executeStatement.Accept(this)}");
+            s.Append($"{stmt.ExecuteStatement.Accept(this)}");
 
             s.AppendLine("[end while]");
 
@@ -240,9 +235,9 @@ namespace SmolScript.Internals.Ast
         {
             var s = new StringBuilder();
 
-            s.AppendLine($"[declare function {stmt.name?.Lexeme ?? ""} ()]");
+            s.AppendLine($"[declare function {stmt.FunctionName?.Lexeme ?? ""} ()]");
 
-            s.Append($"{stmt.functionBody.Accept(this)}");
+            s.Append($"{stmt.FunctionBody.Accept(this)}");
 
             s.AppendLine("[end function declaration]");
 
@@ -253,11 +248,11 @@ namespace SmolScript.Internals.Ast
         {
             var s = new StringBuilder();
 
-            s.AppendLine($"[declare class {stmt.className.Lexeme} ()]");
+            s.AppendLine($"[declare class {stmt.ClassName.Lexeme} ()]");
 
             //s.Append($"{stmt.constructor?.Accept(this) ?? "no ctor"}");
 
-            foreach (var function in stmt.functions)
+            foreach (var function in stmt.Functions)
             {
                 s.Append($"{function.Accept(this)}");
             }

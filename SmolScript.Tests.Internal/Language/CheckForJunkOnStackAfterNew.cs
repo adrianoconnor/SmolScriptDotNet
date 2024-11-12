@@ -36,8 +36,8 @@ var c = new testClass1(1, 2, 3);
 
             vm.Run();
 
-            Assert.IsNotNull(vm.globalEnv.Get("c"));
-            Assert.AreEqual(0, vm.stack.Count);
+            Assert.IsNotNull(vm.GlobalScope.Get("c"));
+            Assert.AreEqual(0, vm.Stack.Count);
         }
     }
 }

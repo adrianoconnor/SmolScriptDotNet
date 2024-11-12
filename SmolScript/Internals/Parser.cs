@@ -4,25 +4,6 @@ using SmolScript.Internals.SmolVariableTypes;
 
 namespace SmolScript.Internals
 {
-    public class ParseError : Exception
-    {
-        public int LineNumber { get; set; }
-        public IList<ParseError>? Errors = null;
-
-        internal ParseError(Token token, string message) :
-           base(message)
-        {
-            this.LineNumber = token.Line;
-        }
-
-        public ParseError(IList<ParseError>? errors, string message) :
-           base(message)
-        {
-            this.Errors = errors;
-        }
-
-    }
-
     /*
     program        → declaration* EOF ;
 
@@ -126,13 +107,7 @@ namespace SmolScript.Internals
 
             if (errors.Any())
             {
-                Console.WriteLine("Errors:");
-                foreach (var error in errors)
-                {
-                    Console.WriteLine(error.Message);
-                }
-
-                throw new ParseError(errors, "Encounted one or more errors parsing");
+                throw new SmolCompilerError(errors, "Encounted one or more errors while parsing");
             }
 
             return statements;
@@ -216,7 +191,6 @@ namespace SmolScript.Internals
                     case TokenType.FOR:
                     case TokenType.IF:
                     case TokenType.WHILE:
-                    case TokenType.PRINT:
                     case TokenType.RETURN:
                     case TokenType.TRY:
                         return;
@@ -358,7 +332,6 @@ namespace SmolScript.Internals
             if (Match(TokenType.TRY)) return TryStatement();
             if (Match(TokenType.THROW)) return ThrowStatement();
             if (Match(TokenType.FOR)) return ForStatement();
-            if (Match(TokenType.PRINT)) return PrintStatement();
             if (Match(TokenType.RETURN)) return ReturnStatement();
             if (Match(TokenType.BREAK)) return BreakStatement();
             if (Match(TokenType.CONTINUE)) return ContinueStatement();
@@ -366,13 +339,6 @@ namespace SmolScript.Internals
             if (Match(TokenType.DEBUGGER)) return DebuggerStatement();
 
             return ExpressionStatement();
-        }
-
-        private Statement PrintStatement()
-        {
-            var expr = Expression();
-            Consume(TokenType.SEMICOLON, "Expected ;");
-            return new PrintStatement(expr);
         }
 
         private Statement ThrowStatement()
@@ -1121,7 +1087,7 @@ namespace SmolScript.Internals
                 return new GroupingExpression(expr);
             }
             
-            throw Error(Peek(), $"Parser did not expect to see '{Peek().Lexeme}' on line {Peek().Line}, column {Peek().Col}, sorry");
+            throw Error(Peek(), $"Parser did not expect to see '{Peek().Lexeme}' here");
         }
 
         private FunctionExpression FatArrowFunctionExpression(bool openBracketConsumed = false)

@@ -19,7 +19,7 @@ namespace SmolScript.Internals
         internal required IList<Token> Tokens { get; set; }
         internal required string Source { get;  set; }
         
-        internal Dictionary<int, int> JumpTable = new Dictionary<int, int>();
+        internal Dictionary<int, int> JumpTable = new();
         
         internal void BuildJumpTable()
         {
@@ -36,14 +36,14 @@ namespace SmolScript.Internals
                 {
                     var instr = this.CodeSections[i][j];
 
-                    if (instr.opcode == OpCode.LABEL)
+                    if (instr.OpCode == OpCode.LABEL)
                     {
                         // We're not storing anything about the section
                         // number but this should be ok becuase we should
                         // only ever jump inside the current section...
                         // Jumps to other sections are handled in a different
                         // way using the CALL instruction
-                        JumpTable[(int)instr.operand1!] = j;
+                        JumpTable[(int)instr.Operand1!] = j;
                     }
                 }
             }

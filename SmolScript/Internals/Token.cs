@@ -23,7 +23,7 @@ namespace SmolScript.Internals
             this.Col = col;
             this.StartPosition = startPosition;
             this.EndPosition = endPosition;
-
+            
             IsFollowedByLineBreak = false;
         }
 

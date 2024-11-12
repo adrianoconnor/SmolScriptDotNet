@@ -3,7 +3,6 @@
     internal interface IStatementVisitor
     {
         object? Visit(ExpressionStatement stmt);
-        object? Visit(PrintStatement stmt);
         object? Visit(ReturnStatement stmt);
         object? Visit(VarStatement stmt);
         object? Visit(BlockStatement stmt);

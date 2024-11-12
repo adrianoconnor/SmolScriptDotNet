@@ -4,11 +4,11 @@ namespace SmolScript.Internals.Ast.Statements
 {
     internal class ReturnStatement : Statement
     {
-        public readonly Expression expression;
+        public readonly Expression ReturnValueExpression;
 
-        public ReturnStatement(Expression expression)
+        public ReturnStatement(Expression returnValueExpression)
         {
-            this.expression = expression;
+            this.ReturnValueExpression = returnValueExpression;
         }
 
         public override object? Accept(IStatementVisitor visitor)

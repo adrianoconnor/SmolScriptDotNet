@@ -4,15 +4,15 @@ namespace SmolScript.Internals.Ast.Statements
 {
     internal class FunctionStatement : Statement
     {
-        public readonly Token name;
-        public readonly IList<Token> parameters;
-        public readonly BlockStatement functionBody;
+        public readonly Token FunctionName;
+        public readonly IList<Token> ParameterList;
+        public readonly BlockStatement FunctionBody;
 
-        public FunctionStatement(Token name, IList<Token> parameters, BlockStatement functionBody)
+        public FunctionStatement(Token functionName, IList<Token> parameterList, BlockStatement functionBody)
         {
-            this.name = name;
-            this.parameters = parameters;
-            this.functionBody = functionBody;
+            this.FunctionName = functionName;
+            this.ParameterList = parameterList;
+            this.FunctionBody = functionBody;
         }
 
         public override object? Accept(IStatementVisitor visitor)

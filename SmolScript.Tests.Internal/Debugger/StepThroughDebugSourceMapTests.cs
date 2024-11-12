@@ -6,10 +6,10 @@ namespace SmolScript.Tests.Internal.Debugger
 	{
         private string getPendingInstr(SmolVm vm)
         {
-            var pending_instr = vm.Program.CodeSections[vm.code_section][vm.PC];
+            var pending_instr = vm.Program.CodeSections[vm.CodeSectionPointer][vm.InstructionPointer];
 
-            var pending_instr_first_token = vm.Program.Tokens[pending_instr.token_map_start_index!.Value];
-            var pending_instr_last_token = vm.Program.Tokens[pending_instr.token_map_end_index!.Value];
+            var pending_instr_first_token = vm.Program.Tokens[pending_instr.TokenMapStartIndex!.Value];
+            var pending_instr_last_token = vm.Program.Tokens[pending_instr.TokenMapEndIndex!.Value];
 
             return vm.Program.Source.Substring(pending_instr_first_token.StartPosition, pending_instr_last_token.EndPosition - pending_instr_first_token.StartPosition);
 

@@ -4,8 +4,8 @@ namespace SmolScript.Internals
 {
     internal class Environment
     {
-        public readonly Environment? enclosing = null;
-        internal IDictionary<string, SmolVariableType> variables = new Dictionary<string, SmolVariableType>();
+        public readonly Environment? Enclosing = null;
+        internal IDictionary<string, SmolVariableType> Variables = new Dictionary<string, SmolVariableType>();
 
         public Environment()
         {
@@ -13,28 +13,28 @@ namespace SmolScript.Internals
 
         public Environment(Environment enclosing)
         {
-            this.enclosing = enclosing;
+            this.Enclosing = enclosing;
         }
 
         public void Define(string variable, SmolVariableType value)
         {
-            variables[variable] = value;
+            Variables[variable] = value;
         }
 
         public void Assign(string variable, SmolVariableType value, bool isThis = false)
         {
-            if (variables.ContainsKey(variable))
+            if (Variables.ContainsKey(variable))
             {
-                variables[variable] = value;
+                Variables[variable] = value;
             }
             else if (isThis)
             {
                 // Having to do this for now so that class ivars work
                 this.Define(variable, value);
             }
-            else if (enclosing != null)
+            else if (Enclosing != null)
             {
-                enclosing.Assign(variable, value);
+                Enclosing.Assign(variable, value);
             }
             else
             {
@@ -44,13 +44,13 @@ namespace SmolScript.Internals
 
         public object? Get(string variable)
         {
-            if (variables.ContainsKey(variable))
+            if (Variables.ContainsKey(variable))
             {
-                return variables[variable];
+                return Variables[variable];
             }
-            else if (enclosing != null)
+            else if (Enclosing != null)
             {
-                return enclosing.Get(variable);
+                return Enclosing.Get(variable);
             }
             else
             {
@@ -60,13 +60,13 @@ namespace SmolScript.Internals
 
         public object? TryGet(string variable)
         {
-            if (variables.ContainsKey(variable))
+            if (Variables.ContainsKey(variable))
             {
-                return variables[variable];
+                return Variables[variable];
             }
-            else if (enclosing != null)
+            else if (Enclosing != null)
             {
-                return enclosing.TryGet(variable);
+                return Enclosing.TryGet(variable);
             }
             else
             {

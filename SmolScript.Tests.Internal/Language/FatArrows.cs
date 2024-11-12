@@ -148,12 +148,15 @@ var x = f(3);");
     [TestMethod]
     public void FatArrows0dInvalidNewLine()
     {
-        Assert.ThrowsException<ParseError>(() =>
+        var ex = Assert.ThrowsException<SmolCompilerError>(() =>
         {
             var vm = SmolVm.Init(@"var f = n
 => n * n;
 var x = f(3);");
         });
+        
+        Assert.AreEqual("Encounted one or more errors while parsing", ex.Message);
+        Assert.AreEqual("Parser did not expect to see '=>' here (Line 2, Col 1)", ex.ParserErrors.FirstOrDefault().Message);
     }
 
 }
