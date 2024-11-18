@@ -57,6 +57,9 @@ namespace SmolScript.Internals
         IDENTIFIER,
         STRING,
         NUMBER,
+        
+        START_OF_EMBEDDED_STRING_EXPRESSION,
+        END_OF_EMBEDDED_STRING_EXPRESSION,
 
         // Keywords
 

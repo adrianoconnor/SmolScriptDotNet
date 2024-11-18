@@ -2,18 +2,6 @@ using System.Text;
 
 namespace SmolScript.Internals
 {
-    public class ScannerError : Exception
-    {
-        public int LineNumber { get; set; }
-        public string Message { get; set; }
-
-        public ScannerError(int lineNumber, string message)
-        {
-            this.LineNumber = lineNumber;
-            this.Message = message;
-        }
-    }
-
     internal class Scanner
     {
         private readonly string _source;
@@ -215,13 +203,11 @@ namespace SmolScript.Internals
                         {
                             if (ReachedEnd())
                             {
-                                //_errors.Add(
-                                throw new ScannerError(_currentLine, $"Expected end of a comment block but reached the end of the file");
+                                throw SmolCompilerError.ScannerError($"Expected end of a comment block but reached the end of the file (line {_currentLine})");
                             }
                             else
                             {
                                 c = NextChar();
-                                //_current = NextChar();
 
                                 if (c == '\n')
                                 {
@@ -299,7 +285,7 @@ namespace SmolScript.Internals
                     break;
 
                 case '`':
-                    ProcessBacktickString();
+                    ProcessString('`');
                     break;
 
                 default:
@@ -313,8 +299,7 @@ namespace SmolScript.Internals
                     }
                     else
                     {
-                        //_errors.Add(
-                        throw new ScannerError(_currentLine, $"Unexpected character '{c}'");
+                        throw SmolCompilerError.ScannerError($"Unexpected character '{c}' on line {_currentLine}");
                     }
 
                     break;
@@ -367,81 +352,18 @@ namespace SmolScript.Internals
         private void ProcessString(char quoteChar)
         {
             StringBuilder sb = new StringBuilder();
+            bool hasProducedAtLeastOneToken = false; // We use this to know whether we need to inject a + before each new token in a string literal that might contain embedded ${x} expressions
 
             while (Peek() != quoteChar && !ReachedEnd())
             {
-
-                if (MatchNext('\n')) // Peek() == '\n')
+                if (quoteChar == '`' && Peek() == '\n') // `backtick` strings allow line breaks
                 {
                     _currentLine++;
-                    //_errors.Add(new ScannerError(_line, "Unexpected Line break in string"));
-                    throw new ScannerError(_currentLine, "Unexpected Line break in string");
-                    //return;
                 }
-
-                if (Peek() == '\\')
+                else if (MatchNext('\n'))
                 {
-                    var next = Peek(1);
-
-                    if (next == '\'' || next == '"' || next == '\\')
-                    {
-                        _ = NextChar();
-                        sb.Append(NextChar());
-                    }
-                    else if (next == 't')
-                    {
-                        _ = NextChar();
-                        _ = NextChar();
-                        sb.Append('\t');
-                    }
-                    else if (next == 'r')
-                    {
-                        _ = NextChar();
-                        _ = NextChar();
-                        sb.Append('\r');
-                    }
-                    else if (next == 'n')
-                    {
-                        _ = NextChar();
-                        _ = NextChar();
-                        sb.Append('\n');
-                    }
-                    else
-                    {
-                        sb.Append(NextChar());
-                    }
+                    throw SmolCompilerError.ScannerError($"Unexpected Line break in string (line {_currentLine})");
                 }
-                else
-                {
-                    sb.Append(NextChar());
-                }
-            }
-
-            if (ReachedEnd())
-            {
-                throw new ScannerError(_currentLine, "Unterminated string");
-
-                //_errors.Add(new ScannerError(_line, "Unterminated string"));
-                //return;
-            }
-
-            // Consume the closing "
-            _ = NextChar();
-
-            AddToken(TokenType.STRING, sb.ToString());
-        }
-
-        private void ProcessBacktickString()
-        {
-            StringBuilder sb = new StringBuilder();
-            bool hasProducedAtLeastOneToken = false; // Use this to know whether we need to inject a + before each new token
-
-            while (Peek() != '`' && !ReachedEnd())
-            {
-                // TODO: Need to refactor this so somehow it uses the same code as regular string parsing -- need it to
-                // match those rules exactly, an handle all of the same cases for escaping etc.
-
-                if (Peek() == '\n') _currentLine++;
 
                 if (Peek() == '\\')
                 {
@@ -477,13 +399,20 @@ namespace SmolScript.Internals
                 }
                 else
                 {
-                    if (Peek() == '$' && Peek(1) == '{')
+                    if (quoteChar == '`' & Peek() == '$' && Peek(1) == '{')
                     {
-                        // We've just entered the ${} section, so whatever we've got so far, create
-                        // a string token and add it to the stream, and then start a new string part
+                        // We've just entered a ${...} section, so whatever we've got so far, create
+                        // a string token and add it to the stream, and start a new string part before
+                        // extracting the actual expression and making it look like it was concatenated
+                        // (e.g., `a${b}` becomes "a" + (b).toString()
 
                         if (sb.Length > 0)
                         {
+                            if (hasProducedAtLeastOneToken)
+                            {
+                                AddToken(TokenType.PLUS); // Concatenate the accumulated string with previously extracted string or expression values 
+                            }
+                            
                             AddToken(TokenType.STRING, sb.ToString());
                             sb = new StringBuilder();
                             hasProducedAtLeastOneToken = true;
@@ -501,8 +430,6 @@ namespace SmolScript.Internals
 
                         while ((Peek() != '}' || inEmbeddedString) && !ReachedEnd())
                         {
-                            // Bug here, ${"}"} will currently not do so well
-
                             if ((embeddedStringChar == null && (Peek() == '\'' || Peek() == '"'))
                                     || embeddedStringChar != null && Peek() == embeddedStringChar) // Also `
                             {
@@ -524,19 +451,18 @@ namespace SmolScript.Internals
 
                             if (hasProducedAtLeastOneToken)
                             {
-                                // There is actually a potential bug here... I think
-                                // `${a}${b}` might actually print the result of a+b if they're numbers.
-
-                                AddToken(TokenType.PLUS);
+                                AddToken(TokenType.PLUS); // Concatenate this expression with previously extracted string or expression values 
                             }
 
                             Scanner embeddedScanner = new Scanner(embeddedExpr.ToString());
 
                             var embeddedTokens = embeddedScanner.ScanTokens();
 
-                            //TODO: Handle errors from embedded scanner
-
-                            AddToken(TokenType.LEFT_BRACKET);
+                            // Special grouping tokens used to ensure that the embedded expression is cast to string at runtime.
+                            // Without this `${a}${b}` becomes a+b, and if a and b are numbers they get added as numbers. Using
+                            // these tags we actually produce (a).toString() + (b).toString() when parsing.
+                            
+                            AddToken(TokenType.START_OF_EMBEDDED_STRING_EXPRESSION);
 
                             foreach (var t in embeddedTokens)
                             {
@@ -548,7 +474,7 @@ namespace SmolScript.Internals
                                 this._tokens.Add(t);
                             }
 
-                            AddToken(TokenType.RIGHT_BRACKET);
+                            AddToken(TokenType.END_OF_EMBEDDED_STRING_EXPRESSION);
 
                             hasProducedAtLeastOneToken = true;
                         }
@@ -563,12 +489,10 @@ namespace SmolScript.Internals
 
             if (ReachedEnd())
             {
-                throw new ScannerError(_currentLine, "Unterminated string");
-                //_errors.Add(new ScannerError(_line, "Unterminated string"));
-                //return;
+                throw SmolCompilerError.ScannerError($"Unterminated string (line {_currentLine})");
             }
 
-            // Consume the closing `
+            // Consume the closing quote
             _ = NextChar();
 
             if (sb.Length > 0 || !hasProducedAtLeastOneToken) // If we haven't produced a token yet, even if it's an empty string, we still need that string token
@@ -578,7 +502,7 @@ namespace SmolScript.Internals
                     AddToken(TokenType.PLUS);
                 }
 
-                AddToken(TokenType.STRING, sb.ToString());// stringValue);
+                AddToken(TokenType.STRING, sb.ToString());
             }
         }
 
@@ -603,8 +527,7 @@ namespace SmolScript.Internals
 
             if (Peek() == '.' && CharIsDigit(Peek(1)))
             {
-                // Consume the .
-                _ = NextChar();
+                _ = NextChar(); // Consume the '.'
 
                 while (CharIsDigit(Peek())) _ = NextChar();
             }

@@ -107,7 +107,7 @@ namespace SmolScript.Internals
 
             if (errors.Any())
             {
-                throw new SmolCompilerError(errors, "Encounted one or more errors while parsing");
+                throw new SmolCompilerError(errors, $"Encounted one or more errors while parsing (first error: {errors.First().Message})");
             }
 
             return statements;
@@ -1085,6 +1085,15 @@ namespace SmolScript.Internals
                 Consume(TokenType.RIGHT_BRACKET, "Expect ')' after expression.");
             
                 return new GroupingExpression(expr);
+            }
+            
+            if (Match(TokenType.START_OF_EMBEDDED_STRING_EXPRESSION))
+            {
+                var expr = Expression();
+                
+                Consume(TokenType.END_OF_EMBEDDED_STRING_EXPRESSION, "Expect internal special token 'END_OF_EMBEDDED_STRING_EXPRESSION' after expression.");
+            
+                return new GroupingExpression(expr, true);
             }
             
             throw Error(Peek(), $"Parser did not expect to see '{Peek().Lexeme}' here");

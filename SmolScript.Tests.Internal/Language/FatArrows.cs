@@ -155,7 +155,8 @@ var x = f(3);");
 var x = f(3);");
         });
         
-        Assert.AreEqual("Encounted one or more errors while parsing", ex.Message);
+        Assert.AreEqual("Encounted one or more errors while parsing (first error: Parser did not expect to see '=>' here (Line 2, Col 1))", ex.Message);
+        Assert.AreEqual(CompilerErrorSource.PARSER, ex.ErrorSource);
         Assert.AreEqual("Parser did not expect to see '=>' here (Line 2, Col 1)", ex.ParserErrors.FirstOrDefault().Message);
     }
 

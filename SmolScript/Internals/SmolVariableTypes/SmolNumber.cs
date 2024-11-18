@@ -1,6 +1,6 @@
 ﻿namespace SmolScript.Internals.SmolVariableTypes
 {
-    internal class SmolNumber : SmolVariableType
+    internal class SmolNumber : SmolVariableType, ISmolNativeCallable
     {
         internal readonly double NumberValue;
 
@@ -34,6 +34,32 @@
             {
                 return base.Equals(obj);
             }
+        }
+        
+        public SmolVariableType GetProp(string propName)
+        {
+            throw new Exception($"{this.GetType()} cannot handle native property {propName}");
+        }
+
+        public void SetProp(string propName, SmolVariableType value)
+        {
+            throw new Exception($"Not a valid target");
+        }
+
+        public SmolVariableType NativeCall(string funcName, List<SmolVariableType> parameters)
+        {
+            switch (funcName)
+            {
+                case "toString": 
+                    return new SmolString(this.NumberValue.ToString());
+                default:
+                    throw new Exception($"{this.GetType()} cannot handle native function {funcName}");
+            }
+        }
+
+        public static SmolVariableType StaticCall(string funcName, List<SmolVariableType> parameters)
+        {
+            throw new Exception($"Number class cannot handle static function {funcName}");
         }
     }
 }

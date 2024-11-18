@@ -3,11 +3,11 @@ namespace SmolScript.Internals.SmolStackTypes
 {
     internal class SmolLoopMarker : SmolStackType
     {
-        internal Environment CurrentEnv;
+        internal Environment SavedEnvironment;
 
-        internal SmolLoopMarker(Environment currentEnv)
+        internal SmolLoopMarker(Environment savedEnvironment)
         {
-            this.CurrentEnv = currentEnv;
+            this.SavedEnvironment = savedEnvironment;
         }
     }
 }

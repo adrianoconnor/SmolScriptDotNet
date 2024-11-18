@@ -12,11 +12,13 @@ public class ParserTests
     [TestMethod]
     public void TestMultiVarDeclarations()
     {
-        //var vm = SmolVM.Init("var a = 1, b = 2, c;");
+        Assert.Inconclusive();
+        
+        var vm = SmolVm.Init("var a = 1, b = 2, c;");
 
-        //Assert.AreEqual(1, vm.GetGlobalVar<int>("a"));
-        //Assert.AreEqual(2, vm.GetGlobalVar<int>("b"));
-        //Assert.IsNull(vm.GetGlobalVar<int>("c"));
+        Assert.AreEqual(1, vm.GetGlobalVar<int>("a"));
+        Assert.AreEqual(2, vm.GetGlobalVar<int>("b"));
+        Assert.IsNull(vm.GetGlobalVar<int>("c"));
     }
 
     [TestMethod]
@@ -30,5 +32,4 @@ var b = 2;
         Assert.AreEqual(2, vm.GetGlobalVar<int>("b"));
         Assert.AreEqual(0, vm.GetGlobalVar<int>("c"));
     }
-
 }

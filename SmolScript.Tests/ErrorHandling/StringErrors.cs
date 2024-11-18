@@ -13,7 +13,7 @@ namespace SmolScript.Tests.ErrorHandling
                 var program = SmolVm.Compile("var n = 'x'; var a = `test ${!!!}`;");
             });
             
-            Assert.AreEqual("Encounted one or more errors while parsing", ex.Message);
+            Assert.AreEqual("Encounted one or more errors while parsing (first error: Parser did not expect to see '`test ${!!!}' here (Line 1, Col 22))", ex.Message);
             Assert.AreEqual("Parser did not expect to see '`test ${!!!}' here (Line 1, Col 22)", ex.ParserErrors.FirstOrDefault().Message);
         }
 
@@ -21,14 +21,11 @@ namespace SmolScript.Tests.ErrorHandling
         [TestMethod]
         public void IllegalMultilineStrings()
         {
-            //Assert.Inconclusive();
-
             var source = @"var a = 'test
 123';";
-            var ex = Assert.ThrowsException<ScannerError>(() => SmolVm.Compile(source));
+            var ex = Assert.ThrowsException<SmolCompilerError>(() => SmolVm.Compile(source));
             
-            Assert.AreEqual("Unexpected Line break in string", ex.Message);
-            Assert.AreEqual(2, ex.LineNumber);
+            Assert.AreEqual("Unexpected Line break in string (line 1)", ex.Message);
         }
     }
 }

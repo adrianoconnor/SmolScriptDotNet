@@ -43,6 +43,10 @@ namespace SmolScript.Internals.SmolVariableTypes
         {
             switch (funcName)
             {
+                case "toString":
+                    {
+                        return this;
+                    }
                 case "indexOf":
                     {
                         var p1 = ((SmolString)parameters[0]).StringValue;

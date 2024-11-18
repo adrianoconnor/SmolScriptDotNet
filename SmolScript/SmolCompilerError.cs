@@ -24,6 +24,11 @@ namespace SmolScript
         {
             ErrorSource = source;
         }
+
+        public static SmolCompilerError ScannerError(string message)
+        {
+            return new SmolCompilerError(message, null, CompilerErrorSource.SCANNER);
+        }
     }
     
     public class ParseError : Exception

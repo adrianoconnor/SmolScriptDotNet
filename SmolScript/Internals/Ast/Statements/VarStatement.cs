@@ -7,8 +7,7 @@ namespace SmolScript.Internals.Ast.Statements
     {
         public readonly Token VariableName;
         public readonly Expression? InitialValueExpression;
-
-        // The tokens that span the var declaration and initalization (if applicable)
+        
         public int? FirstTokenIndex;
         public int? LastTokenIndex;
         
@@ -16,6 +15,7 @@ namespace SmolScript.Internals.Ast.Statements
         {
             this.VariableName = variableName;
             this.InitialValueExpression = initialValueExpression;
+            
             this.FirstTokenIndex = firstTokenIndex;
             this.LastTokenIndex = lastTokenIndex;
         }

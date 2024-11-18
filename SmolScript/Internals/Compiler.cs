@@ -226,7 +226,25 @@ namespace SmolScript.Internals
 
         public object? Visit(GroupingExpression expr)
         {
-            return expr.GroupedExpression.Accept(this);
+            if (expr.CastToStringForEmbeddedStringExpression)
+            {
+                // We use a group with this special flag to force a cast of a varible like `${a}` to string, where a is a number (or whatever).
+                // This is important because interpolated strings are basically separate expressions joined with a +,
+                // so `${a}${b}` is really a+b internally -- if we force both a and b to toString'd, then
+                // you'll get a string concatenation instead of numbers being added...
+                
+                var chunk = new List<ByteCodeInstruction>();
+                
+                chunk.AppendChunk(expr.GroupedExpression.Accept(this));
+                chunk.AppendInstruction(OpCode.FETCH, operand1: "toString", operand2: true);
+                chunk.AppendInstruction(OpCode.CALL, operand1: 0, operand2: true);
+                
+                return chunk;
+            }
+            else
+            {
+                return expr.GroupedExpression.Accept(this);
+            }
         }
 
         public object? Visit(LiteralExpression expr)

@@ -167,9 +167,9 @@ namespace SmolScript
             // Store the current state. This doesn't matter too much, because it shouldn't really
             // be runnable after we're done, but it doesn't hurt to do this.
             var state = new SmolCallSiteSaveState(
-                codeSection: this.CodeSectionPointer,
-                instructionPointer: this.InstructionPointer,
-                environment: this.CurrentScope,
+                savedCodeSection: this.CodeSectionPointer,
+                savedInstructionPointer: this.InstructionPointer,
+                savedEnvironment: this.CurrentScope,
                 callIsExternal: true
             );
 
@@ -477,9 +477,9 @@ namespace SmolScript
                                 // Store our current program/vm state so we can restor
 
                                 var state = new SmolCallSiteSaveState(
-                                    codeSection: this.CodeSectionPointer,
-                                    instructionPointer: this.InstructionPointer,
-                                    environment: this.CurrentScope,
+                                    savedCodeSection: this.CodeSectionPointer,
+                                    savedInstructionPointer: this.InstructionPointer,
+                                    savedEnvironment: this.CurrentScope,
                                     callIsExternal: false
                                 );
 
@@ -663,20 +663,17 @@ namespace SmolScript
                                 throw new SmolRuntimeException("Tried to return but found something unexecpted on the stack");
                             }
                             
-                            this.CurrentScope = savedCallState.Environment;
-                            this.InstructionPointer = savedCallState.InstructionPointer;
-                            this.CodeSectionPointer = savedCallState.CodeSection;
-
-                            // Return value needs to go back on the stack
+                            this.CurrentScope = savedCallState.SavedEnvironment;
+                            this.InstructionPointer = savedCallState.SavedInstructionPointer;
+                            this.CodeSectionPointer = savedCallState.SavedCodeSection;
+                            
                             Stack.Push(returnValue);
 
                             if (savedCallState.CallIsExternal)
                             {
-                                // Not sure what to do about return value here
-
-                                this._runMode = RunMode.PAUSED; // TODO: Should be DONE I think, check this
+                                this._runMode = RunMode.DONE;
                                 
-                                return; // Don't like this, error prone
+                                return;
                             }
 
                             break;
@@ -963,7 +960,7 @@ namespace SmolScript
                         case OpCode.LOOP_START:
 
                             Stack.Push(new SmolLoopMarker(
-                                currentEnv: this.CurrentScope
+                                savedEnvironment: this.CurrentScope
                             ));
 
                             break;
@@ -981,7 +978,7 @@ namespace SmolScript
 
                                 if (next.GetType() == typeof(SmolLoopMarker))
                                 {
-                                    this.CurrentScope = ((SmolLoopMarker)next).CurrentEnv;
+                                    this.CurrentScope = ((SmolLoopMarker)next).SavedEnvironment;
 
                                     Stack.Push(next); // The loop marker needs to be left on the stack, it will eventually be removed by a LOOP_END
 
