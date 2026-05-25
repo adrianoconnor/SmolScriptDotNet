@@ -131,9 +131,9 @@ function getA() { return a; }
 
         vm.Run();
 
-        Assert.ThrowsException<Exception>(vm.Run);
-        Assert.ThrowsException<Exception>(vm.Run);
-        Assert.ThrowsException<Exception>(vm.Step);
+        Assert.Throws<Exception>(vm.Run);
+        Assert.Throws<Exception>(vm.Run);
+        Assert.Throws<Exception>(vm.Step);
     }
 
     [TestMethod]
@@ -244,7 +244,7 @@ function getA() { return a; }
 
         var vm = SmolVm.Compile(code);
 
-        var e = Assert.ThrowsException<Exception>(() => vm.RegisterMethod("mul", 1));
+        var e = Assert.Throws<Exception>(() => vm.RegisterMethod("mul", 1));
 
         Assert.AreEqual("External method 'mul' could not be registered because the second parameter was not a lambda (we expect a Func or Action, but an object with type Int32 was received)", e.Message);
     }

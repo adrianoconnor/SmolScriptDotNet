@@ -1,13 +1,13 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Library</OutputType>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <RootNamespace>SmolScript</RootNamespace>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <Description>A very smol embedded runtime for a JS-like language. This software is early alpha, it is not suitable for production.</Description>
     <PackageId>SmolScript</PackageId>
-    <Version>0.0.2</Version>
+    <Version>0.0.5</Version>
     <Authors>Adrian O'Connor</Authors>
     <Company>Arctus Limited</Company>
     <Product>SmolScript</Product>
@@ -25,11 +25,6 @@
     <Folder Include="Internals\SmolVariableTypes\" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Remove="Internals\Ast\Interpreter\AstInterpreter.cs" />
-    <Compile Remove="Internals\Ast\Interpreter\ICallableSmolFunction.cs" />
-    <Compile Remove="Internals\Ast\Interpreter\SmolFunctionWrapper.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
   </ItemGroup>
 </Project>

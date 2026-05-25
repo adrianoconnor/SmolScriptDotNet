@@ -8,7 +8,7 @@ namespace SmolScript.Tests.ErrorHandling
         [TestMethod]
         public void InvalidStringFromBackticks()
         {
-            var ex = Assert.ThrowsException<SmolCompilerError>(() =>
+            var ex = Assert.Throws<SmolCompilerError>(() =>
             {
                 var program = SmolVm.Compile("var n = 'x'; var a = `test ${!!!}`;");
             });
@@ -23,7 +23,7 @@ namespace SmolScript.Tests.ErrorHandling
         {
             var source = @"var a = 'test
 123';";
-            var ex = Assert.ThrowsException<SmolCompilerError>(() => SmolVm.Compile(source));
+            var ex = Assert.Throws<SmolCompilerError>(() => SmolVm.Compile(source));
             
             Assert.AreEqual("Unexpected Line break in string (line 1)", ex.Message);
         }

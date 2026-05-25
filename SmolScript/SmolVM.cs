@@ -445,7 +445,11 @@ namespace SmolScript
                                     // (from the next value on the stack) and use that
                                     // objects environment instead.
 
-                                    env = ((SmolObject)Stack.Pop()).object_env;
+                                    var smolobjref = (SmolObject)Stack.Pop();
+
+                                    env = (smolobjref).object_env;
+
+                                    env.Variables["this"] = smolobjref; // TODO: Replace this with actually correct bind/apply/call semantics
                                 }
 
                                 // Next pop args off the stack. Op1 is number of args.                    

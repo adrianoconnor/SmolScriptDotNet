@@ -148,7 +148,7 @@ var x = f(3);");
     [TestMethod]
     public void FatArrows0dInvalidNewLine()
     {
-        var ex = Assert.ThrowsException<SmolCompilerError>(() =>
+        var ex = Assert.Throws<SmolCompilerError>(() =>
         {
             var vm = SmolVm.Init(@"var f = n
 => n * n;

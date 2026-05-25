@@ -83,6 +83,8 @@ namespace SmolScript.Tests
 
                 if (matchedSteps.Any())
                 {
+                    Console.WriteLine(source);
+                    
                     var vm = SmolVm.Compile(source);
 
                     foreach (Match matchedStep in matchedSteps!)

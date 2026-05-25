@@ -27,7 +27,7 @@ public class ScannerTests
     [TestMethod]
     public void TestScannerError()
     {
-        var ex = Assert.ThrowsException<SmolCompilerError>(() =>
+        var ex = Assert.Throws<SmolCompilerError>(() =>
         {
             var vm = SmolVm.Compile("var a = '");
         });
@@ -39,7 +39,7 @@ public class ScannerTests
     [TestMethod]
     public void TestScannerErrorInEmbeddedExpression()
     {
-        var ex = Assert.ThrowsException<SmolCompilerError>(() =>
+        var ex = Assert.Throws<SmolCompilerError>(() =>
         {
             var vm = SmolVm.Compile("var a = `${x.}`");
         });

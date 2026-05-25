@@ -1,9 +1,4 @@
-﻿using SmolScript.Internals;
-using SmolScript.Internals.Ast;
-using SmolScript.Internals.SmolStackTypes;
-using SmolScript.Internals.SmolVariableTypes;
-
-namespace SmolScript.Tests.Internal.Language;
+﻿namespace SmolScript.Tests.Internal.Language;
 
 [TestClass]
 public class Functions
@@ -14,25 +9,27 @@ public class Functions
         var source = @"
 var x = 0;
 function b() {
+    // var x = 0; // If we add this line to both 'parent' functions, the result should be zero, but it is not being captured/hoisted correctly and global x ends up = 3
     function a() {
         x = x + 1;
-    }
-    //a();
+    };
+    a();
 }
 
 function c() {
+    // var x = 0;
     function a() {
         x = x + 2;
-    }// add ; to create another error :(
-    //a();
-};;;;
+    };
+    a();
+};
 
 b();
 c();
 ";
 
         var vm = SmolVm.Init(source);
-        Assert.AreEqual(0, vm.GetGlobalVar<int>("x"));
+        Assert.AreEqual(3, vm.GetGlobalVar<int>("x"));
     }
     
     [TestMethod]
@@ -118,4 +115,42 @@ c();
         
         Assert.AreEqual(3, vm.GetGlobalVar<int>("x"));
     }
+    
+    [TestMethod]
+    public void FunctionOnObjectWithThis ()
+    {
+        var source = """
+             var x = 0;
+
+             var o = {
+                 z: 999,
+                 getZ: function() { return this.z; }
+             }
+
+             x = o.getZ();
+        """;
+        
+        var vm = SmolVm.Init(source);
+        Assert.AreEqual(999, vm.GetGlobalVar<int>("x"));
+   
+    }
+    
+    [TestMethod]
+    public void ObjRef()
+    {
+        var source = @"
+
+var a = [];
+a.push(1);
+var b = a;
+b.push(2);
+var a_len = a.length;
+var b_len = b.length;
+";
+
+        var vm = SmolVm.Init(source);
+        Assert.AreEqual(2, vm.GetGlobalVar<int>("a_len"));
+        Assert.AreEqual(2, vm.GetGlobalVar<int>("b_len"));
+    }
+
 }

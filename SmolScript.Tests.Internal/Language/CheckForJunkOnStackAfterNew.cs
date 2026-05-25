@@ -4,7 +4,7 @@ using SmolScript.Internals;
 using SmolScript.Internals.SmolStackTypes;
 using SmolScript.Internals.SmolVariableTypes;
 
-namespace SmolTests
+namespace SmolScript.Tests.Internal.Language
 {
     [TestClass]
     public class CheckForJunkOnStackAfterNew
